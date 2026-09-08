@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>스폰판수 랭킹 - 스버스</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="period.css">
+  <style>
+    :root {
+      --bg: #0a0b0f;
+      --bg-elevated: #12141a;
+      --bg-card: #16181f;
+      --border: rgba(255, 255, 255, 0.06);
+      --text: #e8eaed;
+      --text-muted: #8b8f9a;
+      --text-dim: #5c606b;
+      --cyan: #22d3ee;
+      --orange: #f59e0b;
+      --radius: 14px;
+      --header-h: 56px;
+      --content-max: 1280px;
+    }
+    html { scrollbar-gutter: stable; }
+    html.light {
+      --cyan: #16325c;
+      --bg: #f3f4f7;
+      --bg-elevated: #ffffff;
+      --bg-card: #ffffff;
+      --border: rgba(15, 18, 24, 0.1);
+      --text: #1a1d24;
+      --text-muted: #5c606b;
+      --text-dim: #8a8f99;
+    }
+    html.light .header,
+    html.light .sub-nav {
+      background: rgba(243, 244, 247, 0.9);
+    }
+    html.light .footer { background: #eceef2; }
+    html.light .search-drop,
+    html.light .partner-pop { background: #ffffff; }
+    html.light .fa-switch-slider { background: rgba(0,0,0,0.18); }
+    .theme-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .theme-icon svg { width: 20px; height: 20px; display: block; }
+    .theme-sun { display: none !important; }
+    .theme-moon { display: block !important; }
+    html.light .theme-moon { display: none !important; }
+    html.light .theme-sun { display: block !important; }
+    .fa-switch-wrap {
+      display: flex; align-items: center; gap: 6px;
+      cursor: pointer; flex-shrink: 0; user-select: none;
+    }
+    .fa-switch-input { display: none; }
+    .fa-switch-slider {
+      width: 36px; height: 20px; background: rgba(255,255,255,0.12);
+      border-radius: 999px; position: relative;
+    }
+    .fa-switch-slider::before {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; background: #c0c4cc; border-radius: 50%;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .fa-switch-input:checked + .fa-switch-slider { background: rgba(245,158,11,0.35); }
+    .fa-switch-input:checked + .fa-switch-slider::before {
+      transform: translateX(16px); background: #f59e0b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--header-h);
+      background: rgba(10, 11, 15, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: center;
+    }
+    .header-inner {
+      max-width: var(--content-max); width: 100%;
+      display: flex; align-items: center;
+      padding: 0 24px; gap: 16px;
+    }
+        .logo {
+      display: flex; align-items: center; gap: 4px;
+      text-decoration: none; color: var(--text); font-weight: 700; font-size: 17px; flex-shrink: 0;
+      line-height: 1;
+    }
+    .logo img {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      display: block;
+      position: relative;
+      top: 0;
+    }
+    .logo-text {
+      display: flex;
+      align-items: center;
+      position: relative;
+      top: 2px;
+    }
+    .logo-sub {
+      font-size: 70%;
+      font-weight: 500;
+      color: var(--text-dim);
+      margin-left: 8px;
+    }
+    .search-wrap {
+      flex: 1; max-width: 360px; margin-left: auto; position: relative;
+    }
+    .search-input {
+      width: 100%; height: 36px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0 40px 0 16px;
+      color: var(--text); font-size: 13px; outline: none;
+    }
+    .search-input::placeholder { color: var(--text-dim); }
+    .search-icon {
+      position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%); color: var(--text-dim); pointer-events: none;
+    }
+    .search-drop {
+      display: none; position: absolute; top: 42px; left: 0; right: 0;
+      background: #16181f; border: 1px solid var(--border); border-radius: 12px;
+      max-height: 280px; overflow: auto; z-index: 120;
+    }
+    .search-drop.open { display: block; }
+    .search-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; cursor: pointer; font-size: 13px;
+    }
+    .search-item:hover { background: rgba(34,211,238,0.1); }
+    .search-item img {
+      width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #1a1c24;
+    }
+    .search-item small { color: var(--text-dim); margin-left: auto; }
+    .icon-btn {
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px; border: none; background: transparent;
+      color: var(--text-muted); cursor: pointer;
+    }
+    .main {
+      flex: 1; max-width: var(--content-max);
+      width: 100%; margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+    .page-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+    .period-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+    .period-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .period-divider {
+      width: 1px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.12);
+      margin: 0 1px 0 12px;
+      flex-shrink: 0;
+      align-self: center;
+    }
+    .period-year,
+    .period-months,
+    .period-range {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .period-box {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .period-box:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.06);
+    }
+    .period-box.active,
+    .period-box.year-active {
+      color: #22d3ee;
+      background: rgba(34, 211, 238, 0.1);
+      border-color: rgba(34, 211, 238, 0.3);
+    }
+    .year-arrow { font-size: 14px; line-height: 1; opacity: 0.85; }
+    .rank-list { list-style: none; overflow: hidden; }
+    .rank-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 7px 16px; border-bottom: none;
+    }
+    .rank-item:nth-child(odd) { background: rgba(255,255,255,0.015); }
+    .rank-item:nth-child(even) { background: transparent; }
+    .rank-item:hover { background: rgba(34,211,238,0.08); }
+    .rank-num {
+      width: 22px; font-size: 13px; font-weight: 600;
+      color: var(--text-dim); text-align: center; flex-shrink: 0;
+    }
+    .rank-item.top-1 .rank-num { color: var(--orange); }
+    .rank-item.top-2 .rank-num { color: #c0c0c0; }
+    .rank-item.top-3 .rank-num { color: #cd7f32; }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      overflow: hidden; border: 1px solid var(--border); background: #1a1c24; flex-shrink: 0;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .rank-info { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .rank-name { font-size: 13px; font-weight: 600; }
+    .rank-crew { font-size: 12px; color: var(--text-dim); }
+    .rank-stat {
+      font-size: 13px; font-weight: 600; color: var(--cyan);
+      flex-shrink: 0; text-align: right;
+      min-width: 130px; font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .rank-stat span span {
+      font-size: 70%;
+      opacity: 0.7;
+      line-height: 1;
+    }
+    #listNav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: #1c1f28;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-top: none;
+      border-radius: 0 0 14px 14px;
+      padding: 10px 16px;
+    }
+    #listNav .page-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+    }
+    #listNav .page-btn:hover:not(:disabled) {
+      color: #67e8f9;
+      border-color: rgba(34,211,238,0.35);
+      background: rgba(34,211,238,0.1);
+    }
+    #listNav .page-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+    #pageInfo {
+      width: 52px;
+      min-width: 52px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      display: inline-block;
+    }
+    .rank-item.empty {
+      min-height: 48px;
+      pointer-events: none;
+      background: transparent !important;
+    }
+    #listNav #moreBtn,
+    #listNav #foldBtn {
+      width: 100%;
+      padding: 12px 16px;
+      margin: 0;
+      background: transparent;
+      border: none;
+      color: #22d3ee;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    #listNav #foldBtn { color: #8b8f9a; }
+    #listNav #moreBtn:hover,
+    #listNav #foldBtn:hover {
+      color: #67e8f9;
+      font-weight: 700;
+    }
+    .footer {
+      margin-top: auto; border-top: 1px solid var(--border);
+      background: #08090c; padding: 28px 0 32px;
+      overflow: visible;
+    }
+    .footer-inner {
+      max-width: var(--content-max); margin: 0 auto;
+      padding: 0 24px;
+      font-size: 12px; color: var(--text-dim); line-height: 1.7;
+    }
+    .footer-inner p { margin-bottom: 6px; }
+    .footer-copyright {
+      margin-top: 14px; padding-top: 20px;
+      border-top: 1px solid var(--border); color: var(--text-muted);
+    }
+    .footer-doc {
+      margin-left: 12px;
+      color: inherit;
+      font-weight: 400;
+      text-decoration: none;
+    }
+    .footer-doc:hover { font-weight: 700; }
+    .footer-dot { margin: 0 8px; }
+    .footer-row {
+      position: relative;
+      display: block;
+      padding-right: 88px;
+    }
+    .partner-wrap {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-top: 0;
+    }
+    .partner-btn {
+      display: inline-block;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0e1016;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      list-style: none;
+    }
+    .partner-btn::-webkit-details-marker { display: none; }
+    .partner-btn:hover { color: #22d3ee; border-color: rgba(34,211,238,0.35); }
+    .partner-pop {
+      display: none;
+      position: absolute;
+      right: 0;
+      left: auto;
+      bottom: calc(100% + 8px);
+      width: 280px;
+      padding: 14px 16px;
+      background: #16181f;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.7;
+      z-index: 200;
+    }
+    .partner-wrap[open] .partner-pop { display: block; }
+    .footer-doc {
+      margin-left: 12px;
+      color: inherit;
+      font-weight: 400;
+      text-decoration: none;
+    }
+    .footer-doc:hover { font-weight: 700; }
+    .footer-dot { margin: 0 8px; }
+    .footer-row {
+      position: relative;
+      display: block;
+      padding-right: 88px;
+    }
+    .partner-wrap {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-top: 0;
+    }
+    .partner-btn {
+      display: inline-block;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0e1016;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .partner-btn:hover { color: #22d3ee; border-color: rgba(34,211,238,0.35); }
+    .partner-pop {
+      display: none;
+      position: absolute;
+      left: 0;
+      bottom: calc(100% + 8px);
+      width: 280px;
+      padding: 14px 16px;
+      background: #16181f;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.7;
+      z-index: 20;
+    }
+    .partner-wrap:hover .partner-pop { display: block; }
+    .rank-layout { display: flex; gap: 24px; align-items: flex-start; }
+    .rank-left { width: 60%; flex-shrink: 0; }
+    .rank-right { width: 40%; display: flex; flex-direction: column; gap: 23px; }
+    .side-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      overflow: hidden;
+    }
+    .side-box-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .side-box-body { padding: 8px 0; }
+    .side-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+    .side-item-name { color: var(--text); font-weight: 500; }
+       .filter-row { cursor: pointer; transition: background 0.15s; }
+    .filter-row:hover { background: rgba(34, 211, 238, 0.1); }
+    #clearFilterBtn { font-weight: 400; }
+    #clearFilterBtn:hover { font-weight: 700; }
+    .side-item-value {
+      color: var(--cyan);
+      font-weight: 600;
+      min-width: 90px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .side-empty {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+    @media (max-width: 900px) {
+      .rank-layout { flex-direction: column; }
+      .rank-left, .rank-right { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+    <div id="site-top"></div>
+
+  <main class="main">
+        <div class="period-bar">
+      <div class="period-label">
+        <span class="period-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <line x1="4" y1="6" x2="20" y2="6"></line>
+            <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"></circle>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <circle cx="14" cy="12" r="2" fill="currentColor" stroke="none"></circle>
+            <line x1="4" y1="18" x2="20" y2="18"></line>
+            <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"></circle>
+          </svg>
+        </span>
+        기간
+      </div>
+      <div class="period-month-wrap" id="yearWrap">
+        <button type="button" class="period-box year-active" id="yearBtn">2026년</button>
+        <div class="period-total-menu" id="yearMenu"></div>
+      </div>
+      <div class="period-month-wrap" id="monthWrap">
+        <button type="button" class="period-box active" id="monthBtn">8월</button>
+        <div class="period-total-menu" id="monthMenu"></div>
+      </div>
+      <div class="period-divider"></div>
+      <div class="period-label">누적</div>
+      <div class="period-total" id="totalWrap">
+        <button type="button" class="period-box dim" id="totalBtn">선택</button>
+        <div class="period-total-menu" id="totalMenu">
+          <button type="button" data-range="3m">3개월</button>
+          <button type="button" data-range="6m">6개월</button>
+          <button type="button" data-range="12m">1년</button>
+          <button type="button" data-range="last-year">작년</button>
+          <button type="button" data-range="this-year">올해</button>
+        </div>
+      </div>
+      <div id="updateTime" style="font-size:12px; color:var(--text-dim); margin-left:auto;">업데이트 --</div>
+    </div>
+
+    <div class="rank-layout" id="rankArea" style="visibility: hidden;">
+      <div class="rank-left">
+        <div class="side-box">
+                    <div class="side-box-header" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+            <span id="rankTitleName">개인별 스폰판수</span>
+            <button type="button" id="clearFilterBtn" style="display:none; border:none; background:transparent; color:#22d3ee; font-size:12px; cursor:pointer; margin-left:auto;">전체보기</button>
+          </div>
+                    <ul class="rank-list" id="rankList"></ul>
+          <div id="listNav">
+            <button type="button" class="page-btn" id="prevPage" aria-label="이전">‹</button>
+            <span id="pageInfo">1/1</span>
+            <button type="button" class="page-btn" id="nextPage" aria-label="다음">›</button>
+          </div>
+          <button type="button" id="clearFilterBottomBtn" style="
+            display:none; width:100%; margin-top:0; padding:14px;
+            background:#1c1f28; border:1px solid rgba(255,255,255,0.06);
+            border-top:none; border-radius:0 0 14px 14px;
+            color:#22d3ee; font-size:14px; font-weight:700; cursor:pointer;
+          ">전체보기</button>
+        </div>
+      </div>
+      <div class="rank-right">
+                <div class="side-box">
+          <div class="side-box-header">대학별 평균 판수</div>
+          <div class="side-box-body" id="crewRateList"></div>
+        </div>
+        <div class="side-box">
+          <div class="side-box-header">스폰판수 구간 분포</div>
+          <div id="rateChartBars" style="padding: 12px 16px 16px;"></div>
+        </div>
+        <div class="side-box">
+          <div class="side-box-header">대학별 TOP</div>
+          <div class="side-box-body" id="crewCountList"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+      <div id="site-bottom"></div>
+
+  <script>
+    const MONTH_GID = {
+      7: "1341589360",
+      8: "1402849856"
+    };
+        const ROSTER_CSV = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=0";
+const CREW_LOGO = {
+      "바스포드": "logo/basford_em.webp",
+      "BGM": "logo/bgm_em.webp",
+      "흑카데미": "logo/black_em.webp",
+      "보신대": "logo/bsu_em.webp",
+      "씨나인": "logo/c9_em.webp",
+      "캄몬스타즈": "logo/calm_em.webp",
+      "츠캄몬스타즈,츠캄": "logo/calm_em.webp",
+      "츠캄": "logo/calm_em.webp",
+      "DM": "logo/dm_em.webp",
+      "드림즈": "logo/dreams_em.webp",
+      "드림": "logo/dreams_em.webp",
+      "더블비": "logo/dubbleb_em.webp",
+      "거성대": "logo/gsu_em.webp",
+      "HM": "logo/hm_em.webp",
+      "JSA": "logo/jsa_em.webp",
+      "정선대": "logo/ju_em.webp",
+      "케이대": "logo/ku_em.webp",
+      "엠비대": "logo/mbu_em.webp",
+      "뉴캣슬": "logo/newcat_em.webp",
+      "NSU": "logo/nsu_em.webp",
+      "늪지대": "logo/nzu_em.webp",
+      "섭이대": "logo/siu_em.webp",
+      "철와대": "logo/su_em.webp",
+      "우끼끼즈": "logo/ukks_em.webp",
+      "MSG": "logo/msg_em.webp",
+      "와플대": "logo/waffleu_em.webp",
+      "씨나인1": "logo/c91_em.webp",
+      "YB": "logo/yb_em.webp",
+      "염석대": "logo/yuam_em.webp",
+      "학버드": "logo/hak_em.webp",
+      "철기중대": "logo/chulgi_em.webp",
+      "패션스타": "logo/fstar_em.webp",
+      "나사": "logo/nasa_em.webp",
+      "ASG": "logo/asg_em.webp",
+      "김성여대": "logo/kim_em.webp",
+      "캄성여대": "logo/cswu_em.webp",
+      "수술대": "logo/ssu_em.webp",
+      "신세계": "logo/ssg_em.webp",
+      "뽀인구단": "logo/bboin_em.webp",
+      "장독대": "logo/jdu_em.webp",
+      "이노대": "logo/ino_em.webp", 
+      "거사대": "logo/gsu_em.webp", 
+      "ASG": "logo/asg_em.webp",
+      "방치클럽": "logo/bangchi_em.webp",
+      "복덕방": "logo/bdb_em.webp",
+      "CP": "logo/cp_em.webp",
+      "DP": "logo/dp_em.webp",
+      "묵섭대": "logo/mook_em.webp",
+      "광수대": "logo/gwangsu_em.webp",
+      "캄브릿지": "logo/calmb_em.webp",
+      "마종대": "logo/majong_em.webp",
+      "TPZ": "logo/tpz_em.webp",
+      "범진대": "logo/bj_em.webp",
+      "파이스트": "logo/pist_em.webp",
+      "미다스공대": "logo/midas2_em.webp",
+      "MGS": "logo/mgs_em.webp",
+      "라저대": "logo/rthat_em.webp",
+      "아마대": "logo/ama_em.webp",
+      "츠나대": "logo/tsuna_em.webp",
+      "무창클럽": "logo/moo_em.webp",
+      "카사대": "logo/casa_em.webp",
+"철거반": "logo/cgb_em.webp",
+      "노가다대": "logo/nogada_em.webp",
+      "마싯대": "logo/masit_em.webp",
+      "점단기": "logo/casa_em.webp",
+      "점문예대": "logo/jm_em.webp",
+      "라이트클럽": "logo/lightclub_em.webp",
+      "고대": "logo/go_em.webp",
+      "친박연대": "logo/chinpark_em.webp",
+      "철기대": "logo/cgd_em.webp",
+      "석사관학교": "logo/seoksa_em.webp",
+      "할없녀": "logo/halgirl_em.webp",
+      "무친대": "logo/mcu_em.webp",
+      "소림사": "logo/sorimsa_em.webp"
+    };
+        const CREW_LOGO_SIZE = {};
+    function crewLogo(name) {
+      if (!name) return "";
+      var n = String(name).replace(/\s+/g, "").trim();
+      if (n === "츠캄몬스타즈" || n === "츠캄" || n === "캄몬" || n === "츠캄몬") n = "캄몬스타즈";
+      if (CREW_LOGO[n]) return CREW_LOGO[n];
+      if (CREW_LOGO[name]) return CREW_LOGO[name];
+      const key = Object.keys(CREW_LOGO).find(k => k.toLowerCase() === n.toLowerCase());
+      return key ? CREW_LOGO[key] : "";
+    }
+    function normName(s) {
+      return String(s || "").replace(/\s+/g, "").toLowerCase();
+    }
+    function parseRoster(text) {
+      const lines = text.split("\n").map(function (l) { return l.trim(); }).filter(function (l) { return l; });
+      const list = [];
+      for (var i = 1; i < lines.length; i++) {
+        var cols = lines[i].match(/(?:[^",]+|"[^"]*")+/g) || [];
+        var c = cols.map(function (x) { return x.replace(/^"|"$/g, "").trim(); });
+        var id = c[0] || "";
+        var name = c[1] || "";
+        if (!id && !name) continue;
+        var aliases = (c[2] || "").split(",").map(function (x) { return x.trim(); }).filter(function (x) { return x; });
+        list.push({
+          id: id,
+          name: name,
+          aliases: aliases,
+          race: c[3] || "",
+          crew: c[4] || "FA",
+          gender: c[5] || ""
+        });
+      }
+      return list;
+    }
+    function findRoster(nick, roster) {
+      var n = normName(nick);
+      if (!n) return null;
+      for (var i = 0; i < roster.length; i++) {
+        var r = roster[i];
+        if (normName(r.name) === n) return r;
+        for (var j = 0; j < r.aliases.length; j++) {
+          if (normName(r.aliases[j]) === n) return r;
+        }
+      }
+      return null;
+    }
+    function raceLabel(r) {
+      var s = String(r || "").trim().toUpperCase();
+      if (s === "T" || s === "테" || s === "테란" || s.indexOf("TERRAN") !== -1) return "테란";
+      if (s === "Z" || s === "저" || s === "저그" || s.indexOf("ZERG") !== -1) return "저그";
+      if (s === "P" || s === "프" || s === "프로토스" || s === "프토" || s.indexOf("PROTO") !== -1) return "프로토스";
+      return r || "—";
+    }
+    let currentMonth = 8;
+    let originalData = [];
+                    let listPage = 0;
+                const PAGE_SIZE = 35;
+    let listenersBound = false;
+                   let selectedCrew = window.keepCrew || null; null;
+    let selectedRace = null;
+    function getFilteredData() {
+      var data = originalData.slice();
+      if (selectedCrew) data = data.filter(function (item) { return item.crew === selectedCrew; });
+      if (selectedRace) data = data.filter(function (item) { return item.race === selectedRace; });
+      return data;
+    }
+    function clearFilter() {
+      selectedCrew = null;
+      selectedRace = null;
+      var titleName = document.getElementById("rankTitleName");
+      if (titleName) titleName.textContent = "개인별 스폰판수";
+      var btn = document.getElementById("clearFilterBtn");
+      if (btn) btn.style.display = "none";
+      var bottomBtn = document.getElementById("clearFilterBottomBtn");
+      if (bottomBtn) bottomBtn.style.display = "none";
+      var moreBtn = document.getElementById("moreBtn");
+      if (moreBtn) moreBtn.style.borderRadius = "0 0 14px 14px";
+      resetAndRender();
+    }
+    function sheetUrl(month) {
+      const gid = MONTH_GID[month];
+      if (!gid) return null;
+      return "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=" + gid;
+    }
+        function renderMore() {
+      const list = document.getElementById("rankList");
+      const data = getFilteredData();
+      const maxPage = Math.max(1, Math.ceil(data.length / PAGE_SIZE));
+      if (listPage > maxPage - 1) listPage = maxPage - 1;
+      if (listPage < 0) listPage = 0;
+      const start = listPage * PAGE_SIZE;
+      const pageRows = data.slice(start, start + PAGE_SIZE);
+      list.innerHTML = "";
+      pageRows.forEach(function (item, index) {
+        const rank = start + index + 1;
+        const li = document.createElement("li");
+        li.className = "rank-item" + (rank === 1 ? " top-1" : rank === 2 ? " top-2" : rank === 3 ? " top-3" : "");
+        const imgUrl = item.id
+          ? "https://stimg.sooplive.com/LOGO/" + item.id.substring(0,2).toLowerCase() + "/" + item.id + "/" + item.id + ".jpg"
+          : "";
+        li.innerHTML =
+          '<span class="rank-num">' + rank + '</span>' +
+          '<div class="avatar"><img src="' + imgUrl + '" alt="" onerror="this.style.display=\'none\'"></div>' +
+          '<div class="rank-info">' +
+            '<div class="rank-name">' + item.name + '</div>' +
+            '<div class="rank-crew">' + (item.crew || "FA") + '</div>' +
+          '</div>' +
+          '<div class="rank-stat" style="display:flex; align-items:baseline; justify-content:flex-end; gap:10px;">' +
+            '<span style="font-size:11px; color:#fff; font-weight:400; min-width:72px; text-align:right;">' +
+              String(item.wins).padStart(2, "0") + "승 " + String(item.losses).padStart(2, "0") + "패" +
+            '</span>' +
+            '<span style="min-width:52px; text-align:right;">' + item.games + ' <span style="font-size:70%; opacity:0.7;">판</span></span>' +
+          '</div>';
+        list.appendChild(li);
+      });
+      var nav = document.getElementById("listNav");
+      if (selectedCrew || selectedRace) {
+        if (nav) nav.style.display = "none";
+      } else {
+        if (nav) nav.style.display = "flex";
+        var emptyCount = PAGE_SIZE - pageRows.length;
+        for (var e = 0; e < emptyCount; e++) {
+          var empty = document.createElement("li");
+          empty.className = "rank-item empty";
+          empty.innerHTML = '<span class="rank-num"></span><div class="avatar" style="border-color:transparent;background:transparent;"></div><div class="rank-info"></div><div class="rank-stat"></div>';
+          list.appendChild(empty);
+        }
+        const info = document.getElementById("pageInfo");
+        const prevBtn = document.getElementById("prevPage");
+        const nextBtn = document.getElementById("nextPage");
+        if (info) info.textContent = (listPage + 1) + "/" + maxPage;
+        if (prevBtn) prevBtn.disabled = listPage <= 0;
+        if (nextBtn) nextBtn.disabled = listPage >= maxPage - 1;
+      }
+    }
+    function expandList() {
+      if (showLimit <= 35) showLimit = 80;
+      else if (showLimit <= 80) showLimit = 130;
+      else showLimit = 9999;
+      renderMore();
+    }
+    function foldList() {
+      showLimit = 35;
+      renderMore();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    function renderCrewRate() {
+      const map = {};
+      originalData.forEach(function (item) {
+        if (!item.crew || item.crew === "FA") return;
+        if (!map[item.crew]) map[item.crew] = { games: 0, count: 0 };
+        map[item.crew].games += item.games;
+        map[item.crew].count += 1;
+      });
+      const list = Object.entries(map)
+        .map(function (entry) {
+          var name = entry[0];
+          var d = entry[1];
+          return {
+            name: name,
+            avg: d.count > 0 ? Math.round(d.games / d.count) : 0,
+            count: d.count
+          };
+        })
+        .sort(function (a, b) { return b.avg - a.avg; });
+      const box = document.getElementById("crewRateList");
+      if (!box) return;
+      box.innerHTML = "";
+      list.forEach(function (item, index) {
+        const rank = index + 1;
+        var rankColor = "var(--text-dim)";
+        if (rank === 1) rankColor = "#f59e0b";
+        else if (rank === 2) rankColor = "#a78bfa";
+        else if (rank === 3) rankColor = "#34d399";
+        const div = document.createElement("div");
+        div.className = "side-item filter-row";
+        div.innerHTML =
+          '<div style="display:flex; align-items:center; gap:8px;">' +
+            '<span style="width:18px; color:' + rankColor + '; font-size:12px; font-weight:700;">' + rank + '</span>' +
+                        '<span class="side-item-name" style="display:inline-flex;align-items:center;">' +
+              '<span style="width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:6px;">' +
+                '<img src="' + crewLogo(item.name) + '" alt="" style="max-width:' + (CREW_LOGO_SIZE[item.name] || 24) + 'px;max-height:' + (CREW_LOGO_SIZE[item.name] || 24) + 'px;object-fit:contain;" onerror="this.style.display=\'none\'">' +
+              '</span>' + item.name +
+            '</span>' +
+            '<span style="font-size:11px; color:var(--text-dim);">' + item.count + '명</span>' +
+          '</div>' +
+          '<span class="side-item-value">' + item.avg + ' <span style="font-size:70%; opacity:0.7;">판</span></span>';
+        div.addEventListener("click", function () {
+          selectedCrew = item.name;
+          selectedRace = null;
+                    var titleName = document.getElementById("rankTitleName");
+          if (titleName) titleName.textContent = item.name;
+          var cbtn = document.getElementById("clearFilterBtn");
+          if (cbtn) cbtn.style.display = "none";
+          var bottomBtn = document.getElementById("clearFilterBottomBtn");
+          if (bottomBtn) bottomBtn.style.display = "block";
+          var moreBtn = document.getElementById("moreBtn");
+          if (moreBtn) moreBtn.style.borderRadius = "0";
+          var bottomBtn = document.getElementById("clearFilterBottomBtn");
+          if (bottomBtn) bottomBtn.style.display = "block";
+          var moreBtn = document.getElementById("moreBtn");
+          if (moreBtn) moreBtn.style.borderRadius = "0";
+          resetAndRender();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        box.appendChild(div);
+      });
+    }
+        function renderCrewCount() {
+      const map = {};
+      originalData.forEach(function (item) {
+        if (!item.crew || item.crew === "FA") return;
+        if (!map[item.crew]) {
+          map[item.crew] = { topId: "", topName: "", topGames: -1 };
+        }
+        if (item.games > map[item.crew].topGames) {
+          map[item.crew].topGames = item.games;
+          map[item.crew].topId = item.id || "";
+          map[item.crew].topName = item.name || "";
+        }
+      });
+      const list = Object.entries(map)
+        .map(function (entry) {
+          return {
+            crew: entry[0],
+            topId: entry[1].topId,
+            topName: entry[1].topName,
+            topGames: entry[1].topGames
+          };
+        })
+        .sort(function (a, b) { return b.topGames - a.topGames; });
+      const box = document.getElementById("crewCountList");
+      if (!box) return;
+      box.innerHTML = "";
+      list.forEach(function (item, index) {
+        const rank = index + 1;
+        var rankColor = "var(--text-dim)";
+        if (rank === 1) rankColor = "#f59e0b";
+        else if (rank === 2) rankColor = "#a78bfa";
+        else if (rank === 3) rankColor = "#34d399";
+        const imgUrl = item.topId
+          ? "https://stimg.sooplive.com/LOGO/" + item.topId.substring(0,2).toLowerCase() + "/" + item.topId + "/" + item.topId + ".jpg"
+          : "";
+        const div = document.createElement("div");
+        div.className = "side-item";
+        div.innerHTML =
+          '<div style="display:flex; align-items:center; gap:8px; min-width:0;">' +
+            '<span style="width:18px; color:' + rankColor + '; font-size:12px; font-weight:700; flex-shrink:0;">' + rank + '</span>' +
+            '<div class="avatar" style="width:24px; height:24px;"><img src="' + imgUrl + '" alt="" onerror="this.style.display=\'none\'"></div>' +
+            '<span class="side-item-name">' + item.topName + '</span>' +
+            '<span style="font-size:11px; color:var(--text-dim);">' + item.crew + '</span>' +
+          '</div>' +
+          '<span class="side-item-value">' + item.topGames + ' <span style="font-size:70%; opacity:0.7;">판</span></span>';
+        box.appendChild(div);
+      });
+    }
+    function renderRaceAvgRemoved() {
+      const map = {};
+      originalData.forEach(function (item) {
+        const r = item.race || "?";
+        if (!map[r]) map[r] = { games: 0, count: 0 };
+        map[r].games += item.games;
+        map[r].count += 1;
+      });
+      const list = Object.entries(map)
+        .map(function (entry) {
+          return {
+            race: entry[0],
+            avg: entry[1].count > 0 ? Math.round(entry[1].games / entry[1].count) : 0,
+            count: entry[1].count
+          };
+        })
+        .sort(function (a, b) { return b.avg - a.avg; });
+      const box = document.getElementById("raceAvgList");
+      if (!box) return;
+      box.innerHTML = "";
+      list.forEach(function (item, index) {
+        const rank = index + 1;
+        var rankColor = "var(--text-dim)";
+        if (rank === 1) rankColor = "#f59e0b";
+        else if (rank === 2) rankColor = "#a78bfa";
+        else if (rank === 3) rankColor = "#34d399";
+        const div = document.createElement("div");
+        div.className = "side-item filter-row";
+        div.innerHTML =
+          '<div style="display:flex; align-items:center; gap:8px;">' +
+            '<span style="width:18px; color:' + rankColor + '; font-size:12px; font-weight:700;">' + rank + '</span>' +
+            '<span class="side-item-name">' + raceLabel(item.race) + '</span>' +
+            '<span style="font-size:11px; color:var(--text-dim);">' + item.count + '명</span>' +
+          '</div>' +
+          '<span class="side-item-value">' + item.avg + ' <span style="font-size:70%; opacity:0.7;">판</span></span>';
+        div.addEventListener("click", function () {
+          selectedRace = item.race;
+          selectedCrew = null;
+          var titleName = document.getElementById("rankTitleName");
+          if (titleName) titleName.textContent = raceLabel(item.race);
+                    var cbtn = document.getElementById("clearFilterBtn");
+          if (cbtn) cbtn.style.display = "inline";
+          var bottomBtn = document.getElementById("clearFilterBottomBtn");
+          if (bottomBtn) bottomBtn.style.display = "none";
+          var moreBtn = document.getElementById("moreBtn");
+          if (moreBtn) moreBtn.style.borderRadius = "0 0 14px 14px";
+          resetAndRender();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        box.appendChild(div);
+      });
+    }
+    function renderRateChart() {
+      const ranges = [
+        { label: "80판 이상", min: 80, max: 99999, color: "#22d3ee" },
+        { label: "60~79판", min: 60, max: 79.999, color: "#a78bfa" },
+        { label: "40~59판", min: 40, max: 59.999, color: "#f472b6" },
+        { label: "20~39판", min: 20, max: 39.999, color: "#fbbf24" },
+        { label: "10~19판", min: 10, max: 19.999, color: "#34d399" },
+        { label: "10판 미만", min: 0, max: 9.999, color: "#818cf8" }
+      ];
+      const data = originalData.filter(function (item) { return item.games > 0; });
+      const counts = ranges.map(function (r) {
+        return {
+          label: r.label,
+          color: r.color,
+          count: data.filter(function (item) { return item.games >= r.min && item.games < r.max; }).length
+        };
+      }).filter(function (r) { return r.count > 0; });
+      const total = counts.reduce(function (s, r) { return s + r.count; }, 0);
+      const box = document.getElementById("rateChartBars");
+      if (!box) return;
+      if (total === 0) {
+        box.innerHTML = '<div class="side-empty">데이터 없음</div>';
+        return;
+      }
+      const maxCount = Math.max.apply(null, counts.map(function (r) { return r.count; }));
+      box.innerHTML = counts.map(function (r) {
+        const pct = Math.round((r.count / total) * 100);
+        const widthPct = Math.round((r.count / maxCount) * 100);
+        return (
+          '<div style="margin-bottom:10px;">' +
+            '<div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px;">' +
+              '<span>' + r.label + '</span>' +
+              '<span style="color:var(--text-dim);"><span style="color:#fff; font-weight:700;">' + pct + '%</span>(' + r.count + '명)</span>' +
+            '</div>' +
+            '<div style="height:8px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden;">' +
+              '<div style="height:100%; width:' + widthPct + '%; background:' + r.color + '; border-radius:4px;"></div>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join("");
+    }
+    function resetAndRender() {
+      listPage = 0;
+      document.getElementById("rankList").innerHTML = "";
+      renderMore();
+      renderCrewRate();
+      renderCrewCount();
+      renderRateChart();
+    }
+    async function loadData(month) {
+      const url = sheetUrl(month);
+      const listEl = document.getElementById("rankList");
+      if (!url) {
+        listEl.innerHTML = "<li style='padding:20px;color:#f87171;'>해당 월 데이터 없음</li>";
+        document.getElementById("rankArea").style.visibility = "visible";
+        var nav = document.getElementById("listNav");
+        if (nav) nav.style.display = "none";
+        return;
+      }
+      try {
+        const rosterRes = await fetch(ROSTER_CSV);
+        const rosterText = await rosterRes.text();
+        const roster = parseRoster(rosterText);
+        const dataRes = await fetch(url);
+        const dataText = await dataRes.text();
+        const lines = dataText.split("\n").map(function (l) { return l.trim(); }).filter(function (l) { return l; });
+        let result = [];
+        for (var i = 1; i < lines.length; i++) {
+          var cols = lines[i].match(/(?:[^",]+|"[^"]*")+/g) || [];
+          var c = cols.map(function (x) { return x.replace(/^"|"$/g, "").trim(); });
+          var name = (c[0] || "").trim();
+          if (!name || name === "이름") continue;
+          var race = (c[1] || "").trim();
+          var games = parseInt((c[2] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          var wins = parseInt((c[3] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          var losses = parseInt((c[4] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          var who = findRoster(name, roster);
+          result.push({
+            name: who ? who.name : name,
+            id: who ? who.id : "",
+            crew: who ? who.crew : "FA",
+            race: race || (who ? who.race : ""),
+            games: games,
+            wins: wins,
+            losses: losses
+          });
+        }
+        result.sort(function (a, b) {
+          if (b.games !== a.games) return b.games - a.games;
+          return b.wins - a.wins;
+        });
+        originalData = result;
+        resetAndRender();
+        document.getElementById("rankArea").style.visibility = "visible";
+        const now = new Date();
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const dd = String(now.getDate()).padStart(2, "0");
+        const hh = String(now.getHours()).padStart(2, "0");
+        const min = String(now.getMinutes()).padStart(2, "0");
+        const updateEl = document.getElementById("updateTime");
+        if (updateEl) updateEl.textContent = "최근 업데이트 " + mm + "." + dd + " " + hh + ":" + min;
+        if (!listenersBound) {
+          listenersBound = true;
+          function goListTop() {
+            var el = document.getElementById("rankTitle") || document.getElementById("rankArea");
+            if (!el) return;
+            var y = el.getBoundingClientRect().top + window.scrollY - 120;
+            window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+          }
+          const prevBtn = document.getElementById("prevPage");
+          const nextBtn = document.getElementById("nextPage");
+          if (prevBtn) prevBtn.addEventListener("click", function () {
+            if (listPage > 0) { listPage--; renderMore(); goListTop(); }
+          });
+          if (nextBtn) nextBtn.addEventListener("click", function () {
+            listPage++;
+            renderMore();
+            goListTop();
+          });
+          const clearFilterBtn = document.getElementById("clearFilterBtn");
+          if (clearFilterBtn) clearFilterBtn.addEventListener("click", clearFilter);
+          const clearFilterBottomBtn = document.getElementById("clearFilterBottomBtn");
+          if (clearFilterBottomBtn) clearFilterBottomBtn.addEventListener("click", clearFilter);
+          document.querySelectorAll(".period-months .period-box").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              document.querySelectorAll(".period-months .period-box").forEach(function (b) {
+                b.classList.remove("active");
+              });
+              btn.classList.add("active");
+              currentMonth = parseInt(btn.getAttribute("data-month"), 10);
+              loadData(currentMonth);
+            });
+          });
+          document.querySelectorAll(".period-range .period-box").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              document.querySelectorAll(".period-range .period-box").forEach(function (b) {
+                b.classList.remove("active");
+              });
+              btn.classList.add("active");
+            });
+          });
+        }
+      } catch (err) {
+        listEl.innerHTML = "<li style='padding:20px;color:#f87171;'>데이터 불러오기 실패</li>";
+        document.getElementById("rankArea").style.visibility = "visible";
+        console.error(err);
+      }
+    }
+        loadData(currentMonth);
+  </script>
+  <script src="common.js"></script>
+  <script src="period.js"></script>
+</body>
+</html>

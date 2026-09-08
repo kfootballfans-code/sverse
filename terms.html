@@ -1,0 +1,311 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>서비스 이용약관 - 스버스</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <style>
+    :root {
+      --bg: #0a0b0f;
+      --bg-elevated: #12141a;
+      --bg-card: #16181f;
+      --border: rgba(255, 255, 255, 0.06);
+      --text: #e8eaed;
+      --text-muted: #8b8f9a;
+      --text-dim: #5c606b;
+      --cyan: #22d3ee;
+      --header-h: 56px;
+      --content-max: 1280px;
+    }
+    html { scrollbar-gutter: stable; }
+    html.light {
+      --cyan: #16325c;
+      --bg: #f3f4f7;
+      --bg-elevated: #ffffff;
+      --bg-card: #ffffff;
+      --border: rgba(15, 18, 24, 0.1);
+      --text: #1a1d24;
+      --text-muted: #5c606b;
+      --text-dim: #8a8f99;
+    }
+    html.light .header,
+    html.light .sub-nav {
+      background: rgba(243, 244, 247, 0.9);
+    }
+    html.light .footer { background: #eceef2; }
+    html.light .search-drop,
+    html.light .partner-pop { background: #ffffff; }
+    html.light .fa-switch-slider { background: rgba(0,0,0,0.18); }
+    .theme-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .theme-icon svg { width: 20px; height: 20px; display: block; }
+    .theme-sun { display: none !important; }
+    .theme-moon { display: block !important; }
+    html.light .theme-moon { display: none !important; }
+    html.light .theme-sun { display: block !important; }
+    .fa-switch-wrap {
+      display: flex; align-items: center; gap: 6px;
+      cursor: pointer; flex-shrink: 0; user-select: none;
+    }
+    .fa-switch-input { display: none; }
+    .fa-switch-slider {
+      width: 36px; height: 20px; background: rgba(255,255,255,0.12);
+      border-radius: 999px; position: relative;
+    }
+    .fa-switch-slider::before {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; background: #c0c4cc; border-radius: 50%;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .fa-switch-input:checked + .fa-switch-slider { background: rgba(245,158,11,0.35); }
+    .fa-switch-input:checked + .fa-switch-slider::before {
+      transform: translateX(16px); background: #f59e0b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; line-height: 1.5;
+      display: flex; flex-direction: column;
+    }
+    .header {
+      position: sticky; top: 0; z-index: 100; height: var(--header-h);
+      background: rgba(10, 11, 15, 0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border); display: flex; justify-content: center;
+    }
+    .header-inner {
+      max-width: var(--content-max); width: 100%;
+      display: flex; align-items: center; padding: 0 24px; gap: 16px;
+    }
+        .logo {
+      display: flex; align-items: center; gap: 4px;
+      text-decoration: none; color: var(--text); font-weight: 700; font-size: 17px; flex-shrink: 0;
+      line-height: 1;
+    }
+    .logo img {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      display: block;
+      position: relative;
+      top: 0;
+    }
+    .logo-text {
+      display: flex;
+      align-items: center;
+      position: relative;
+      top: 2px;
+    }
+    .logo-sub {
+      font-size: 70%;
+      font-weight: 500;
+      color: var(--text-dim);
+      margin-left: 8px;
+    }
+    .search-wrap { flex: 1; max-width: 360px; margin-left: auto; position: relative; }
+    .search-input {
+      width: 100%; height: 36px; background: var(--bg-elevated);
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 0 40px 0 16px; color: var(--text); font-size: 13px; outline: none;
+    }
+    .search-input::placeholder { color: var(--text-dim); }
+    .search-icon {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-dim); pointer-events: none;
+    }
+    .search-drop {
+      display: none; position: absolute; top: 42px; left: 0; right: 0;
+      background: #16181f; border: 1px solid var(--border); border-radius: 12px;
+      max-height: 280px; overflow: auto; z-index: 120;
+    }
+    .search-drop.open { display: block; }
+    .search-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; cursor: pointer; font-size: 13px;
+    }
+    .search-item:hover { background: rgba(34,211,238,0.1); }
+    .search-item img {
+      width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #1a1c24;
+    }
+    .search-item small { color: var(--text-dim); margin-left: auto; }
+    .icon-btn {
+      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      border-radius: 8px; border: none; background: transparent; color: var(--text-muted); cursor: pointer;
+    }
+    .main {
+      flex: 1; max-width: 860px; width: 100%;
+      margin: 0 auto; padding: 32px 24px 56px;
+    }
+    .legal-kicker { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; }
+    .legal-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .legal-date { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+    .legal-box {
+      background: #0e1014;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 28px 12px;
+    }
+    .legal-box h2 {
+      font-size: 16px; font-weight: 700; margin: 22px 0 8px;
+    }
+    .legal-box h2:first-child { margin-top: 0; }
+    .legal-box p, .legal-box li {
+      font-size: 14px;
+      color: var(--text-muted); line-height: 1.75; margin-bottom: 8px;
+    }
+    .legal-box ol { padding-left: 20px; margin-bottom: 8px; }
+    .legal-box a { color: var(--cyan); text-decoration: none; }
+    .footer {
+      margin-top: auto; border-top: 1px solid var(--border);
+      background: #08090c; padding: 28px 0 32px;
+      overflow: visible;
+    }
+    .footer-inner {
+      max-width: var(--content-max); margin: 0 auto;
+      padding: 0 24px;
+      font-size: 12px; color: var(--text-dim); line-height: 1.7;
+    }
+    .footer-inner p { margin-bottom: 6px; }
+    .footer-copyright {
+      margin-top: 14px; padding-top: 20px;
+      border-top: 1px solid var(--border); color: var(--text-muted);
+    }
+    .footer-doc {
+      margin-left: 12px;
+      color: inherit;
+      font-weight: 400;
+      text-decoration: none;
+    }
+    .footer-doc:hover { font-weight: 700; }
+    .footer-dot { margin: 0 8px; }
+    .footer-row {
+      position: relative;
+      display: block;
+      padding-right: 88px;
+    }
+    .partner-wrap {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-top: 0;
+    }
+    .partner-btn {
+      display: inline-block;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0e1016;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      list-style: none;
+    }
+    .partner-btn::-webkit-details-marker { display: none; }
+    .partner-btn:hover { color: #22d3ee; border-color: rgba(34,211,238,0.35); }
+    .partner-pop {
+      display: none;
+      position: absolute;
+      right: 0;
+      left: auto;
+      bottom: calc(100% + 8px);
+      width: 280px;
+      padding: 14px 16px;
+      background: #16181f;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.7;
+      z-index: 200;
+    }
+    .partner-wrap[open] .partner-pop { display: block; }
+    .footer-doc { margin-left: 12px; color: inherit; font-weight: 400; text-decoration: none; }
+    .footer-doc:hover { font-weight: 700; }
+    .footer-dot { margin: 0 8px; }
+    .footer-row { position: relative; display: block; padding-right: 88px; }
+    .partner-wrap { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+    .partner-btn {
+      display: inline-block; padding: 6px 10px; border: 1px solid var(--border);
+      border-radius: 8px; background: #0e1016; color: var(--text-muted);
+      font-size: 12px; cursor: pointer;
+    }
+    .partner-btn:hover { color: #22d3ee; border-color: rgba(34,211,238,0.35); }
+    .partner-pop {
+      display: none; position: absolute; left: 0; bottom: calc(100% + 8px);
+      width: 280px; padding: 14px 16px; background: #16181f;
+      border: 1px solid var(--border); border-radius: 10px;
+      color: var(--text); font-size: 13px; line-height: 1.7; z-index: 20;
+    }
+    .partner-wrap:hover .partner-pop { display: block; }
+  </style>
+</head>
+<body>
+    <div id="site-top"></div>
+
+  <main class="main">
+    <h1 class="legal-title">서비스 이용약관</h1>
+    <p class="legal-date">시행일 2026년 9월 1일</p>
+    <div class="legal-box">
+      <h2>1. 이 문서가 다루는 범위</h2>
+      <p>이 약관은 스버스 웹사이트(이하 사이트)를 누가, 어떤 조건으로 쓰는지 정합니다. 사이트에 들어오는 순간 이 내용을 확인한 것으로 봅니다.</p>
+
+      <h2>2. 용어</h2>
+      <p>사이트란 SOOP(구 아프리카TV)에서 누구나 볼 수 있는 공개 정보를 모아 순위·통계로 보여주는 비공식 페이지를 말합니다.</p>
+      <p>이용자란 가입 여부와 관계없이 이 사이트를 보는 사람을 말합니다.</p>
+      <p>운영자란 스버스를 만들고 관리하는 주체를 말합니다.</p>
+
+      <h2>3. 사이트가 하는 일</h2>
+      <p>사이트는 별풍선, 시청 관련 수치, 방송시간, 전적·승률, 크루·대회 기록처럼 공개된 숫자를 정리해 보여줍니다.</p>
+      <p>회원가입 없이 무료로 볼 수 있습니다.</p>
+      <p>SOOP과 계약·제휴·공식 관계가 없습니다. SOOP이 만든 서비스가 아닙니다.</p>
+
+      <h2>4. 이용할 때 하지 말 것</h2>
+      <ol>
+        <li>사이트에 올라온 표·숫자·화면을 허락 없이 대량 복사하거나 다른 곳에 그대로 다시 올리는 일</li>
+        <li>자동 프로그램으로 사이트를 과도하게 두들기는 일</li>
+        <li>사이트 동작이나 데이터 수집을 막는 일</li>
+        <li>다른 사람 이름·기록·이미지를 이용해 명예를 해치거나 권리를 침해하는 일</li>
+      </ol>
+
+      <h2>5. 제공되는 데이터는 어디서 오나</h2>
+      <p>사이트는 플랫폼에서 누구나 열어볼 수 있는 공개 정보만 가져옵니다. 비공개 방송 설정, 개인 연락처, 계정 비밀번호 같은 것은 다루지 않습니다.</p>
+      <p>가져온 데이터는 순위와 통계를 만드는 데만 씁니다.</p>
+
+      <h2>6. 책임 범위</h2>
+      <p>천재지변, 네트워크 장애, 호스팅 중단처럼 운영자가 막을 수 없는 이유로 사이트가 꺼져도 그 손해까지 책임지지 않습니다.</p>
+      <p>원본 플랫폼의 화면·정책·데이터 형식이 바뀌면 숫자가 빠지거나 늦어질 수 있습니다.</p>
+      <p>화면에 나온 순위와 통계는 참고용입니다. 절대적으로 맞는 값이라고 보장하지 않습니다.</p>
+      <p>사이트를 보고 이용자가 내린 판단이나 그로 인한 손해는 이용자 쪽에 있습니다.</p>
+
+      <h2>7. 광고</h2>
+      <p>운영 비용을 위해 광고가 붙을 수 있습니다. 광고를 누르면 외부 사이트로 나갑니다. 그 밖에서 벌어진 거래나 피해는 운영자 책임이 아닙니다.</p>
+
+      <h2>8. 권리</h2>
+      <p>표, 그래프, 페이지 구성처럼 사이트가 다시 정리한 결과물의 권리는 운영자에게 있습니다. 원본 공개 데이터 자체에 대한 권리는 해당 플랫폼에 있습니다.</p>
+
+      <h2>9. 약관이 바뀔 때</h2>
+      <p>필요할 때 이 글을 고칠 수 있습니다. 고친 내용은 이 페이지에 올리는 시점부터 적용됩니다.</p>
+
+      <h2>10. 문의와 분쟁</h2>
+      <p>이용·제휴 문의는 <a href="mailto:starcraftverse@gmail.com">starcraftverse@gmail.com</a> 으로 보내면 됩니다.</p>
+      <p>이 약관을 두고 다툼이 생기면 대한민국 법을 기준으로 하고, 운영자 소재지를 관할하는 법원을 첫 재판 법원으로 합니다.</p>
+    </div>
+  </main>
+      <div id="site-bottom"></div>
+
+  <script src="common.js"></script>
+</body>
+</html>

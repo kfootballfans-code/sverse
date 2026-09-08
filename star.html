@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>별풍선 랭킹 - 스버스</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="period.css">
+  <style>
+    :root {
+      --bg: #0a0b0f;
+      --bg-elevated: #12141a;
+      --bg-card: #16181f;
+      --border: rgba(255, 255, 255, 0.06);
+      --text: #e8eaed;
+      --text-muted: #8b8f9a;
+      --text-dim: #5c606b;
+      --cyan: #22d3ee;
+      --orange: #f59e0b;
+      --radius: 14px;
+      --header-h: 56px;
+      --content-max: 1280px;
+    }
+    html { scrollbar-gutter: stable; }
+    html.light {
+      --cyan: #16325c;
+      --bg: #f3f4f7;
+      --bg-elevated: #ffffff;
+      --bg-card: #ffffff;
+      --border: rgba(15, 18, 24, 0.1);
+      --text: #1a1d24;
+      --text-muted: #5c606b;
+      --text-dim: #8a8f99;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main {
+      flex: 1; max-width: var(--content-max);
+      width: 100%; margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+    .page-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; display: none; }
+
+    .rank-layout { display: flex !important; gap: 24px !important; align-items: flex-start !important; width: 100% !important; }
+    .rank-left { width: calc(70% - 12px) !important; flex-shrink: 0 !important; }
+    .rank-left .side-box { min-height: auto; height: auto; display: flex; flex-direction: column; }
+    .rank-right { width: calc(30% - 12px) !important; margin-left: auto !important; flex-shrink: 0 !important; display: flex; flex-direction: column; gap: 23px; }
+
+    /* 대학별차트 모드 시 우측 배너 숨김 및 차트 전용 카드 박스 스타일 */
+    .rank-layout.chart-full-mode .rank-left {
+      width: 100% !important;
+    }
+    .rank-layout.chart-full-mode .rank-right {
+      display: none !important;
+    }
+    .rank-layout.chart-full-mode .side-box {
+      background: #11141d !important;
+      border: 1.6px solid rgba(255, 255, 255, 0.06) !important;
+      border-radius: 10px !important;
+      overflow: hidden;
+    }
+    .rank-layout.chart-full-mode .side-box-header {
+      background: #11141d !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .side-box {
+      background: var(--bg-card); 
+      border: 1.6px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .side-box {
+      background: var(--bg-card); 
+      border: 1.6px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .side-box-header {
+      padding: 15px 16px 12px 16px; 
+      border-bottom: none; 
+      font-size: 15px; 
+      font-weight: 700; 
+      text-indent: 9px;
+    }
+    .side-box-body { padding: 8px 0; }
+
+    .hero-ranker-zone {
+      background: #08111a; border: 1px solid rgba(34,211,238,0.15);
+      border-radius: 8px; padding: 12px 16px; display: flex; align-items: center;
+      gap: 12px; margin: 0 16px 10px 16px; position: relative; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .hero-ranker-zone:hover { background: rgba(34,211,238,0.08); }
+    .hero-ranker-zone.is-first::after {
+      content: '1위'; position: absolute; top: -5px; left: -5px;
+      background: var(--cyan); color: #000; font-size: 9px; font-weight: 900;
+      padding: 2px 6px; border-radius: 4px;
+    }
+    .hero-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--cyan); background: #1a1c24; flex-shrink: 0; }
+    .hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-meta { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+    .hero-meta .p-name { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+    .hero-meta .c-name { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .hero-val { font-size: 15px; font-weight: 800; color: var(--cyan); flex-shrink: 0; display: flex; flex-direction: row; align-items: center; gap: 10px; }
+
+    @keyframes eloSpin { to { transform: rotate(360deg); } }
+    #eloLoading {
+      display: flex;
+      min-height: 280px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+    #eloLoading .elo-spin {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: #22d3ee;
+      border-radius: 50%;
+      animation: eloSpin 0.8s linear infinite;
+    }
+    body.viewer-page-loading #rankArea { display: none !important; }
+    .side-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 16px; font-size: 13px;
+    }
+    .side-item-name { color: var(--text); font-weight: 500; }
+    .side-item-value {
+      color: var(--cyan); font-weight: 600; min-width: 100px;
+      text-align: right; font-variant-numeric: tabular-nums;
+    }
+    .crew-row { cursor: pointer; transition: background 0.15s; }
+    .crew-row:hover { background: rgba(34, 211, 238, 0.1); }
+    .crew-detail { font-size: 12px; color: var(--text-dim); margin-left: 8px; }
+    .crew-row:hover .crew-detail { color: #f59e0b; font-weight: 700; }
+
+    .rank-list { 
+      list-style: none; 
+      display: flex; flex-direction: column; gap: 6px; padding: 0 16px 16px 16px; 
+      min-height: auto;
+    }
+    .rank-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 12px; border-radius: 8px; position: relative;
+      overflow: hidden; background: #07080c; cursor: pointer;
+      transition: background 0.15s;
+      flex-wrap: nowrap; gap: 0; border-bottom: none;
+    }
+    .bar-bg {
+      position: absolute; top: 0; left: 0; height: 100%;
+      background: rgba(34, 211, 238, 0.03); z-index: 1; pointer-events: none;
+    }
+    .rank-item:hover { background: rgba(34, 211, 238, 0.08); }
+    .rank-item.empty {
+      min-height: 48px;
+      pointer-events: none;
+      background: transparent !important;
+    }
+
+    .rank-num {
+      font-size: 12px; font-weight: bold; color: var(--text-muted); width: 18px; text-align: center; flex-shrink: 0; z-index: 2;
+    }
+    .rank-item.top-1 .rank-num { color: var(--orange); }
+    .rank-item.top-2 .rank-num { color: #c0c0c0; }
+    .rank-item.top-3 .rank-num { color: #cd7f32; }
+
+    .avatar {
+      width: 30px; height: 30px; border-radius: 50%; overflow: hidden;
+      border: 1px solid var(--border); background: #1a1c24; flex-shrink: 0; z-index: 2;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .rank-info { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; z-index: 2; margin-left: 10px; }
+    .rank-name-group { display: flex; flex-direction: column; min-width: 0; }
+    .rank-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rank-crew { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .rank-stat {
+      font-size: 13px; font-weight: 700; color: var(--cyan);
+      flex-shrink: 0; text-align: right; z-index: 2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #listNav {
+      display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+      background: #1c1f28; border: none;
+      border-radius: 0 0 10px 10px; padding: 10px 16px;
+    }
+    #listNav .page-btn {
+      width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); cursor: pointer; font-size: 14px; line-height: 1;
+    }
+    #listNav .page-btn:hover:not(:disabled) {
+      color: #67e8f9; border-color: rgba(34,211,238,0.35); background: rgba(34,211,238,0.1);
+    }
+    #listNav .page-btn:disabled { opacity: 0.3; cursor: default; }
+    #pageInfo {
+      min-width: 36px; text-align: center; font-variant-numeric: tabular-nums; font-size: 13px; color: var(--text); font-weight: 600;
+    }
+
+    .row-v4 { display: flex; align-items: center; margin-bottom: 12px; gap: 12px; }
+    .row-v4:last-of-type { margin-bottom: 0; }
+    .lbl-v4 { width: 75px; flex-shrink: 0; color: #64748b; font-size: 12px; }
+    .val-v4 { width: 78px; flex-shrink: 0; text-align: right; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .cnt-v4 { color: #475569; font-size: 11px; font-weight: 400; }
+    .track-v4 { flex: 1; height: 6px; background: #1e293b; border-radius: 2px; overflow: hidden; }
+    .fill-v4 {
+      height: 100%;
+      background-image: linear-gradient(90deg, currentColor 4px, transparent 4px);
+      background-size: 6px 100%;
+    }
+    .dist-median {
+      margin-top: 8px; padding-top: 12px; border-top: none;
+      text-align: center; font-size: 12px; font-weight: 500; color: var(--text-dim);
+    }
+
+    /* 대학별 차트 iframe 컨테이너 */
+    .profile-chart-wrap {
+      padding: 0;
+      background: #11141d;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+    #crewChartIframe {
+      width: 100%;
+      height: 1020px;
+      border: none;
+      border-radius: 0 0 10px 10px;
+      background: #11141d;
+      overflow: hidden;
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .rank-layout { flex-direction: column; }
+      .rank-left, .rank-right { width: 100%; }
+    }
+
+    body.star-page-loading #rankArea { display: none !important; }
+  </style>
+</head>
+<body class="star-page-loading">
+  <div id="site-top"></div>
+
+  <main class="main">
+    <h1 class="page-title">별풍선 랭킹</h1>
+
+    <div class="period-bar">
+      <div class="period-tabs">
+        <button type="button" class="period-box crew-tab active" id="tabStarRank">랭킹</button>
+        <button type="button" class="period-box crew-tab" id="tabStarChart">대학별차트</button>
+      </div>
+      <div class="period-right" style="display: flex; gap: 10px; margin-left: auto; align-items: center;">
+        <div class="period-label">
+          <span class="period-ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <line x1="4" y1="6" x2="20" y2="6"></line>
+              <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"></circle>
+              <line x1="4" y1="12" x2="20" y2="12"></line>
+              <circle cx="14" cy="12" r="2" fill="currentColor" stroke="none"></circle>
+              <line x1="4" y1="18" x2="20" y2="18"></line>
+              <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"></circle>
+            </svg>
+          </span>
+          기간
+        </div>
+        <div class="period-month-wrap" id="yearWrap">
+          <button type="button" class="period-box year-active" id="yearBtn">2026년</button>
+          <div class="period-total-menu" id="yearMenu"></div>
+        </div>
+        <div class="period-month-wrap" id="monthWrap">
+          <button type="button" class="period-box active" id="monthBtn">8월</button>
+          <div class="period-total-menu" id="monthMenu"></div>
+        </div>
+        <div class="period-divider"></div>
+        <div class="period-label">누적</div>
+        <div class="period-total" id="totalWrap" style="margin-right: 18px;">
+          <button type="button" class="period-box dim" id="totalBtn">선택</button>
+          <div class="period-total-menu" id="totalMenu">
+            <button type="button" data-range="3m">3개월</button>
+            <button type="button" data-range="6m">6개월</button>
+            <button type="button" data-range="12m">1년</button>
+            <button type="button" data-range="last-year">작년</button>
+            <button type="button" data-range="this-year">올해</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="eloLoading">
+      <div class="elo-spin"></div>
+      <div>데이터를 읽는중입니다</div>
+    </div>
+
+    <div class="rank-layout" id="rankArea">
+      <div class="rank-left">
+        <div class="side-box">
+          <div class="side-box-header" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+              <span id="rankTitle">
+                여자 개인별
+                <span style="font-size:11px; color:var(--text-dim); font-weight:400; margin-left:6px;"></span>
+              </span>
+              <button type="button" id="clearCrewBtn" style="display:none; border:none; background:transparent; color:#22d3ee; font-size:12px; cursor:pointer;">전체보기</button>
+            </div>
+            <div class="filter-combination-row" id="faToggleLabel">
+              <button type="button" class="combo1-btn" id="menFilterBtn">
+                <span class="icon-box"></span>
+                <span>남자</span>
+              </button>
+              <button type="button" class="combo1-btn" id="faFilterBtn">
+                <span class="icon-box"></span>
+                <span>FA</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- [대학별차트] iframe으로 완벽하게 격리 호출 -->
+          <div id="chartMainContainer" class="profile-chart-wrap" style="display:none;">
+            <iframe id="crewChartIframe" src="" loading="lazy" scrolling="no"></iframe>
+          </div>
+
+          <div id="heroSlot"></div>
+          <ul class="rank-list" id="rankList"></ul>
+
+          <div id="listNav">
+            <button type="button" class="page-btn" id="prevPage" aria-label="이전">‹</button>
+            <span id="pageInfo">1/1</span>
+            <button type="button" class="page-btn" id="nextPage" aria-label="다음">›</button>
+          </div>
+          <button type="button" id="clearCrewBottomBtn" style="
+            display:none;
+            width:100%;
+            margin-top:0;
+            padding:14px;
+            background:#1c1f28;
+            border:1px solid rgba(255,255,255,0.06);
+            border-top:none;
+            border-radius:0 0 14px 14px;
+            color:#22d3ee;
+            font-size:14px;
+            font-weight:500;
+            cursor:pointer;
+          ">개인별 전체보기</button>
+        </div>
+      </div>
+
+      <div class="rank-right">
+        <div class="side-box">
+          <div class="side-box-header" style="display:flex; align-items:center; justify-content:space-between; position:relative;">
+            <span>대학별 평균</span>
+            <button type="button" id="crewAvgDetailBtn"
+              style="border:1px solid var(--border); background:transparent; color:var(--text-dim); font-size:11px; cursor:pointer; font-weight:600; padding:4px 8px; border-radius:999px;"
+              onmouseover="this.style.color='#22d3ee'; this.style.borderColor='rgba(34,211,238,0.35)'; this.style.background='rgba(34,211,238,0.1)'"
+              onmouseout="this.style.color='var(--text-dim)'; this.style.borderColor='var(--border)'; this.style.background='transparent'"
+            >방식</button>
+            <div id="avgMethodPop" style="display:none; position:absolute; right:12px; top:36px; z-index:20; width:260px; padding:12px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; font-size:12px; color:var(--text-muted); line-height:1.55; font-weight:400;">남자의 데이터를 제공하지만 투트랙을 하는 수장이나 남자크루원 및 메프를 뛰는 교수들등 정확한 평균지표를 구분하기 전까지 '대학별' 평균과 '구간 분포'의 경우에는 남자 스트리머는 제외합니다.</div>
+          </div>
+          <div class="side-box-body" id="crewAvgList"></div>
+        </div>
+
+        <div class="side-box">
+          <div class="side-box-header">별풍선 구간 분포</div>
+          <div id="starChartBars" style="padding: 12px 16px 16px;"></div>
+        </div>
+
+        <div class="side-box">
+          <div class="side-box-header">대학별 TOP</div>
+          <div class="side-box-body" id="crewCountList"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-bottom"></div>
+
+  <script src="common.js"></script>
+  <script src="period.js"></script>
+  <script src="roster.js"></script>
+  <script src="rank-data.js"></script>
+  <script src="rank-ui.js"></script>
+  <script>
+    const CREW_LOGO = {
+      "바스포드": "logo/basford_em.webp",
+      "BGM": "logo/bgm_em.webp",
+      "흑카데미": "logo/black_em.webp",
+      "보신대": "logo/bsu_em.webp",
+      "씨나인": "logo/c9_em.webp",
+      "캄몬스타즈": "logo/calm_em.webp",
+      "츠캄몬스타즈,츠캄": "logo/calm_em.webp",
+      "츠캄": "logo/calm_em.webp",
+      "DM": "logo/dm_em.webp",
+      "드림즈": "logo/dreams_em.webp",
+      "드림": "logo/dreams_em.webp",
+      "더블비": "logo/dubbleb_em.webp",
+      "거성대": "logo/gsu_em.webp",
+      "HM": "logo/hm_em.webp",
+      "JSA": "logo/jsa_em.webp",
+      "정선대": "logo/ju_em.webp",
+      "케이대": "logo/ku_em.webp",
+      "엠비대": "logo/mbu_em.webp",
+      "뉴캣슬": "logo/newcat_em.webp",
+      "NSU": "logo/nsu_em.webp",
+      "늪지대": "logo/nzu_em.webp",
+      "섭이대": "logo/siu_em.webp",
+      "철와대": "logo/su_em.webp",
+      "우끼끼즈": "logo/ukks_em.webp",
+      "MSG": "logo/msg_em.webp",
+      "와플대": "logo/waffleu_em.webp",
+      "씨나인1": "logo/c91_em.webp",
+      "YB": "logo/yb_em.webp",
+      "염석대": "logo/yuam_em.webp",
+      "학버드": "logo/hak_em.webp",
+      "철기중대": "logo/chulgi_em.webp",
+      "패션스타": "logo/fstar_em.webp",
+      "나사": "logo/nasa_em.webp",
+      "ASG": "logo/asg_em.webp",
+      "김성여대": "logo/kim_em.webp",
+      "캄성여대": "logo/cswu_em.webp",
+      "수술대": "logo/ssu_em.webp",
+      "신세계": "logo/ssg_em.webp",
+      "뽀인구단": "logo/bboin_em.webp",
+      "장독대": "logo/jdu_em.webp",
+      "이노대": "logo/ino_em.webp", 
+      "거사대": "logo/gsu_em.webp", 
+      "방치클럽": "logo/bangchi_em.webp",
+      "복덕방": "logo/bdb_em.webp",
+      "CP": "logo/cp_em.webp",
+      "DP": "logo/dp_em.webp",
+      "묵섭대": "logo/mook_em.webp",
+      "광수대": "logo/gwangsu_em.webp",
+      "캄브릿지": "logo/calmb_em.webp",
+      "마종대": "logo/majong_em.webp",
+      "TPZ": "logo/tpz_em.webp",
+      "범진대": "logo/bj_em.webp",
+      "파이스트": "logo/pist_em.webp",
+      "미다스공대": "logo/midas2_em.webp",
+      "MGS": "logo/mgs_em.webp",
+      "라저대": "logo/rthat_em.webp",
+      "아마대": "logo/ama_em.webp",
+      "츠나대": "logo/tsuna_em.webp",
+      "무창클럽": "logo/moo_em.webp",
+      "카사대": "logo/casa_em.webp",
+      "철거반": "logo/cgb_em.webp",
+      "노가다대": "logo/nogada_em.webp",
+      "마싯대": "logo/masit_em.webp",
+      "점단기": "logo/casa_em.webp",
+      "점문예대": "logo/jm_em.webp",
+      "라이트클럽": "logo/lightclub_em.webp",
+      "고대": "logo/go_em.webp",
+      "친박연대": "logo/chinpark_em.webp",
+      "철기대": "logo/cgd_em.webp",
+      "석사관학교": "logo/seoksa_em.webp",
+      "할없녀": "logo/halgirl_em.webp",
+      "무친대": "logo/mcu_em.webp",
+      "소림사": "logo/sorimsa_em.webp"
+    };
+    
+    const CREW_LOGO_SIZE = {};
+    function crewLogo(name) {
+      if (!name) return "";
+      var alias = window.crewAlias ? window.crewAlias(name) : name;
+      if (CREW_LOGO[name]) return CREW_LOGO[name];
+      if (CREW_LOGO[alias]) return CREW_LOGO[alias];
+      var key = Object.keys(CREW_LOGO).find(function (k) {
+        return k.toLowerCase() === String(name).toLowerCase() || k.toLowerCase() === String(alias).toLowerCase();
+      });
+      return key ? CREW_LOGO[key] : "";
+    }
+
+    var showFa = !!window.keepFa;
+    var showMen = !!window.keepMen;
+    var isChartMode = false;
+
+    async function loadData() {
+      var eloLoading = document.getElementById("eloLoading");
+      var rankArea = document.getElementById("rankArea");
+      document.body.classList.add("star-page-loading");
+      if (eloLoading) eloLoading.style.display = "flex";
+      if (rankArea) rankArea.style.display = "none";
+
+      try {
+        var roster = await window.loadRoster();
+        var pack = await window.loadDaterRows({ roster: roster, metricCol: 2, metricKey: "star" });
+        var originalData = pack.period;
+        var liveData = pack.live;
+        var hasMetric = originalData.some(function (it) { return (it.star || 0) > 0; });
+        var crewSource = hasMetric ? originalData : liveData;
+        var listPage = 0;
+        var selectedCrew = window.keepCrew || null;
+
+        function getFilteredData() {
+          return window.filterPeople(originalData, {
+            metricKey: "star",
+            showFa: showFa,
+            showMen: showMen,
+            selectedCrew: selectedCrew
+          });
+        }
+
+        function renderCrewAvg() {
+          var avgList = pack.crewAvgList || [];
+          var box = document.getElementById("crewAvgList");
+          if (!box) return;
+          box.innerHTML = "";
+          avgList.forEach(function (item, index) {
+            var div = document.createElement("div");
+            div.className = "side-item crew-row";
+            var rank = index + 1;
+            var rankColor = "var(--text-dim)";
+            if (rank === 1) rankColor = "#f59e0b";
+            else if (rank === 2) rankColor = "#a78bfa";
+            else if (rank === 3) rankColor = "#34d399";
+            div.innerHTML =
+              '<div style="display:flex; align-items:center; gap:8px; min-width:0;">' +
+              '<span style="width:18px; color:' + rankColor + '; font-size:12px; font-weight:700; flex-shrink:0;">' + rank + '</span>' +
+              '<span class="side-item-name" style="display:inline-flex; align-items:center;">' +
+              '<span style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:6px;">' +
+              '<img src="' + crewLogo(item.name) + '" alt="" style="max-width:' + (CREW_LOGO_SIZE[item.name] || 24) + 'px;max-height:' + (CREW_LOGO_SIZE[item.name] || 24) + 'px;object-fit:contain;" onerror="this.style.display=\'none\'">' +
+              '</span>' + item.name + '</span>' +
+              '<span style="font-size:11px; color:var(--text-dim);">' + item.count + '명</span></div>' +
+              '<div style="display:flex; align-items:center;">' +
+              '<span class="side-item-value">' + item.avg.toLocaleString() + ' <span style="font-size:70%; opacity:0.7;">개</span></span>' +
+              '<span class="crew-detail">상세</span></div>';
+            div.addEventListener("click", function () {
+              selectedCrew = item.name; window.keepCrew = item.name;
+              var title = document.getElementById("rankTitle");
+              if (title) title.textContent = item.name;
+              var topBtn = document.getElementById("clearCrewBtn");
+              if (topBtn) topBtn.style.display = "none";
+              var bottomBtn = document.getElementById("clearCrewBottomBtn");
+              if (bottomBtn) bottomBtn.style.display = "block";
+              var crewBox = document.getElementById("crewCountList");
+              if (crewBox && crewBox.parentElement) crewBox.parentElement.style.display = "none";
+              var faWrap = document.getElementById("faToggleLabel");
+              if (faWrap) faWrap.style.display = "none";
+              resetAndRender();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+            box.appendChild(div);
+          });
+        }
+
+        function renderCrewCount() {
+          var crewMap = {};
+          window.womenCrewSource(crewSource, "star").forEach(function (item) {
+            if (!crewMap[item.crew]) crewMap[item.crew] = { count: 0, topId: "", topName: "", topStar: -1 };
+            crewMap[item.crew].count += 1;
+            if (item.star > crewMap[item.crew].topStar) {
+              crewMap[item.crew].topStar = item.star;
+              crewMap[item.crew].topId = item.id || "";
+              crewMap[item.crew].topName = item.name || "";
+            }
+          });
+          var list = Object.keys(crewMap).map(function (name) {
+            var d = crewMap[name];
+            return { crew: name, count: d.count, topId: d.topId, topName: d.topName, topStar: d.topStar };
+          }).sort(function (a, b) { return b.topStar - a.topStar; });
+          var box = document.getElementById("crewCountList");
+          if (!box) return;
+          box.innerHTML = "";
+          list.forEach(function (item, index) {
+            var rank = index + 1;
+            var rankColor = "var(--text-dim)";
+            if (rank === 1) rankColor = "#f59e0b";
+            else if (rank === 2) rankColor = "#a78bfa";
+            else if (rank === 3) rankColor = "#34d399";
+            var div = document.createElement("div");
+            div.className = "side-item";
+            div.innerHTML =
+              '<div style="display:flex; align-items:center; gap:8px; min-width:0;">' +
+              '<span style="width:18px; color:' + rankColor + '; font-size:12px; font-weight:700; flex-shrink:0;">' + rank + '</span>' +
+              '<div class="avatar" style="width:24px; height:24px; flex-shrink:0;">' +
+              '<img src="' + window.soopImg(item.topId) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
+              '<span class="side-item-name" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + item.topName + '</span>' +
+              '<span style="font-size:11px; color:var(--text-dim); flex-shrink:0;">' + item.crew + '</span></div>' +
+              '<span class="side-item-value">' + item.topStar.toLocaleString() + ' <span style="font-size:70%; opacity:0.7;">개</span></span>';
+            box.appendChild(div);
+          });
+        }
+
+        function renderStarChart() {
+          var ranges = [
+            { label: "50만 이상", min: 500000, max: Infinity, color: "#22d3ee" },
+            { label: "30만~50만", min: 300000, max: 499999, color: "#a78bfa" },
+            { label: "20만~30만", min: 200000, max: 299999, color: "#f472b6" },
+            { label: "15만~20만", min: 150000, max: 199999, color: "#fbbf24" },
+            { label: "10만~15만", min: 100000, max: 149999, color: "#34d399" },
+            { label: "5만~10만", min: 50000, max: 99999, color: "#818cf8" },
+            { label: "5만 미만", min: 0, max: 49999, color: "#64748b" }
+          ];
+          var data = window.womenCrewSource(crewSource, "star");
+          var counts = ranges.map(function (r) {
+            return Object.assign({}, r, { count: data.filter(function (item) { return item.star >= r.min && item.star <= r.max; }).length });
+          }).filter(function (r) { return r.count > 0; });
+          var total = counts.reduce(function (sum, r) { return sum + r.count; }, 0);
+          var box = document.getElementById("starChartBars");
+          if (!box) return;
+          if (!total) { box.innerHTML = ""; return; }
+          var maxCount = Math.max.apply(null, counts.map(function (r) { return r.count; }));
+          var sortedStars = data.map(function (item) { return item.star; }).sort(function (a, b) { return a - b; });
+          var median = 0;
+          if (sortedStars.length) {
+            var mid = Math.floor(sortedStars.length / 2);
+            median = sortedStars.length % 2 === 0
+              ? Math.round((sortedStars[mid - 1] + sortedStars[mid]) / 2)
+              : sortedStars[mid];
+          }
+          box.innerHTML = counts.map(function (r) {
+            var pct = Math.round((r.count / total) * 100);
+            var widthPct = Math.round((r.count / maxCount) * 100);
+            return '<div class="row-v4"><div class="lbl-v4">' + r.label + '</div>' +
+              '<div class="track-v4"><div class="fill-v4" style="width:' + widthPct + '%;color:' + r.color + ';"></div></div>' +
+              '<div class="val-v4" style="color:' + r.color + ';">' + pct + '% <span class="cnt-v4">(' + r.count + '명)</span></div></div>';
+          }).join("") + '<div class="dist-median">중위값 ' + median.toLocaleString() + '개</div>';
+        }
+
+        function renderMore() {
+          var heroBox = document.getElementById("heroSlot");
+          var list = document.getElementById("rankList");
+          if (heroBox) heroBox.innerHTML = "";
+
+          if (!hasMetric) {
+            list.innerHTML = window.emptyHtml();
+            window.paintPager(0, 1, true);
+            return;
+          }
+          var data = getFilteredData();
+          var sliced = window.pageSlice(data, listPage, window.PAGE_SIZE);
+          listPage = sliced.page;
+          
+          const absoluteMaxVal = (data.length > 0) ? data[0].star : 1;
+          list.innerHTML = "";
+
+          if (listPage === 0 && sliced.rows.length > 0 && heroBox) {
+            var hero = sliced.rows[0];
+            var hImg = window.soopImg(hero.id);
+            var hCrew = (window.getPeriod && window.getPeriod() && window.getPeriod().range) ? (hero.liveCrew || hero.crew) : hero.crew;
+            heroBox.innerHTML = `
+              <div class="hero-ranker-zone is-first" onclick="if('${hero.id}') location.href='profile.html?id=${encodeURIComponent(hero.id)}'">
+                <div class="hero-avatar"><img src="${hImg}" onerror="this.style.display='none'"></div>
+                <div class="hero-meta">
+                  <span class="p-name">${hero.name}</span>
+                  <span class="c-name">${hCrew || "FA"}</span>
+                </div>
+                <div class="hero-val">
+                  <span>${(!hero.star ? "-" : hero.star.toLocaleString() + '<span style="font-size:70%;opacity:0.7;margin-left:1px;position:relative;top:-1px;">개</span>')}</span>
+                </div>
+              </div>
+            `;
+          }
+
+          var listRows = listPage === 0 ? sliced.rows.slice(1) : sliced.rows;
+          listRows.forEach(function (item) {
+            var rank = item.rank;
+            var li = document.createElement("li");
+            li.className = "rank-item" + (rank === 1 ? " top-1" : rank === 2 ? " top-2" : rank === 3 ? " top-3" : "");
+            
+            var valNum = item.star || 0;
+            var percent = Math.max(8, Math.min(100, Math.round((valNum / absoluteMaxVal) * 100)));
+
+            li.innerHTML =
+              '<div class="bar-bg" style="width: ' + percent + '%;"></div>' +
+              '<span class="rank-num">' + rank + '</span>' +
+              '<div class="avatar"><img src="' + window.soopImg(item.id) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
+              '<div class="rank-info"><div class="rank-name">' + item.name + '</div><div class="rank-crew">' + ((window.getPeriod && window.getPeriod() && window.getPeriod().range) ? (item.liveCrew || item.crew) : item.crew) + '</div></div>' +
+              '<div class="rank-stat">' + (!item.star ? "-" : item.star.toLocaleString() + '<span style="font-size:70%;opacity:0.7;margin-left:1px;position:relative;top:-1px;">개</span>' + ((window.getPeriod && window.getPeriod() && window.getPeriod().range && item.monthCount > 1) ? '<div style="font-size:10px;color:#9aa0a6;margin-top:0px;,font-weight:500;">평균 ' + Math.round(item.star / item.monthCount).toLocaleString() + '</div>' : '')) + '</div>';
+            list.appendChild(li);
+          });
+
+          if (selectedCrew) {
+            window.paintPager(sliced.page, sliced.maxPage, true);
+          } else {
+            window.fillEmptyRows(list, window.PAGE_SIZE - sliced.rows.length);
+            window.paintPager(sliced.page, sliced.maxPage, false);
+          }
+        }
+
+        window.clearCrewFilter = function () {
+          selectedCrew = null; window.keepCrew = null;
+          var title = document.getElementById("rankTitle");
+          if (title) title.innerHTML = isChartMode ? '대학별 평균 차트' : '여자 개인별 <span style="font-size:11px; color:var(--text-dim); font-weight:400; margin-left:6px;"></span>';
+          var topBtn = document.getElementById("clearCrewBtn");
+          if (topBtn) topBtn.style.display = "none";
+          var bottomBtn = document.getElementById("clearCrewBottomBtn");
+          if (bottomBtn) bottomBtn.style.display = "none";
+          var crewBox = document.getElementById("crewCountList");
+          if (crewBox && crewBox.parentElement) crewBox.parentElement.style.display = "";
+          var faWrap = document.getElementById("faToggleLabel");
+          if (faWrap) faWrap.style.display = isChartMode ? "none" : "flex";
+          resetAndRender();
+        };
+
+        function resetAndRender() {
+          listPage = 0;
+          document.getElementById("rankList").innerHTML = "";
+          var chartBox = document.getElementById("chartMainContainer");
+          var heroBox = document.getElementById("heroSlot");
+          var listNav = document.getElementById("listNav");
+          var rankAreaEl = document.getElementById("rankArea");
+          var iframe = document.getElementById("crewChartIframe");
+
+          if (isChartMode) {
+            if (rankAreaEl) rankAreaEl.classList.add("chart-full-mode");
+            if (chartBox) chartBox.style.display = "flex";
+            if (heroBox) heroBox.style.display = "none";
+            if (listNav) listNav.style.display = "none";
+            document.getElementById("rankList").innerHTML = "";
+            // 차트 탭 클릭 시 starchart.html 1회 로드
+            if (iframe && (!iframe.getAttribute("src") || iframe.getAttribute("src") === "")) {
+              iframe.setAttribute("src", "starchart.html");
+            }
+          } else {
+            if (rankAreaEl) rankAreaEl.classList.remove("chart-full-mode");
+            if (chartBox) chartBox.style.display = "none";
+            if (heroBox) heroBox.style.display = "block";
+            if (listNav) listNav.style.display = "flex";
+            renderMore();
+          }
+
+          renderCrewAvg();
+          renderStarChart();
+          renderCrewCount();
+        }
+
+        // 상단 탭 전환 이벤트
+        var tabRank = document.getElementById("tabStarRank");
+        var tabChart = document.getElementById("tabStarChart");
+        if (tabRank) {
+          tabRank.onclick = function() {
+            this.classList.add("active");
+            if (tabChart) tabChart.classList.remove("active");
+            isChartMode = false;
+            var title = document.getElementById("rankTitle");
+            if (title) title.innerHTML = '여자 개인별 <span style="font-size:11px; color:var(--text-dim); font-weight:400; margin-left:6px;"></span>';
+            var faWrap = document.getElementById("faToggleLabel");
+            if (faWrap) faWrap.style.display = "flex";
+            resetAndRender();
+          };
+        }
+        if (tabChart) {
+          tabChart.onclick = function() {
+            this.classList.add("active");
+            if (tabRank) tabRank.classList.remove("active");
+            isChartMode = true;
+            selectedCrew = null;
+            var title = document.getElementById("rankTitle");
+            if (title) title.innerHTML = '대학별 평균 차트';
+            var faWrap = document.getElementById("faToggleLabel");
+            if (faWrap) faWrap.style.display = "none";
+            resetAndRender();
+          };
+        }
+
+        resetAndRender();
+        var crewQ = new URLSearchParams(location.search).get("crew");
+        if (crewQ) {
+          selectedCrew = crewQ; window.keepCrew = crewQ;
+          var title = document.getElementById("rankTitle");
+          if (title) title.textContent = crewQ;
+          var bottomBtn = document.getElementById("clearCrewBottomBtn");
+          if (bottomBtn) bottomBtn.style.display = "block";
+          var crewBox = document.getElementById("crewCountList");
+          if (crewBox && crewBox.parentElement) crewBox.parentElement.style.display = "none";
+          var faWrap = document.getElementById("faToggleLabel");
+          if (faWrap) faWrap.style.display = "none";
+          resetAndRender();
+        }
+        var area = document.getElementById("rankArea");
+        if (area) area.style.visibility = "visible";
+
+        var prevBtn = document.getElementById("prevPage");
+        var nextBtn = document.getElementById("nextPage");
+        if (prevBtn) prevBtn.onclick = function () {
+          if (listPage > 0) { listPage--; renderMore(); window.goListTop(); }
+        };
+        if (nextBtn) nextBtn.onclick = function () {
+          listPage++; renderMore(); window.goListTop();
+        };
+        var clearCrewBtn = document.getElementById("clearCrewBtn");
+        if (clearCrewBtn) clearCrewBtn.onclick = window.clearCrewFilter;
+        var clearCrewBottomBtn = document.getElementById("clearCrewBottomBtn");
+        if (clearCrewBottomBtn) clearCrewBottomBtn.onclick = window.clearCrewFilter;
+
+        var crewAvgDetailBtn = document.getElementById("crewAvgDetailBtn");
+        if (crewAvgDetailBtn) {
+          crewAvgDetailBtn.addEventListener("click", function () {
+            var pop = document.getElementById("avgMethodPop");
+            if (pop) pop.style.display = pop.style.display === "block" ? "none" : "block";
+            var head = crewAvgDetailBtn.parentElement;
+            if (head && !head.getAttribute("data-avg-leave")) {
+              head.setAttribute("data-avg-leave", "1");
+              head.addEventListener("mouseleave", function () {
+                if (pop) pop.style.display = "none";
+              });
+            }
+          });
+        }
+        var menBtn = document.getElementById("menFilterBtn");
+        var faBtn = document.getElementById("faFilterBtn");
+        if (menBtn) {
+          menBtn.classList.toggle("active", showMen);
+          menBtn.onclick = function () {
+            showMen = !showMen;
+            window.keepMen = showMen;
+            menBtn.classList.toggle("active", showMen);
+            resetAndRender();
+          };
+        }
+        if (faBtn) {
+          faBtn.classList.toggle("active", showFa);
+          faBtn.onclick = function () {
+            showFa = !showFa;
+            window.keepFa = showFa;
+            faBtn.classList.toggle("active", showFa);
+            resetAndRender();
+          };
+        }
+      } catch (err) {
+        var list = document.getElementById("rankList");
+        var why = (err && err.message) ? String(err.message) : String(err);
+        if (list) list.innerHTML = "<li style='padding:28px 16px;color:#f87171;text-align:center;'>데이터 불러오지 못했습니다 F5 새로고침을 해주세요<br><span style='display:block;margin-top:8px;color:#8b8f9a;font-size:12px;'>" + why + "</span></li>";
+        var area = document.getElementById("rankArea");
+        if (area) area.style.visibility = "visible";
+        console.error(err);
+      } finally {
+        document.body.classList.remove("star-page-loading");
+        if (eloLoading) eloLoading.style.display = "none";
+        if (rankArea) rankArea.style.display = "flex";
+      }
+    }
+    window.onPeriodChange = function () { loadData(); };
+    loadData();
+  </script>
+</body>
+</html>

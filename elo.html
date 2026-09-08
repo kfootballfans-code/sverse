@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elo승률 랭킹 - 스버스</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="period.css">
+  <style>
+    :root {
+      --bg: #0a0b0f;
+      --bg-elevated: #12141a;
+      --bg-card: #16181f;
+      --border: rgba(255, 255, 255, 0.06);
+      --text: #e8eaed;
+      --text-muted: #8b8f9a;
+      --text-dim: #5c606b;
+      --cyan: #22d3ee;
+      --orange: #f59e0b;
+      --radius: 14px;
+      --header-h: 56px;
+      --content-max: 1280px;
+    }
+    html { scrollbar-gutter: stable; }
+    html.light {
+      --cyan: #16325c;
+      --bg: #f3f4f7;
+      --bg-elevated: #ffffff;
+      --bg-card: #ffffff;
+      --border: rgba(15, 18, 24, 0.1);
+      --text: #1a1d24;
+      --text-muted: #5c606b;
+      --text-dim: #8a8f99;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; line-height: 1.5; display: flex; flex-direction: column;
+    }
+    .main {
+      flex: 1; max-width: var(--content-max); width: 100%; margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+    .page-title { display: none; }
+
+    .side-box {
+      background: var(--bg-card); 
+      border: none;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .rank-layout { display: flex; gap: 24px; align-items: flex-start; }
+    .rank-left { width: 60%; flex-shrink: 0; }
+    .rank-left .side-box { min-height: auto; height: auto; display: flex; flex-direction: column; }
+    .rank-right { width: 40%; display: flex; flex-direction: column; gap: 23px; }
+
+    .side-box-header { 
+      padding: 15px 16px 1px 16px; 
+      border-bottom: none; 
+      font-size: 15px; 
+      font-weight: 700; 
+      text-indent: 9px; 
+    }
+    #heroSlot:empty { display: block; height: 12px; }
+    .side-box-body { padding: 8px 0; }
+    .side-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; font-size: 13px; }
+    .side-item-name { color: var(--text); font-weight: 500; }
+    .filter-row { cursor: pointer; transition: background 0.15s; }
+    .filter-row:hover { background: rgba(34, 211, 238, 0.1); }
+    .side-item-value { color: var(--cyan); font-weight: 600; min-width: 90px; text-align: right; font-variant-numeric: tabular-nums; }
+    .side-empty { height: 100px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 13px; }
+
+    .hero-ranker-zone {
+      background: #08111a; border: 1px solid rgba(34,211,238,0.15);
+      border-radius: 8px; padding: 12px 16px; display: flex; align-items: center;
+      gap: 12px; margin: 12px 16px 6px 16px; position: relative; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .hero-ranker-zone:hover { background: rgba(34,211,238,0.08); }
+    .hero-ranker-zone.is-first::after {
+      content: '1위'; position: absolute; top: -5px; left: -5px;
+      background: var(--cyan); color: #000; font-size: 9px; font-weight: 900;
+      padding: 2px 6px; border-radius: 4px;
+    }
+    .hero-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--cyan); background: #1a1c24; flex-shrink: 0; }
+    .hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    
+    .hero-meta { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+    .hero-meta .p-name { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+    .hero-meta .c-name { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    
+    .hero-val { font-size: 15px; font-weight: 800; color: var(--cyan); flex-shrink: 0; display:flex; flex-direction:row; align-items:center; gap:10px; }
+    .hero-val-sub { font-size:11px; color:#fff; font-weight:400; opacity:0.8; margin-top:0; }
+    #rankTitleName { min-width: 92px; flex-shrink: 0; font-size: 17px; }
+    #rankTitleName img { width: 18px; height: 18px; margin-right: 6px; position: relative; top: 3px; }
+    #pageInfo { min-width: 36px; text-align: center; font-variant-numeric: tabular-nums; font-size: 13px; }
+
+    .sub-rank-list { 
+      display: flex; flex-direction: column; gap: 6px; padding: 0 16px 16px 16px; 
+      min-height: auto;
+    }
+    .rank-item-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 12px; border-radius: 8px; position: relative;
+      overflow: hidden; background: #07080c; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .rank-item-row:hover { background: rgba(34, 211, 238, 0.08); }
+    .bar-bg {
+      position: absolute; top: 0; left: 0; height: 100%;
+      background: rgba(34, 211, 238, 0.03); z-index: 1; pointer-events: none;
+    }
+    .item-left { display: flex; align-items: center; gap: 10px; z-index: 2; min-width: 0; }
+    .item-num { font-size: 12px; font-weight: bold; color: var(--text-muted); width: 18px; text-align: center; flex-shrink: 0; }
+    .item-avatar { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; border: 1px solid var(--border); background: #1a1c24; flex-shrink: 0; }
+    .item-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    
+    .item-name-group { display: flex; flex-direction: column; min-width: 0; }
+    .item-p-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+    .item-c-name { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    
+    .item-val { font-size: 13px; font-weight: 700; color: #cbd5e1; z-index: 2; flex-shrink: 0; display:flex; gap:10px; align-items:center; }
+    
+    #listNav {
+      display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+      background: #1c1f28; border: none;
+      border-radius: 0 0 10px 10px; padding: 10px 16px;
+    }
+    #listNav .page-btn {
+      width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); cursor: pointer; font-size: 14px; line-height: 1;
+    }
+    #listNav .page-btn:hover:not(:disabled) {
+      color: #67e8f9; border-color: rgba(34,211,238,0.35); background: rgba(34,211,238,0.1);
+    }
+    #listNav .page-btn:disabled { opacity: 0.3; cursor: default; }
+
+    @media (max-width: 900px) {
+      .rank-layout { flex-direction: column; }
+      .rank-left, .rank-right { width: 100%; }
+    }
+
+    @keyframes eloSpin {
+      to { transform: rotate(360deg); }
+    }
+    #eloLoading {
+      display: flex;
+      min-height: 280px;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+    #eloLoading .elo-spin {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: #22d3ee;
+      border-radius: 50%;
+      animation: eloSpin 0.8s linear infinite;
+    }
+
+    .arch-chart-zone {
+      position: relative; width: 100%; height: 160px;
+      display: flex; justify-content: center; align-items: flex-end;
+      margin-top: 4px;
+      margin-bottom: 0px;
+      overflow: hidden;
+    }
+    .arch-svg { width: 280px; height: 160px; }
+    .arch-track { fill: none; stroke-width: 20; stroke-linecap: butt; }
+    .arch-fill { 
+      transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1); 
+      stroke-linecap: round;
+    }
+    .arch-bg { stroke: rgba(255, 255, 255, 0.06); }
+    html.light .arch-bg { stroke: #eef2f6; }
+    .color-terran { stroke: #2563eb; }
+    .color-zerg { stroke: #cf6ffc; }
+    .color-protoss { stroke: #fac20c; }
+
+    .race-legend-row {
+      display: flex; justify-content: center; align-items: center; gap: 32px;
+      list-style: none; 
+      padding: 0px 16px 16px;
+      margin: 0;
+      border-top: none;
+    }
+    .race-legend-inline-item {
+      display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; transition: opacity 0.15s;
+    }
+    .race-legend-inline-item:hover { opacity: 0.7; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .legend-dot.terran { background-color: #2563eb; }
+    .legend-dot.zerg { background-color: #cf6ffc; }
+    .legend-dot.protoss { background-color: #fac20c; }
+    .race-label-txt { color: var(--text-muted); font-weight: 600; }
+    .race-val-txt { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+    .row-v4 { display: flex; align-items: center; margin-bottom: 12px; gap: 12px; }
+    .row-v4:last-of-type { margin-bottom: 0; }
+    .lbl-v4 { width: 55px; flex-shrink: 0; color: #64748b; font-size: 12px; }
+    .val-v4 { width: 78px; flex-shrink: 0; text-align: right; font-size: 12px; font-weight: 700; }
+    .cnt-v4 { color: #475569; font-size: 11px; font-weight: 400; }
+    .track-v4 { flex: 1; height: 6px; background: #1e293b; border-radius: 2px; overflow: hidden; }
+    .fill-v4 {
+      height: 100%;
+      background-image: linear-gradient(90deg, currentColor 4px, transparent 4px);
+      background-size: 6px 100%;
+    }
+    .dist-median {
+      margin-top: 8px; padding-top: 12px; border-top: none;
+      text-align: center; font-size: 12px; font-weight: 500; color: var(--text-dim);
+    }
+    .mef-toggle-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .mef-toggle-btn.active {
+      color: var(--cyan);
+      border-color: rgba(34, 211, 238, 0.4);
+      background: rgba(34, 211, 238, 0.1);
+    }
+    .ticker-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 14px;
+      background: #07080c;
+      border-radius: 8px;
+      margin: 0 16px 10px 16px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .ticker-row:last-child { margin-bottom: 10px; }
+    .ticker-row:hover { background: rgba(34, 211, 238, 0.08); }
+    .ticker-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #1a1c24;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .ticker-name { color: var(--text); }
+    .ticker-crew { color: var(--text-dim); font-size: 11px; margin-left: 6px; }
+    .trend-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--bg-card);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .trend-row:hover { background: rgba(34, 211, 238, 0.08); }
+    .trend-name { color: var(--text); }
+    .trend-crew { color: var(--text-dim); font-size: 11px; margin-left: 6px; }
+    .trend-up { color: #10b981; font-size: 11.5px; font-weight: 700; }
+    .trend-cur { color: var(--cyan); font-size: 11.5px; font-weight: 700; }
+    .trend-down { color: #fb7185; font-size: 11.5px; font-weight: 700; }
+    .race-toggle-wrap {
+      position: relative;
+      display: inline-block;
+      margin-left: auto;
+      margin-right: 4px;
+    }
+    .race-toggle-btn {
+      font-size: 11px;
+      color: var(--cyan);
+      font-weight: 500;
+      background: var(--bg);
+      padding: 10px 25px 10px 15px;
+      border-radius: 6px;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      line-height: 1;
+      font-family: inherit;
+    }
+    .race-toggle-btn:hover {
+      background: rgba(34, 211, 238, 0.08);
+    }
+    .race-toggle-btn::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 9px;
+      width: 4px;
+      height: 4px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      transform: translateY(-70%) rotate(45deg);
+      pointer-events: none;
+    }
+    .race-toggle-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      width: 95px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+      z-index: 50;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .race-toggle-wrap.open .race-toggle-menu {
+      display: block;
+    }
+    .race-toggle-menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .race-toggle-menu button:hover,
+    .race-toggle-menu button.active {
+      color: var(--cyan);
+      background: rgba(34, 211, 238, 0.1);
+    }
+    .notice-banner-box {
+      margin-left: auto;
+      margin-right: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      max-width: 220px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .notice-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+    .notice-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    /* 로딩 중일 때는 랭크 영역을 강제로 숨김 */
+body.elo-page-loading #rankArea {
+  display: none !important;
+}
+  </style>
+</head>
+<body class="elo-page-loading">
+    <div id="site-top"></div>
+  <div id="site-top"></div>
+  <main class="main">
+    <h1 class="page-title" style="display: none;">Elo승률</h1>
+
+    <div class="period-bar">
+      <div class="period-tabs">
+        <button type="button" class="period-box crew-tab active" data-tab="elo">Elo승률</button>
+        <button type="button" class="period-box crew-tab" data-tab="match">스폰판수</button>
+        <button type="button" class="period-box crew-tab" data-tab="mef">메이저프로리그</button>
+      </div>
+      <div class="period-right" style="display: flex; gap: 10px; margin-left: auto; align-items: center;">
+      <div class="period-label">
+        <span class="period-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <line x1="4" y1="6" x2="20" y2="6"></line>
+            <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"></circle>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <circle cx="14" cy="12" r="2" fill="currentColor" stroke="none"></circle>
+            <line x1="4" y1="18" x2="20" y2="18"></line>
+            <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"></circle>
+          </svg>
+        </span>
+        기간
+      </div>
+      <div class="period-month-wrap" id="yearWrap">
+        <button type="button" class="period-box year-active" id="yearBtn">2026년</button>
+        <div class="period-total-menu" id="yearMenu"></div>
+      </div>
+      <div class="period-month-wrap" id="monthWrap">
+        <button type="button" class="period-box active" id="monthBtn">8월</button>
+        <div class="period-total-menu" id="monthMenu"></div>
+      </div>
+      <div class="period-divider"></div>
+      <div class="period-label">누적</div>
+      <div class="period-total" id="totalWrap" style="margin-right: 18px;">
+        <button type="button" class="period-box dim" id="totalBtn">선택</button>
+        <div class="period-total-menu" id="totalMenu">
+          <button type="button" data-range="3m">3개월</button>
+          <button type="button" data-range="6m">6개월</button>
+          <button type="button" data-range="12m">1년</button>
+          <button type="button" data-range="last-year">작년</button>
+          <button type="button" data-range="this-year">올해</button>
+          <button type="button" data-range="2025" class="mef-year-opt" style="display:none;">2025년</button>
+          <button type="button" data-range="2024" class="mef-year-opt" style="display:none;">2024년</button>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <div id="eloLoading">
+      <div class="elo-spin"></div>
+      <div>데이터를 읽는중입니다</div>
+    </div>
+    
+    <div class="rank-layout" id="rankArea" style="display: none;">
+      <div class="rank-left">
+        <div class="side-box">
+          <div class="side-box-header" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+  <span id="rankTitleName">개인별 승률</span>
+  <button type="button" id="clearFilterBtn" style="display:none; border:none; background:transparent; color:#22d3ee; font-size:12px; cursor:pointer;">필터 해제</button>
+</div>
+          
+          <div id="heroSlot"></div>
+          <div class="sub-rank-list" id="rankList"></div>
+
+          <div id="listNav">
+            <button type="button" class="page-btn" id="prevPage" aria-label="이전">‹</button>
+            <span id="pageInfo">1/1</span>
+            <button type="button" class="page-btn" id="nextPage" aria-label="다음">›</button>
+          </div>
+          <button type="button" id="clearFilterBottomBtn" style="
+            display:none; width:100%; padding:14px; background:#1c1f28; border:1px solid rgba(255,255,255,0.06);
+            border-top:none; border-radius:0 0 14px 14px; color:#22d3ee; font-size:14px; font-weight:700; cursor:pointer;
+          ">전체보기</button>
+        </div>
+      </div>
+      
+      <div class="rank-right">
+        <div class="side-box" id="crewRateBox">
+          <div class="side-box-header" id="crewRateTitle"></div>
+          <div class="side-box-body" id="crewRateList">
+            <div style="padding: 24px 16px; text-align: center; color: var(--text-dim); font-size: 13px;">준비중</div>
+          </div>
+        </div>
+        <!-- 메프 전용 다승/출전 배너 -->
+        <div class="side-box" id="mefTopBox" style="display:none;">
+          <div class="side-box-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <span id="mefTopTitle">다승 TOP 5</span>
+            <div style="display:flex; gap:4px;">
+              <button type="button" class="mef-toggle-btn active" id="btnMefWins" onclick="switchMefTop('wins')">다승</button>
+              <button type="button" class="mef-toggle-btn" id="btnMefGames" onclick="switchMefTop('games')">출전</button>
+            </div>
+          </div>
+          <div class="side-box-body" id="mefTopList"></div>
+        </div>
+
+        <div class="side-box" id="raceAvgBox">
+          <div class="side-box-header" id="raceAvgTitle" style="border-bottom: none; display: flex; align-items: center; justify-content: space-between;">
+            <span>종족별 평균 승률</span>
+            <div class="race-toggle-wrap" id="matchTypeWrap">
+              <button type="button" class="race-toggle-btn" id="matchTypeBtn">모든경기</button>
+              <div class="race-toggle-menu" id="matchTypeMenu">
+                <button type="button" class="active" onclick="selectMatchType('모든경기')">모든경기</button>
+                <button type="button" onclick="selectMatchType('스폰')">스폰</button>
+                <button type="button" onclick="selectMatchType('CK')">CK</button>
+                <button type="button" onclick="selectMatchType('대학대전')">대학대전</button>
+                <button type="button" onclick="selectMatchType('대회')">대회</button>
+              </div>
+            </div>
+          </div>
+          <div class="side-box-body" id="raceAvgList"></div>
+        </div>
+        <div class="side-box">
+          <div class="side-box-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <span id="chartTitle">승률 구간 분포</span>
+            <span id="chartMedian" style="
+              font-size: 11px; 
+              color: var(--cyan); 
+              font-weight: 500; 
+              background: var(--bg); 
+              padding: 8px 10px 7px 5px; 
+              border-radius: 6px; 
+              display: inline-flex; 
+              align-items: center; 
+              justify-content: center;
+              margin-right: 4px;
+            "></span>
+          </div>
+          <div id="rateChartBars" style="padding: 12px 16px 16px;"></div>
+        </div>
+        <div class="side-box" id="crewCountBox">
+          <div class="side-box-header" id="topTitle">대학별 TOP</div>
+          <div class="side-box-body" id="crewCountList">
+            <div style="padding: 24px 16px; text-align: center; color: var(--text-dim); font-size: 13px;">준비중</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-bottom"></div>
+
+  <script src="common.js"></script>
+  <script src="period.js"></script>
+  <script>
+    const MONTH_GID = { 7: "1341589360", 8: "1402849856" };
+    const MEF_GID = { 7: "1178750810", 8: "1178750810" };
+    const ROSTER_CSV = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=0";
+    
+    const CREW_LOGO = {
+      "바스포드": "logo/basford_em.webp", "BGM": "logo/bgm_em.webp", "흑카데미": "logo/black_em.webp",
+      "보신대": "logo/bsu_em.webp", "씨나인": "logo/c9_em.webp", "캄몬스타즈": "logo/calm_em.webp",
+      "DM": "logo/dm_em.webp", "드림즈": "logo/dreams_em.webp", "더블비": "logo/dubbleb_em.webp",
+      "거성대": "logo/gsu_em.webp", "HM": "logo/hm_em.webp", "JSA": "logo/jsa_em.webp",
+      "정선대": "logo/ju_em.webp", "케이대": "logo/ku_em.webp", "엠비대": "logo/mbu_em.webp",
+      "뉴캣슬": "logo/newcat_em.webp", "NSU": "logo/nsu_em.webp", "늪지대": "logo/nzu_em.webp",
+      "섭이대": "logo/siu_em.webp", "철와대": "logo/su_em.webp", "우끼끼즈": "logo/ukks_em.webp",
+      "MSG": "logo/msg_em.webp", "와플대": "logo/waffleu_em.webp", "YB": "logo/yb_em.webp",
+      "염석대": "logo/yuam_em.webp", "학버드": "logo/hak_em.webp", "철기중대": "logo/chulgi_em.webp",
+      "패션스타": "logo/fstar_em.webp", "나사": "logo/nasa_em.webp", "ASG": "logo/asg_em.webp",
+      "캄성여대": "logo/cswu_em.webp", "수술대": "logo/ssu_em.webp", "신세계": "logo/ssg_em.webp",
+      "뽀인구단": "logo/bboin_em.webp", "장독대": "logo/jdu_em.webp", "이노대": "logo/ino_em.webp", 
+      "방치클럽": "logo/bangchi_em.webp", "복덕방": "logo/bdb_em.webp", "CP": "logo/cp_em.webp",
+      "DP": "logo/dp_em.webp", "묵섭대": "logo/mook_em.webp", "광수대": "logo/gwangsu_em.webp",
+      "캄브릿지": "logo/calmb_em.webp", "마종대": "logo/majong_em.webp", "TPZ": "logo/tpz_em.webp",
+      "범진대": "logo/bj_em.webp", "파이스트": "logo/pist_em.webp", "미다스공대": "logo/midas2_em.webp",
+      "MGS": "logo/mgs_em.webp", "라저대": "logo/rthat_em.webp", "아마대": "logo/ama_em.webp",
+      "츠나대": "logo/tsuna_em.webp", "무창클럽": "logo/moo_em.webp", "카사대": "logo/casa_em.webp",
+      "철거반": "logo/cgb_em.webp", "노가다대": "logo/nogada_em.webp", "마싯대": "logo/masit_em.webp",
+      "점문예대": "logo/jm_em.webp", "라이트클럽": "logo/lightclub_em.webp", "고대": "logo/go_em.webp",
+      "친박연대": "logo/chinpark_em.webp", "철기대": "logo/cgd_em.webp", "석사관학교": "logo/seoksa_em.webp",
+      "할없녀": "logo/halgirl_em.webp", "무친대": "logo/mcu_em.webp", "소림사": "logo/sorimsa_em.webp"
+    };
+
+    function crewLogo(name) {
+      if (!name) return "";
+      var n = String(name).replace(/\s+/g, "").trim();
+      if (n === "츠캄몬스타즈" || n === "츠캄" || n === "캄몬" || n === "츠캄몬") n = "캄몬스타즈";
+      if (n === "마범대") n = "엠비대";
+      if (CREW_LOGO[n]) return CREW_LOGO[n];
+      if (CREW_LOGO[name]) return CREW_LOGO[name];
+      const key = Object.keys(CREW_LOGO).find(k => k.toLowerCase() === n.toLowerCase());
+      return key ? CREW_LOGO[key] : "";
+    }
+    function normName(s) { return String(s || "").replace(/\s+/g, "").toLowerCase(); }
+
+    function badgeHtml(crew) {
+      if (!crew || crew === "FA") return "";
+      const logo = (typeof crewLogo === "function") ? crewLogo(crew) : "";
+      if (logo) {
+        return `<img src="${logo}" alt="${crew}" title="${crew}" style="width:16px; height:16px; object-fit:contain; vertical-align:middle; margin-left:5px; flex-shrink:0;">`;
+      }
+      return `<span style="font-size:10px; padding:1px 5px; border-radius:4px; background:rgba(255,255,255,0.08); color:var(--text-dim); margin-left:5px; font-weight:600; flex-shrink:0;">${crew}</span>`;
+    }
+    
+    function parseRoster(text) {
+      const lines = text.split("\n").map(l => l.trim()).filter(l => l);
+      const list = [];
+      for (var i = 1; i < lines.length; i++) {
+        var cols = lines[i].match(/(?:[^",]+|"[^"]*")+/g) || [];
+        var c = cols.map(x => x.replace(/^"|"$/g, "").trim());
+        if (!c[0] && !c[1]) continue;
+        list.push({ id: c[0]||"", name: c[1]||"", aliases: (c[2]||"").split(",").filter(Boolean), race: c[3]||"", crew: c[4]||"FA", gender: c[5]||"" });
+      }
+      return list;
+    }
+    function findRoster(nick, roster) {
+      var n = normName(nick);
+      return roster.find(r => normName(r.name) === n || r.aliases.some(a => normName(a) === n)) || null;
+    }
+    function goProfile(id) { if (id) location.href = "profile.html?id=" + encodeURIComponent(id); }
+
+    let currentMonth = 8;
+    let originalData = [];
+    let pageMode = "elo";
+    let listPage = 0;
+    const PAGE_SIZE = 25;
+    let selectedCrew = null;
+    let selectedRace = null;
+    let mefCsvCache = null; // 메프 구글시트 중복 호출 방지 캐시
+
+    function getFilteredData() {
+      var data = originalData.slice();
+      if (selectedCrew) data = data.filter(item => item.crew === selectedCrew);
+      if (selectedRace) data = data.filter(item => raceLabel(item.race) === selectedRace);
+      if (pageMode === "match") data.sort((a, b) => (a.unranked !== b.unranked) ? (a.unranked ? 1 : -1) : (b.games - a.games || b.wins - a.wins));
+      else data.sort((a, b) => (a.unranked !== b.unranked) ? (a.unranked ? 1 : -1) : (b.rate - a.rate || b.games - a.games));
+      return data;
+    }
+
+    function clearFilter() {
+      selectedCrew = null; selectedRace = null;
+      document.getElementById("rankTitleName").textContent = pageMode === "match" ? "개인별 스폰" : (pageMode === "mef" ? "메이저프로리그" : "개인별 승률");
+      document.getElementById("clearFilterBtn").style.display = "none";
+      document.getElementById("clearFilterBottomBtn").style.display = "none";
+      resetAndRender();
+    }
+
+    function renderMore() {
+      const heroBox = document.getElementById("heroSlot");
+      const list = document.getElementById("rankList");
+      const data = getFilteredData();
+      const maxPage = Math.max(1, Math.ceil(data.length / PAGE_SIZE));
+      if (listPage > maxPage - 1) listPage = maxPage - 1;
+      if (listPage < 0) listPage = 0;
+
+      const start = listPage * PAGE_SIZE;
+      const pageRows = data.slice(start, start + PAGE_SIZE);
+      const absoluteMaxVal = (data.length > 0) ? (pageMode === "match" ? data[0].games : data[0].rate) : 1;
+
+      heroBox.innerHTML = "";
+      list.innerHTML = "";
+
+      if (listPage === 0 && pageRows.length > 0) {
+        const hero = pageRows[0];
+        const hImg = hero.id ? `https://stimg.sooplive.com/LOGO/${hero.id.substring(0,2).toLowerCase()}/${hero.id}/${hero.id}.jpg` : "";
+        heroBox.innerHTML = `
+          <div class="hero-ranker-zone is-first" onclick="goProfile('${hero.id}')">
+            <div class="hero-avatar"><img src="${hImg}" onerror="this.style.display='none'"></div>
+            <div class="hero-meta">
+              ${pageMode === "mef" ? `
+                <div style="display:flex; align-items:center;">
+                  <span class="p-name">${hero.name}</span>
+                  ${badgeHtml(hero.crew)}
+                </div>
+              ` : `
+                <span class="p-name">${hero.name}</span>
+                <span class="c-name">${hero.crew || "FA"}</span>
+              `}
+            </div>
+            <div class="hero-val" style="display: flex; gap: 10px; align-items: center;">
+              <span style="font-size:11px; color:#fff; font-weight:400; opacity:0.8;">${String(hero.wins).padStart(2,"0")}승 ${String(hero.losses).padStart(2,"0")}패</span>
+              <span style="color: var(--cyan);">${pageMode === "match" ? hero.games + '<span style="font-size:75%;">판</span>' : hero.rateText}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      const listRows = listPage === 0 ? pageRows.slice(1) : pageRows;
+      list.innerHTML = listRows.map((item, i) => {
+        const rank = start + (listPage === 0 ? i + 2 : i + 1);
+        const valNum = pageMode === "match" ? item.games : item.rate;
+        const percent = Math.max(8, Math.min(100, Math.round((valNum / absoluteMaxVal) * 100)));
+        const imgUrl = item.id ? `https://stimg.sooplive.com/LOGO/${item.id.substring(0,2).toLowerCase()}/${item.id}/${item.id}.jpg` : "";
+
+        return `
+          <div class="rank-item-row" onclick="goProfile('${item.id}')">
+            <div class="bar-bg" style="width: ${percent}%;"></div>
+            <div class="item-left">
+              <span class="item-num">${item.unranked && pageMode === "elo" ? "-" : rank}</span>
+              <div class="item-avatar"><img src="${imgUrl}" onerror="this.style.display='none'"></div>
+              <div class="item-name-group">
+                ${pageMode === "mef" ? `
+                  <div style="display:flex; align-items:center;">
+                    <span class="item-p-name">${item.name}</span>
+                    ${badgeHtml(item.crew)}
+                  </div>
+                ` : `
+                  <span class="item-p-name">${item.name}</span>
+                  <span class="item-c-name">${item.crew || "FA"}</span>
+                `}
+              </div>
+            </div>
+            <div class="item-val">
+              <span style="font-size:11px; color:#fff; font-weight:400; opacity:0.8;">${String(item.wins).padStart(2,"0")}승 ${String(item.losses).padStart(2,"0")}패</span>
+              <span style="color:var(--cyan); min-width:48px; text-align:right;">${pageMode === "match" ? item.games + '<span style="font-size:70%; opacity:0.7;">판</span>' : item.rateText}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      var nav = document.getElementById("listNav");
+      if (selectedCrew || selectedRace || data.length <= PAGE_SIZE) {
+        nav.style.display = "none";
+      } else {
+        nav.style.display = "flex";
+        document.getElementById("pageInfo").textContent = (listPage + 1) + "/" + maxPage;
+        document.getElementById("prevPage").disabled = listPage <= 0;
+        document.getElementById("nextPage").disabled = listPage >= maxPage - 1;
+      }
+    }
+
+    function renderCrewRate() {
+      if (pageMode === "mef") return;
+      
+      const map = {};
+      originalData.forEach(item => {
+        if (pageMode === "elo" && item.unranked) return;
+        if (!item.crew || item.crew === "FA") return;
+        if (!map[item.crew]) map[item.crew] = { wins: 0, games: 0, count: 0 };
+        map[item.crew].wins += item.wins;
+        map[item.crew].games += item.games;
+        map[item.crew].count += 1;
+      });
+      const list = Object.entries(map).map(e => ({
+        name: e[0], rate: e[1].games > 0 ? (e[1].wins/e[1].games)*100 : 0,
+        avg: e[1].count > 0 ? Math.round(e[1].games/e[1].count) : 0, count: e[1].count
+      })).sort((a, b) => pageMode === "match" ? b.avg - a.avg : b.rate - a.rate);
+
+      const box = document.getElementById("crewRateList");
+      if (!box) return;
+      box.innerHTML = list.map((item, i) => {
+        const color = i===0 ? "#f59e0b" : i===1 ? "#a78bfa" : i===2 ? "#34d399" : "var(--text-dim)";
+        return `
+          <div class="side-item filter-row" onclick="filterByCrew('${item.name}')">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="width:18px; color:${color}; font-size:12px; font-weight:700;">${i+1}</span>
+              <span class="side-item-name" style="display:inline-flex; align-items:center;">
+                <span style="width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:6px;">
+                  <img src="${crewLogo(item.name)}" alt="" style="max-width:24px; max-height:24px; object-fit:contain;" onerror="this.style.display='none'">
+                </span>
+                ${item.name}
+              </span>
+              <span style="font-size:11px; color:var(--text-dim);">${item.count}명</span>
+            </div>
+            <span class="side-item-value">${pageMode==="match" ? item.avg+" 판" : item.rate.toFixed(1)+"%"}</span>
+          </div>`;
+      }).join("");
+    }
+
+    function filterByCrew(c) {
+      selectedCrew = c; selectedRace = null;
+      var logo = crewLogo(c);
+      document.getElementById("rankTitleName").innerHTML = (logo ? '<img src="'+logo+'" alt="" style="width:26px;height:26px;object-fit:contain;margin-right:6px;vertical-align:-3px;" onerror="this.style.display=\'none\'">' : "") + c;
+      document.getElementById("clearFilterBottomBtn").style.display = "block";
+      resetAndRender(); window.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    function renderRateChart() {
+      const map = {
+        "테란": { code: "terran", wins: 0, games: 0, len: 376.99 },
+        "저그": { code: "zerg", wins: 0, games: 0, len: 298.45 },
+        "프로토스": { code: "protoss", wins: 0, games: 0, len: 219.91 }
+      };
+
+      originalData.forEach(item => {
+        if (pageMode === "elo" && item.unranked) return;
+        if (item.games <= 0) return;
+        
+        let rName = String(item.race || "").trim().toUpperCase();
+        if (rName === "T" || rName === "테" || rName === "테란") rName = "테란";
+        else if (rName === "Z" || rName === "저" || rName === "저그") rName = "저그";
+        else if (rName === "P" || rName === "프" || rName === "프로토스") rName = "프로토스";
+        else return; 
+
+        if (map[rName]) {
+          map[rName].wins += item.wins;
+          map[rName].games += item.games;
+        }
+      });
+
+      const box = document.getElementById("raceAvgList");
+      if (!box) return;
+
+      const totalGames = map["테란"].games + map["저그"].games + map["프로토스"].games;
+      if (totalGames === 0) {
+        box.innerHTML = '<div class="side-empty">데이터 없음</div>';
+        return;
+      }
+
+      Object.keys(map).forEach(k => {
+        const d = map[k];
+        d.rate = d.games > 0 ? (d.wins / d.games) * 100 : 0;
+        d.offset = d.len * (1 - (d.rate / 100));
+      });
+
+      let svgHtml = '<div class="arch-chart-zone"><svg class="arch-svg" viewBox="0 0 280 160">';
+      svgHtml += '<defs><clipPath id="chartClip"><rect x="0" y="0" width="280" height="140"></rect></clipPath></defs>';
+      svgHtml += '<g clip-path="url(#chartClip)">';
+      svgHtml += '<path class="arch-track arch-bg" d="M 20,140 A 120,120 0 0,1 260,140"></path>';
+      svgHtml += '<path class="arch-track arch-bg" d="M 45,140 A 95,95 0 0,1 235,140"></path>';
+      svgHtml += '<path class="arch-track arch-bg" d="M 70,140 A 70,70 0 0,1 210,140"></path>';
+      
+      svgHtml += '<path id="arcTerran" class="arch-track arch-fill color-terran" d="M 20,140 A 120,120 0 0,1 260,140" stroke-dasharray="376.99" stroke-dashoffset="376.99"></path>';
+      svgHtml += '<path id="arcZerg" class="arch-track arch-fill color-zerg" d="M 45,140 A 95,95 0 0,1 235,140" stroke-dasharray="298.45" stroke-dashoffset="298.45"></path>';
+      svgHtml += '<path id="arcProtoss" class="arch-track arch-fill color-protoss" d="M 70,140 A 70,70 0 0,1 210,140" stroke-dasharray="219.91" stroke-dashoffset="219.91"></path>';
+      svgHtml += '</g></svg></div>';
+
+      let legendHtml = '<ul class="race-legend-row">';
+      ['테란', '저그', '프로토스'].forEach(k => {
+        const d = map[k];
+        legendHtml += 
+          '<li class="race-legend-inline-item" onclick="window.filterByRace(\'' + k + '\')">' +
+            '<span class="legend-dot ' + d.code + '"></span>' +
+            '<span class="race-label-txt">' + k[0] + '</span>' +
+            '<span class="race-val-txt">' + d.rate.toFixed(1) + '%</span>' +
+          '</li>';
+      });
+      legendHtml += '</ul>';
+
+      box.innerHTML = svgHtml + legendHtml;
+
+      setTimeout(() => {
+        const arcT = document.getElementById("arcTerran");
+        const arcZ = document.getElementById("arcZerg");
+        const arcP = document.getElementById("arcProtoss");
+        if (arcT) arcT.style.strokeDashoffset = map['테란'].offset;
+        if (arcZ) arcZ.style.strokeDashoffset = map['저그'].offset;
+        if (arcP) arcP.style.strokeDashoffset = map['프로토스'].offset;
+      }, 50);
+    }
+
+    window.filterByRace = function(raceName) {
+      selectedRace = raceName;
+      selectedCrew = null;
+      document.getElementById("rankTitleName").textContent = raceName;
+      document.getElementById("clearFilterBottomBtn").style.display = "block";
+      resetAndRender();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    function renderRaceAvg() {
+      const ranges = pageMode === "match" ? [
+        { label: "80판 이상", min: 80, max: 99999, color: "#22d3ee" },
+        { label: "60~79판", min: 60, max: 80, color: "#a78bfa" },
+        { label: "40~59판", min: 40, max: 60, color: "#f472b6" },
+        { label: "20~39판", min: 20, max: 40, color: "#fbbf24" },
+        { label: "10~19판", min: 10, max: 20, color: "#34d399" },
+        { label: "10판 미만", min: 0, max: 10, color: "#818cf8" }
+      ] : [
+        { label: "80% 이상", min: 80, max: 100.1, color: "#22d3ee" },
+        { label: "70~80%", min: 70, max: 80, color: "#a78bfa" },
+        { label: "60~70%", min: 60, max: 70, color: "#f472b6" },
+        { label: "50~60%", min: 50, max: 60, color: "#fbbf24" },
+        { label: "40~50%", min: 40, max: 50, color: "#34d399" },
+        { label: "30~40%", min: 30, max: 40, color: "#818cf8" },
+        { label: "30% 미만", min: 0, max: 30, color: "#64748b" }
+      ];
+      
+      const data = originalData.filter(item => (pageMode !== "elo" || !item.unranked) && item.games > 0);
+      const counts = ranges.map(r => ({
+        ...r,
+        count: data.filter(item => {
+          var v = pageMode === "match" ? item.games : item.rate;
+          return v >= r.min && v < r.max;
+        }).length
+      })).filter(r => r.count > 0);
+      
+      const total = counts.reduce((s, r) => s + r.count, 0);
+      const box = document.getElementById("rateChartBars");
+      if (!box) return;
+      if (total === 0) { box.innerHTML = '<div class="side-empty">데이터 없음</div>'; return; }
+      
+      const maxCount = Math.max(...counts.map(r => r.count));
+      
+      let median = 0;
+      let sortedVals = data.map(item => pageMode === "match" ? item.games : item.rate).sort((a,b) => a - b);
+      if (sortedVals.length) {
+        let mid = Math.floor(sortedVals.length / 2);
+        median = sortedVals.length % 2 === 0 ? (sortedVals[mid-1] + sortedVals[mid]) / 2 : sortedVals[mid];
+      }
+      let medianText = pageMode === "match" ? median.toFixed(0) + "판" : median.toFixed(1) + "%";
+      
+      const medianSpan = document.getElementById("chartMedian");
+      if (medianSpan) {
+        medianSpan.textContent = '중위값 ' + medianText;
+      }
+
+      box.innerHTML = counts.map(r => {
+        const pct = Math.round((r.count / total) * 100);
+        const widthPct = Math.round((r.count / maxCount) * 100);
+        return '<div class="row-v4"><div class="lbl-v4">' + r.label + '</div>' +
+          '<div class="track-v4"><div class="fill-v4" style="width:' + widthPct + '%;color:' + r.color + ';"></div></div>' +
+          '<div class="val-v4" style="color:' + r.color + ';">' + pct + '% <span class="cnt-v4">(' + r.count + '명)</span></div></div>';
+      }).join("");
+    }
+
+    function renderCrewCount() {
+      if (pageMode === "mef") return;
+
+      const map = {};
+      originalData.forEach(function (item) {
+        if (pageMode === "elo" && item.unranked) return;
+        if (!item.crew || item.crew === "FA") return;
+        if (!map[item.crew]) {
+          map[item.crew] = { topId: "", topName: "", topRate: -1, topGames: -1 };
+        }
+        if (item.rate > map[item.crew].topRate || (item.rate === map[item.crew].topRate && item.games > map[item.crew].topGames)) {
+          map[item.crew].topRate = item.rate;
+          map[item.crew].topGames = item.games;
+          map[item.crew].topId = item.id || "";
+          map[item.crew].topName = item.name || "";
+        }
+      });
+      const list = Object.entries(map).map(entry => ({
+        crew: entry[0], topId: entry[1].topId, topName: entry[1].topName, topRate: entry[1].topRate, topGames: entry[1].topGames
+      })).sort((a, b) => b.topRate - a.topRate);
+
+      const box = document.getElementById("crewCountList");
+      if (!box) return;
+      box.innerHTML = "";
+      list.forEach(function (item, index) {
+        const rank = index + 1;
+        var rankColor = rank === 1 ? "#f59e0b" : (rank === 2 ? "#a78bfa" : (rank === 3 ? "#34d399" : "var(--text-dim)"));
+        
+        const imgUrl = (item.topId && item.topId.length >= 2) 
+          ? "https://stimg.sooplive.com/LOGO/" + item.topId.substring(0,2).toLowerCase() + "/" + item.topId + "/" + item.topId + ".jpg" 
+          : "";
+          
+        const div = document.createElement("div");
+        div.className = "side-item";
+        div.innerHTML =
+          '<div style="display:flex; align-items:center; gap:8px; min-width:0;">' +
+            '<span style="width:18px; color:' + rankColor + '; font-size:12px; font-weight:700; flex-shrink:0;">' + rank + '</span>' +
+            '<div class="avatar" style="width:24px; height:24px; min-width:24px; max-width:24px; flex-shrink:0; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#1a1c24;">' +
+              '<img src="' + imgUrl + '" alt="" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display=\'none\'">' +
+            '</div>' +
+            '<span class="side-item-name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + item.topName + '</span>' +
+            '<span style="font-size:11px; color:var(--text-dim); flex-shrink:0;">' + item.crew + '</span>' +
+          '</div>' +
+          '<span class="side-item-value" style="flex-shrink:0;">' + (pageMode === "match" ? (item.topGames + ' 판') : (item.topRate.toFixed(1) + '%')) + '</span>';
+        box.appendChild(div);
+      });
+    }
+
+    async function renderRiseForMef() {
+      const box = document.getElementById("crewRateList");
+      if (!box || pageMode !== "mef") return;
+
+      try {
+        let mText = mefCsvCache;
+        if (!mText) {
+          const mRes = await fetch("https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=1178750810");
+          mText = await mRes.text();
+          mefCsvCache = mText;
+        }
+        const mLines = mText.split("\n").map(l => l.trim()).filter(Boolean);
+        const matchMonthBag = {};
+
+        for (let i = 1; i < mLines.length; i++) {
+          const cols = mLines[i].match(/(?:[^",]+|"[^"]*")+/g) || [];
+          const c = cols.map(x => x.replace(/^"|"$/g, "").trim());
+          const rawYm = c[0] || "";
+          if (!rawYm || rawYm === "날짜" || rawYm === "월") continue;
+
+          const ymMatch = rawYm.match(/(\d{2,4})\D+(\d{1,2})/);
+          if (!ymMatch) continue;
+          let y = parseInt(ymMatch[1], 10);
+          if (y < 100) y += 2000;
+          const ymKey = y * 100 + parseInt(ymMatch[2], 10);
+
+          const name = c[2] || "";
+          if (!name || name === "이름") continue;
+
+          const games = parseInt((c[3] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          const wins = parseInt((c[4] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          let rate = games > 0 ? (wins / games) * 100 : 0;
+
+          const found = originalData.find(item => item.name === name);
+          const whoId = found ? found.id : "";
+          const whoCrew = found ? found.crew : "";
+
+          if (!matchMonthBag[ymKey]) matchMonthBag[ymKey] = {};
+          matchMonthBag[ymKey][name] = { name, crew: whoCrew, id: whoId, games, wins, rate };
+        }
+
+        const sortedMonths = Object.keys(matchMonthBag).map(Number).sort((a, b) => a - b);
+        if (!sortedMonths.length) return;
+
+        const curYm = sortedMonths[sortedMonths.length - 1];
+        const prevYm = sortedMonths.length >= 2 ? sortedMonths[sortedMonths.length - 2] : null;
+        const curPlayers = Object.values(matchMonthBag[curYm] || {});
+
+        const qualified = curPlayers.filter(p => p.games >= 3).sort((a, b) => b.rate - a.rate || b.games - a.games);
+        const curTop = qualified.length > 0 ? qualified[0] : (curPlayers.sort((a, b) => b.rate - a.rate)[0] || null);
+
+        let bestUp = null;
+        let worstDown = null;
+
+        if (prevYm && matchMonthBag[prevYm]) {
+          curPlayers.forEach(cur => {
+            const prev = matchMonthBag[prevYm][cur.name];
+            if (prev && cur.games >= 3 && prev.games >= 3) {
+              const diff = cur.rate - prev.rate;
+              if (!bestUp || diff > bestUp.diff) {
+                bestUp = { name: cur.name, crew: cur.crew, id: cur.id, diff, rate: cur.rate };
+              }
+              if (!worstDown || diff < worstDown.diff) {
+                worstDown = { name: cur.name, crew: cur.crew, id: cur.id, diff, rate: cur.rate };
+              }
+            }
+          });
+        }
+
+        const items = [];
+        const photo = (id) => id ? `https://stimg.sooplive.com/LOGO/${id.substring(0,2).toLowerCase()}/${id}/${id}.jpg` : "";
+
+        if (bestUp && bestUp.diff > 0) {
+          items.push(`
+            <div class="ticker-row" ${bestUp.id ? `onclick="goProfile('${bestUp.id}')"` : ""}>
+              <span style="display:inline-flex; align-items:center; gap:8px;">
+                <span style="font-size:11px; color:var(--text-dim); font-weight:700;">[최다 상승]</span>
+                <img class="ticker-avatar" src="${photo(bestUp.id)}" alt="" onerror="this.style.display='none'">
+                <span class="ticker-name">${bestUp.name}</span>
+                <span class="ticker-crew">${bestUp.crew || ""}</span>
+              </span>
+              <span style="color:#10b981; font-size:11.5px; font-weight:700;">▲ ${bestUp.diff.toFixed(1)}%p (${bestUp.rate.toFixed(1)}%)</span>
+            </div>
+          `);
+        }
+        if (curTop) {
+          items.push(`
+            <div class="ticker-row" ${curTop.id ? `onclick="goProfile('${curTop.id}')"` : ""}>
+              <span style="display:inline-flex; align-items:center; gap:8px;">
+                <span style="font-size:11px; color:var(--text-dim); font-weight:700;">[최다 승률]</span>
+                <img class="ticker-avatar" src="${photo(curTop.id)}" alt="" onerror="this.style.display='none'">
+                <span class="ticker-name">${curTop.name}</span>
+                <span class="ticker-crew">${curTop.crew || ""}</span>
+              </span>
+              <span style="color:var(--cyan); font-size:11.5px; font-weight:700;">${curTop.rate.toFixed(1)}% (${curTop.games}전)</span>
+            </div>
+          `);
+        }
+        if (worstDown && worstDown.diff < 0) {
+          items.push(`
+            <div class="ticker-row" ${worstDown.id ? `onclick="goProfile('${worstDown.id}')"` : ""}>
+              <span style="display:inline-flex; align-items:center; gap:8px;">
+                <span style="font-size:11px; color:var(--text-dim); font-weight:700;">[최다 하락]</span>
+                <img class="ticker-avatar" src="${photo(worstDown.id)}" alt="" onerror="this.style.display='none'">
+                <span class="ticker-name">${worstDown.name}</span>
+                <span class="ticker-crew">${worstDown.crew || ""}</span>
+              </span>
+              <span style="color:#fb7185; font-size:11.5px; font-weight:700;">▼ ${Math.abs(worstDown.diff).toFixed(1)}%p (${worstDown.rate.toFixed(1)}%)</span>
+            </div>
+          `);
+        }
+
+        box.innerHTML = items.length > 0 ? items.join("") : '<div class="side-empty">비교 데이터 없음</div>';
+      } catch (e) {
+        console.error("메프 티커 로드 실패:", e);
+      }
+    }
+
+    let mefTopMode = "wins";
+
+    window.switchMefTop = function(mode) {
+      mefTopMode = mode;
+      document.getElementById("btnMefWins").classList.toggle("active", mode === "wins");
+      document.getElementById("btnMefGames").classList.toggle("active", mode === "games");
+      document.getElementById("mefTopTitle").textContent = mode === "wins" ? "다승 TOP 5" : "최다출전 TOP 5";
+      renderMefTopList();
+    };
+
+    function renderMefTopList() {
+      const box = document.getElementById("mefTopList");
+      if (!box || pageMode !== "mef") return;
+
+      const data = originalData.filter(item => item.games > 0).slice();
+      if (mefTopMode === "wins") {
+        data.sort((a, b) => b.wins - a.wins || b.rate - a.rate);
+      } else {
+        data.sort((a, b) => b.games - a.games || b.wins - a.wins);
+      }
+
+      const top5 = data.slice(0, 5);
+      if (!top5.length) {
+        box.innerHTML = '<div class="side-empty">데이터 없음</div>';
+        return;
+      }
+
+      box.innerHTML = top5.map((item, index) => {
+        const rank = index + 1;
+        const color = rank === 1 ? "#f59e0b" : (rank === 2 ? "#a78bfa" : (rank === 3 ? "#34d399" : "var(--text-dim)"));
+        const imgUrl = item.id ? `https://stimg.sooplive.com/LOGO/${item.id.substring(0,2).toLowerCase()}/${item.id}/${item.id}.jpg` : "";
+
+        return `
+          <div class="side-item" style="cursor:pointer;" onclick="goProfile('${item.id}')">
+            <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+              <span style="width:18px; color:${color}; font-size:12px; font-weight:700; flex-shrink:0;">${rank}</span>
+              <div style="width:24px; height:24px; border-radius:50%; overflow:hidden; border:1px solid var(--border); background:#1a1c24; flex-shrink:0;">
+                <img src="${imgUrl}" alt="" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.style.display='none'">
+              </div>
+              <span class="side-item-name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</span>
+              <span style="font-size:11px; color:var(--text-dim); flex-shrink:0;">${item.crew || "FA"}</span>
+            </div>
+            <span class="side-item-value">
+              ${mefTopMode === "wins" 
+                ? `${item.wins}<span style="font-size:75%;">승</span>`
+                : `${item.games}<span style="font-size:75%;">전</span>`
+              }
+            </span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function resetAndRender() {
+      listPage = 0;
+      renderMore();
+
+      const cRateTitle = document.getElementById("crewRateTitle");
+      const mefBox = document.getElementById("mefTopBox");
+
+      if (pageMode === "mef") {
+        if (cRateTitle) cRateTitle.textContent = "전달대비 성적";
+        if (mefBox) mefBox.style.display = "block";
+        renderRiseForMef();
+        renderMefTopList();
+      } else if (pageMode === "match") {
+        if (cRateTitle) cRateTitle.textContent = "대학별 승률";
+        if (mefBox) mefBox.style.display = "none";
+        renderCrewRate();
+      } else {
+        if (cRateTitle) cRateTitle.textContent = "대학별 승률";
+        if (mefBox) mefBox.style.display = "none";
+        renderCrewRate();
+      }
+
+      renderRateChart(); 
+      renderRaceAvg();
+      renderCrewCount();
+    }
+
+    async function loadData(month) {
+      const eloLoading = document.getElementById("eloLoading");
+      const rankArea = document.getElementById("rankArea");
+      document.body.classList.add("elo-page-loading");
+      if (eloLoading) eloLoading.style.display = "flex";
+      if (rankArea) rankArea.style.display = "none";
+
+      try {
+        const rRes = await fetch(ROSTER_CSV);
+        const roster = parseRoster(await rRes.text());
+        const gid = pageMode === "mef" ? MEF_GID[month] : MONTH_GID[month];
+        const url = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=" + gid;
+        const dRes = await fetch(url);
+        const lines = (await dRes.text()).split("\n").map(l => l.trim()).filter(Boolean);
+        
+        let result = [];
+        for (let i = 1; i < lines.length; i++) {
+          const c = lines[i].match(/(?:[^",]+|"[^"]*")+/g).map(x => x.replace(/^"|"$/g, "").trim());
+          let name = pageMode === "mef" ? c[2] : c[0];
+          let race = c[1] || "";
+          let games = parseInt((pageMode==="mef"?c[3]:c[2]).replace(/[^0-9]/g,""),10)||0;
+          let wins = parseInt((pageMode==="mef"?c[4]:c[3]).replace(/[^0-9]/g,""),10)||0;
+          let losses = parseInt((pageMode==="mef"?c[5]:c[4]).replace(/[^0-9]/g,""),10)||0;
+          if (!name || name === "이름") continue;
+          
+          let rate = games > 0 ? (wins/games)*100 : 0;
+          let who = findRoster(name, roster);
+          result.push({ 
+            name: who ? who.name : name, 
+            id: who ? who.id : "", 
+            crew: who ? who.crew : "FA", 
+            race: race || (who ? who.race : ""),
+            games: games, 
+            wins: wins, 
+            losses: losses, 
+            rate: rate, 
+            rateText: rate.toFixed(1)+"%" 
+          });
+        }
+        
+        let maxGames = Math.max(...result.map(r => r.games));
+        result.forEach(r => r.unranked = r.games <= maxGames * 0.2);
+        originalData = result;
+        resetAndRender();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        document.body.classList.remove("elo-page-loading");
+        if (eloLoading) eloLoading.style.display = "none";
+        if (rankArea) rankArea.style.display = "flex";
+      }
+    }
+
+    document.querySelectorAll(".crew-tab").forEach(b => {
+      b.addEventListener("click", function() {
+        document.querySelectorAll(".crew-tab").forEach(t => t.classList.remove("active"));
+        b.classList.add("active");
+        pageMode = b.getAttribute("data-tab");
+        clearFilter();
+        document.getElementById("rankTitleName").textContent = pageMode === "match" ? "개인별 스폰판수" : (pageMode === "mef" ? "메이저프로리그" : "개인별 승률");
+        document.querySelector(".page-title").textContent = pageMode === "match" ? "스폰판수" : (pageMode === "mef" ? "메이저프로리그" : "Elo승률");
+        
+        const cRateTitle = document.getElementById("crewRateTitle");
+        if (pageMode === "mef") {
+          if (cRateTitle) cRateTitle.textContent = "전달대비";
+          const cCountList = document.getElementById("crewCountList");
+          if (cCountList) cCountList.innerHTML = '<div style="padding: 24px 16px; text-align: center; color: var(--text-dim); font-size: 13px;">준비중</div>';
+          renderRiseForMef();
+        } else if (pageMode === "match") {
+          if (cRateTitle) cRateTitle.textContent = "대학별 승률";
+          renderCrewRate();
+          renderCrewCount();
+        } else {
+          if (cRateTitle) cRateTitle.textContent = "대학별 승률";
+          renderCrewRate();
+          renderCrewCount();
+        }
+
+        loadData(currentMonth);
+      });
+    });
+
+    document.getElementById("prevPage").addEventListener("click", () => {
+      listPage--;
+      renderMore();
+      document.querySelector(".rank-left .side-box").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("nextPage").addEventListener("click", () => {
+      listPage++;
+      renderMore();
+      document.querySelector(".rank-left .side-box").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("clearFilterBtn").addEventListener("click", clearFilter);
+    document.getElementById("clearFilterBottomBtn").addEventListener("click", clearFilter);
+    
+    loadData(currentMonth);
+
+    const matchTypeWrap = document.getElementById("matchTypeWrap");
+    const matchTypeBtn = document.getElementById("matchTypeBtn");
+
+    if (matchTypeBtn && matchTypeWrap) {
+      matchTypeBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        matchTypeWrap.classList.toggle("open");
+      });
+
+      document.addEventListener("click", function(e) {
+        if (!matchTypeWrap.contains(e.target)) {
+          matchTypeWrap.classList.remove("open");
+        }
+      });
+    }
+
+    window.selectMatchType = function(val) {
+      if (matchTypeBtn) matchTypeBtn.textContent = val;
+      const menuBtns = document.querySelectorAll("#matchTypeMenu button");
+      menuBtns.forEach(btn => {
+        if (btn.textContent === val) btn.classList.add("active");
+        else btn.classList.remove("active");
+      });
+      if (matchTypeWrap) matchTypeWrap.classList.remove("open");
+    };
+  </script>
+
+</body>
+</html>

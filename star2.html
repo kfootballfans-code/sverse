@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>별풍선 랭킹 - 스버스</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="period.css">
+  <style>
+    :root {
+      --bg: #0a0b0f;
+      --bg-elevated: #12141a;
+      --bg-card: #16181f;
+      --border: rgba(255, 255, 255, 0.06);
+      --text: #e8eaed;
+      --text-muted: #8b8f9a;
+      --text-dim: #5c606b;
+      --cyan: #22d3ee;
+      --orange: #f59e0b;
+      --radius: 14px;
+      --header-h: 56px;
+      --content-max: 1280px;
+    }
+    html { scrollbar-gutter: stable; }
+    html.light {
+      --cyan: #16325c;
+      --bg: #f3f4f7;
+      --bg-elevated: #ffffff;
+      --bg-card: #ffffff;
+      --border: rgba(15, 18, 24, 0.1);
+      --text: #1a1d24;
+      --text-muted: #5c606b;
+      --text-dim: #8a8f99;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* main 영역 스타일 */
+    .main {
+      flex: 1; max-width: var(--content-max);
+      width: 100%; margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+    .page-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+    
+.period-bar {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 23px; flex-wrap: wrap;
+      padding: 10px 14px; background: var(--bg-card); 
+      border: none; 
+      border-radius: 10px;
+    }
+    .period-label {
+      font-size: 14px; font-weight: 600; color: var(--text);
+      flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .period-ico {
+      display: inline-flex; align-items: center; color: #e8eaed;
+    }
+    .period-divider {
+      width: 1px; height: 32px; background: rgba(255,255,255,0.12);
+      margin: 0 1px 0 12px; flex-shrink: 0; align-self: center;
+    }
+    .period-box {
+      min-width: 32px; height: 32px; padding: 0 10px;
+      border: 1px solid var(--border); background: transparent;
+      color: #c0c4cc; border-radius: 8px; font-size: 13px;
+      line-height: 32px; cursor: pointer; display: inline-flex;
+      align-items: center; justify-content: center; gap: 6px;
+    }
+    .period-box:hover {
+      color: var(--text); background: rgba(255,255,255,0.06);
+    }
+    .period-box.active, .period-box.year-active {
+      color: #22d3ee; background: rgba(34,211,238,0.1); border-color: rgba(34,211,238,0.3);
+    }
+    .period-box.dim {
+      color: var(--text-dim); border-color: var(--border); background: transparent;
+    }
+    .period-box.dim:hover {
+      color: var(--text); background: rgba(255,255,255,0.06);
+    }
+    .period-month-wrap, .period-total {
+      display: inline-block; width: max-content; position: relative;
+    }
+    #yearBtn { width: 88px; min-width: 88px; padding-left: 13px; padding-right: 20px; font-size: 13px; box-sizing: border-box; }
+    #monthBtn { width: 72px; min-width: 72px; padding-left: 8px; padding-right: 22px; font-size: 13px; box-sizing: border-box; }
+    #totalBtn { width: 118px; min-width: 118px; padding-left: 10px; padding-right: 22px; justify-content: center; text-align: center; letter-spacing: 2px; box-sizing: border-box; }
+    #yearBtn, #monthBtn, #totalBtn { position: relative; }
+    #yearBtn::after, #monthBtn::after, #totalBtn::after {
+      content: ""; position: absolute; top: 50%; width: 4px; height: 4px;
+      border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+      transform: translateY(-70%) rotate(45deg); pointer-events: none;
+    }
+    #yearBtn::after { right: 10px; }
+    #monthBtn::after { right: 15px; }
+    #totalBtn::after { right: 20px; }
+    .period-total-menu {
+      display: none; position: absolute; top: calc(100% + 6px);
+      left: 0; right: 0; width: 100%; min-width: 0; box-sizing: border-box;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 6px; z-index: 40;
+    }
+    .period-month-wrap.open .period-total-menu, .period-total.open .period-total-menu { display: block; }
+    .period-total-menu button {
+      display: block; width: 100%; text-align: left; border: none;
+      background: transparent; color: var(--text-muted); font-size: 13px;
+      padding: 8px 10px; border-radius: 8px; cursor: pointer;
+    }
+    .period-total-menu button:hover, .period-total-menu button.active {
+      color: #22d3ee; background: rgba(34,211,238,0.1);
+    }
+    .period-total-menu button:disabled {
+      opacity: 0.35; cursor: default; color: var(--text-dim);
+    }
+
+    .rank-list { list-style: none; overflow: hidden; }
+    .rank-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 7px 16px; border-bottom: none;
+    }
+    .rank-item:nth-child(odd) { background: rgba(255,255,255,0.015); }
+    .rank-item:nth-child(even) { background: transparent; }
+    .rank-item:hover { background: rgba(34,211,238,0.08); }
+    .rank-num {
+      width: 22px; font-size: 13px; font-weight: 600;
+      color: var(--text-dim); text-align: center; flex-shrink: 0;
+    }
+    .rank-item.top-1 .rank-num { color: var(--orange); }
+    .rank-item.top-2 .rank-num { color: #c0c0c0; }
+    .rank-item.top-3 .rank-num { color: #cd7f32; }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%; overflow: hidden;
+      border: 1px solid var(--border); background: #1a1c24; flex-shrink: 0;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .rank-info { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .rank-name { font-size: 13px; font-weight: 600; }
+    .rank-crew { font-size: 12px; color: var(--text-dim); }
+    .rank-stat {
+      font-size: 13px; font-weight: 600; color: var(--cyan);
+      flex-shrink: 0; text-align: right; min-width: 110px; font-variant-numeric: tabular-nums;
+    }
+
+    #listNav {
+      display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+      background: #1c1f28; border: none;
+      border-radius: 0 0 10px 10px; padding: 10px 16px;
+    }
+    #listNav .page-btn {
+      width: 28px; height: 28px; border-radius: 8px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-muted); cursor: pointer; font-size: 14px; line-height: 1;
+    }
+    #listNav .page-btn:hover:not(:disabled) {
+      color: #67e8f9; border-color: rgba(34,211,238,0.35); background: rgba(34,211,238,0.1);
+    }
+    #listNav .page-btn:disabled { opacity: 0.3; cursor: default; }
+    #pageInfo {
+      width: 52px; min-width: 52px; text-align: center;
+      font-size: 13px; font-weight: 600; color: var(--text);
+      font-variant-numeric: tabular-nums; display: inline-block;
+    }
+    .rank-item.empty {
+      min-height: 48px; pointer-events: none; background: transparent !important;
+    }
+
+    #moreBtn, #foldBtn {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1px; width: 100%; margin: 0; padding: 3px 16px;
+      background: transparent; border: none; color: #22d3ee;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+    }
+    #foldBtn { color: #8b8f9a; }
+    #listNav #moreBtn, #listNav #foldBtn {
+      display: flex !important; flex-direction: column !important;
+      align-items: center !important; justify-content: center !important;
+      gap: 4px !important; width: 100% !important; padding: 12px 16px !important;
+    }
+    #listNav #moreBtn[style*="none"], #listNav #foldBtn[style*="none"] { display: none !important; }
+    #moreBtn:hover, #foldBtn:hover { color: #67e8f9; font-weight: 700; }
+
+    .list-nav-arrows { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 48px; flex-shrink: 0; }
+    #foldArrow, #moreArrow { width: 48px; height: 12px; border: none; background: transparent; color: #8b8f9a; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; }
+    #foldArrow:hover, #moreArrow:hover { color: #67e8f9; }
+    #listNav:has(#foldBtn:hover) #foldArrow, #listNav:has(#moreBtn:hover) #moreArrow { color: #67e8f9; }
+    #listNav:has(#foldArrow:hover) #foldBtn, #listNav:has(#moreArrow:hover) #moreBtn { color: #67e8f9; font-weight: 700; }
+
+    .rank-layout { display: flex; gap: 24px; align-items: flex-start; }
+    .rank-left { width: 60%; flex-shrink: 0; }
+    .rank-right { width: 40%; display: flex; flex-direction: column; gap: 23px; }
+    .side-box {
+      background: var(--bg-card); border: 0px solid var(--border);
+      border-radius: 8px; overflow: hidden;
+    }
+    .side-box-header {
+      padding: 12px 16px; border-bottom: 0px solid var(--border);
+      font-size: 14px; font-weight: 600;
+    }
+    .side-box-body { padding: 8px 0; }
+    .side-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 16px; font-size: 13px;
+    }
+    .side-item-name { color: var(--text); font-weight: 500; }
+    .side-item-value {
+      color: var(--cyan); font-weight: 600; min-width: 100px;
+      text-align: right; font-variant-numeric: tabular-nums;
+    }
+    .crew-row { cursor: pointer; transition: background 0.15s; }
+    .crew-row:hover { background: rgba(34, 211, 238, 0.1); }
+    .crew-detail { font-size: 12px; color: var(--text-dim); margin-left: 8px; flex-shrink: 0; }
+    .crew-row:hover .crew-detail { color: #f59e0b; font-weight: 700; }
+
+    .row-v4 { display: flex; align-items: center; margin-bottom: 12px; gap: 12px; }
+    .row-v4:last-of-type { margin-bottom: 0; }
+    .lbl-v4 { width: 75px; flex-shrink: 0; color: #64748b; font-size: 12px; }
+    .val-v4 { width: 78px; flex-shrink: 0; text-align: right; font-size: 12px; font-weight: 700; }
+    .cnt-v4 { color: #475569; font-size: 11px; font-weight: 400; }
+    .track-v4 { flex: 1; height: 6px; background: #1e293b; border-radius: 2px; overflow: hidden; }
+    .fill-v4 {
+      height: 100%;
+      background-image: linear-gradient(90deg, currentColor 4px, transparent 4px);
+      background-size: 6px 100%;
+    }
+    .dist-median {
+      margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border);
+      text-align: center; font-size: 12px; font-weight: 500; color: var(--text-dim);
+    }
+
+    @media (max-width: 900px) {
+      .rank-layout { flex-direction: column; }
+      .rank-left, .rank-right { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="site-top"></div>
+
+  <main class="main">
+    <div class="period-bar">
+      <div class="period-label">
+        <span class="period-ico">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <line x1="4" y1="6" x2="20" y2="6"></line>
+            <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"></circle>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <circle cx="14" cy="12" r="2" fill="currentColor" stroke="none"></circle>
+            <line x1="4" y1="18" x2="20" y2="18"></line>
+            <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"></circle>
+          </svg>
+        </span>
+        기간
+      </div>
+      <div class="period-month-wrap" id="yearWrap">
+        <button type="button" class="period-box year-active" id="yearBtn">2026년</button>
+        <div class="period-total-menu" id="yearMenu"></div>
+      </div>
+      <div class="period-month-wrap" id="monthWrap">
+        <button type="button" class="period-box active" id="monthBtn">8월</button>
+        <div class="period-total-menu" id="monthMenu"></div>
+      </div>
+      <div class="period-divider"></div>
+      <div class="period-label">누적</div>
+      <div class="period-total" id="totalWrap">
+        <button type="button" class="period-box dim" id="totalBtn">선택</button>
+        <div class="period-total-menu" id="totalMenu">
+          <button type="button" data-range="3m">3개월</button>
+          <button type="button" data-range="6m">6개월</button>
+          <button type="button" data-range="12m">1년</button>
+          <button type="button" data-range="last-year">작년</button>
+          <button type="button" data-range="this-year">올해</button>
+        </div>
+      </div>
+      <div id="updateTime" style="font-size:12px; color:var(--text-dim); margin-left:auto;">업데이트 --</div>
+    </div>
+
+    <div class="rank-layout" id="rankArea">
+      <div class="rank-left">
+        <div class="side-box">
+          <div class="side-box-header" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+              <span id="rankTitle">
+                여자 개인별
+                <span style="font-size:11px; color:var(--text-dim); font-weight:400; margin-left:6px;"></span>
+              </span>
+              <button type="button" id="clearCrewBtn" style="display:none; border:none; background:transparent; color:#22d3ee; font-size:12px; cursor:pointer;">전체보기</button>
+            </div>
+            <div class="filter-combination-row" id="faToggleLabel">
+              <button type="button" class="combo1-btn" id="menFilterBtn">
+                <span class="icon-box"></span>
+                <span>남자</span>
+              </button>
+              <button type="button" class="combo1-btn" id="faFilterBtn">
+                <span class="icon-box"></span>
+                <span>FA</span>
+              </button>
+            </div>
+          </div>
+          <ul class="rank-list" id="rankList"></ul>
+          <div id="listNav">
+            <button type="button" class="page-btn" id="prevPage" aria-label="이전">‹</button>
+            <span id="pageInfo">1/1</span>
+            <button type="button" class="page-btn" id="nextPage" aria-label="다음">›</button>
+          </div>
+          <button type="button" id="clearCrewBottomBtn" style="
+            display:none;
+            width:100%;
+            margin-top:0;
+            padding:14px;
+            background:#1c1f28;
+            border:1px solid rgba(255,255,255,0.06);
+            border-top:none;
+            border-radius:0 0 14px 14px;
+            color:#22d3ee;
+            font-size:14px;
+            font-weight:500;
+            cursor:pointer;
+          ">개인별 전체보기</button>
+        </div>
+      </div>
+
+      <div class="rank-right">
+        <div class="side-box">
+          <div class="side-box-header" style="display:flex; align-items:center; justify-content:space-between; position:relative;">
+            <span>대학별 평균</span>
+            <button type="button" id="crewAvgDetailBtn"
+              style="border:1px solid var(--border); background:transparent; color:var(--text-dim); font-size:11px; cursor:pointer; font-weight:600; padding:4px 8px; border-radius:999px;"
+              onmouseover="this.style.color='#22d3ee'; this.style.borderColor='rgba(34,211,238,0.35)'; this.style.background='rgba(34,211,238,0.1)'"
+              onmouseout="this.style.color='var(--text-dim)'; this.style.borderColor='var(--border)'; this.style.background='transparent'"
+            >방식</button>
+            <div id="avgMethodPop" style="display:none; position:absolute; right:12px; top:36px; z-index:20; width:260px; padding:12px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; font-size:12px; color:var(--text-muted); line-height:1.55; font-weight:400;">남자의 데이터를 제공하지만 투트랙을 하는 수장이나 남자크루원 및 메프를 뛰는 교수들등 정확한 평균지표를 구분하기 전까지 '대학별' 평균과 '구간 분포'의 경우에는 남자 스트리머는 제외합니다.
+</div>
+          </div>
+          <div class="side-box-body" id="crewAvgList"></div>
+        </div>
+
+        <div class="side-box">
+          <div class="side-box-header">별풍선 구간 분포</div>
+          <div id="starChartBars" style="padding: 12px 16px 16px;"></div>
+        </div>
+
+        <div class="side-box">
+          <div class="side-box-header">대학별 TOP</div>
+          <div class="side-box-body" id="crewCountList"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-bottom"></div>
+
+  <script src="common.js"></script>
+  <script src="period.js"></script>
+  <script src="roster.js"></script>
+  <script src="rank-data.js"></script>
+  <script src="rank-ui.js"></script>
+  <script>
+    const CREW_LOGO = {
+      "바스포드": "logo/basford_em.webp",
+      "BGM": "logo/bgm_em.webp",
+      "흑카데미": "logo/black_em.webp",
+      "보신대": "logo/bsu_em.webp",
+      "씨나인": "logo/c9_em.webp",
+      "캄몬스타즈": "logo/calm_em.webp",
+      "츠캄몬스타즈,츠캄": "logo/calm_em.webp",
+      "츠캄": "logo/calm_em.webp",
+      "DM": "logo/dm_em.webp",
+      "드림즈": "logo/dreams_em.webp",
+      "드림": "logo/dreams_em.webp",
+      "더블비": "logo/dubbleb_em.webp",
+      "거성대": "logo/gsu_em.webp",
+      "HM": "logo/hm_em.webp",
+      "JSA": "logo/jsa_em.webp",
+      "정선대": "logo/ju_em.webp",
+      "케이대": "logo/ku_em.webp",
+      "엠비대": "logo/mbu_em.webp",
+      "뉴캣슬": "logo/newcat_em.webp",
+      "NSU": "logo/nsu_em.webp",
+      "늪지대": "logo/nzu_em.webp",
+      "섭이대": "logo/siu_em.webp",
+      "철와대": "logo/su_em.webp",
+      "우끼끼즈": "logo/ukks_em.webp",
+      "MSG": "logo/msg_em.webp",
+      "와플대": "logo/waffleu_em.webp",
+      "씨나인1": "logo/c91_em.webp",
+      "YB": "logo/yb_em.webp",
+      "염석대": "logo/yuam_em.webp",
+      "학버드": "logo/hak_em.webp",
+      "철기중대": "logo/chulgi_em.webp",
+      "패션스타": "logo/fstar_em.webp",
+      "나사": "logo/nasa_em.webp",
+      "ASG": "logo/asg_em.webp",
+      "김성여대": "logo/kim_em.webp",
+      "캄성여대": "logo/cswu_em.webp",
+      "수술대": "logo/ssu_em.webp",
+      "신세계": "logo/ssg_em.webp",
+      "뽀인구단": "logo/bboin_em.webp",
+      "장독대": "logo/jdu_em.webp",
+      "이노대": "logo/ino_em.webp", 
+      "거사대": "logo/gsu_em.webp", 
+      "방치클럽": "logo/bangchi_em.webp",
+      "복덕방": "logo/bdb_em.webp",
+      "CP": "logo/cp_em.webp",
+      "DP": "logo/dp_em.webp",
+      "묵섭대": "logo/mook_em.webp",
+      "광수대": "logo/gwangsu_em.webp",
+      "캄브릿지": "logo/calmb_em.webp",
+      "마종대": "logo/majong_em.webp",
+      "TPZ": "logo/tpz_em.webp",
+      "범진대": "logo/bj_em.webp",
+      "파이스트": "logo/pist_em.webp",
+      "미다스공대": "logo/midas2_em.webp",
+      "MGS": "logo/mgs_em.webp",
+      "라저대": "logo/rthat_em.webp",
+      "아마대": "logo/ama_em.webp",
+      "츠나대": "logo/tsuna_em.webp",
+      "무창클럽": "logo/moo_em.webp",
+      "카사대": "logo/casa_em.webp",
+      "철거반": "logo/cgb_em.webp",
+      "노가다대": "logo/nogada_em.webp",
+      "마싯대": "logo/masit_em.webp",
+      "점단기": "logo/casa_em.webp",
+      "점문예대": "logo/jm_em.webp",
+      "라이트클럽": "logo/lightclub_em.webp",
+      "고대": "logo/go_em.webp",
+      "친박연대": "logo/chinpark_em.webp",
+      "철기대": "logo/cgd_em.webp",
+      "석사관학교": "logo/seoksa_em.webp",
+      "할없녀": "logo/halgirl_em.webp",
+      "무친대": "logo/mcu_em.webp",
+      "소림사": "logo/sorimsa_em.webp"
+    };
+    
+    const CREW_LOGO_SIZE = {};
+    function crewLogo(name) {
+      if (!name) return "";
+      var alias = window.crewAlias ? window.crewAlias(name) : name;
+      if (CREW_LOGO[name]) return CREW_LOGO[name];
+      if (CREW_LOGO[alias]) return CREW_LOGO[alias];
+      var key = Object.keys(CREW_LOGO).find(function (k) {
+        return k.toLowerCase() === String(name).toLowerCase() || k.toLowerCase() === String(alias).toLowerCase();
+      });
+      return key ? CREW_LOGO[key] : "";
+    }
+
+    var showFa = !!window.keepFa;
+    var showMen = !!window.keepMen;
+    async function loadData() {
+      try {
+        var roster = await window.loadRoster();
+        var pack = await window.loadDaterRows({ roster: roster, metricCol: 2, metricKey: "star" });
+        var originalData = pack.period;
+        var liveData = pack.live;
+        var hasMetric = originalData.some(function (it) { return (it.star || 0) > 0; });
+        var crewSource = hasMetric ? originalData : liveData;
+        var crewRaw = hasMetric ? (pack.periodRaw || []) : (pack.liveRaw || []);
+        var listPage = 0;
+        var selectedCrew = window.keepCrew || null;
+
+        function getFilteredData() {
+          return window.filterPeople(originalData, {
+            metricKey: "star",
+            showFa: showFa,
+            showMen: showMen,
+            selectedCrew: selectedCrew
+          });
+        }
+
+        function renderCrewAvg() {
+          var avgList = pack.crewAvgList || [];
+          var box = document.getElementById("crewAvgList");
+          if (!box) return;
+          box.innerHTML = "";
+          avgList.forEach(function (item, index) {
+            var div = document.createElement("div");
+            div.className = "side-item crew-row";
+            var rank = index + 1;
+            var rankColor = "var(--text-dim)";
+            if (rank === 1) rankColor = "#f59e0b";
+            else if (rank === 2) rankColor = "#a78bfa";
+            else if (rank === 3) rankColor = "#34d399";
+            div.innerHTML =
+              '<div style="display:flex; align-items:center; gap:8px; min-width:0;">' +
+              '<span style="width:18px; color:' + rankColor + '; font-size:12px; font-weight:700; flex-shrink:0;">' + rank + '</span>' +
+              '<span class="side-item-name" style="display:inline-flex; align-items:center;">' +
+              '<span style="width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:6px;">' +
+              '<img src="' + crewLogo(item.name) + '" alt="" style="max-width:' + (CREW_LOGO_SIZE[item.name] || 24) + 'px;max-height:' + (CREW_LOGO_SIZE[item.name] || 24) + 'px;object-fit:contain;" onerror="this.style.display=\'none\'">' +
+              '</span>' + item.name + '</span>' +
+              '<span style="font-size:11px; color:var(--text-dim);">' + item.count + '명</span></div>' +
+              '<div style="display:flex; align-items:center;">' +
+              '<span class="side-item-value">' + item.avg.toLocaleString() + ' <span style="font-size:70%; opacity:0.7;">개</span></span>' +              '<span class="crew-detail">상세</span></div>';
+            div.addEventListener("click", function () {
+              selectedCrew = item.name; window.keepCrew = item.name;
+              var title = document.getElementById("rankTitle");
+              if (title) title.textContent = item.name;
+              var topBtn = document.getElementById("clearCrewBtn");
+              if (topBtn) topBtn.style.display = "none";
+              var bottomBtn = document.getElementById("clearCrewBottomBtn");
+              if (bottomBtn) bottomBtn.style.display = "block";
+              var crewBox = document.getElementById("crewCountList");
+              if (crewBox && crewBox.parentElement) crewBox.parentElement.style.display = "none";
+              var faWrap = document.getElementById("faToggleLabel");
+              if (faWrap) faWrap.style.display = "none";
+              resetAndRender();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+            box.appendChild(div);
+          });
+        }
+
+        function renderCrewCount() {
+          var crewMap = {};
+          window.womenCrewSource(crewSource, "star").forEach(function (item) {
+            if (!crewMap[item.crew]) crewMap[item.crew] = { count: 0, topId: "", topName: "", topStar: -1 };
+            crewMap[item.crew].count += 1;
+            if (item.star > crewMap[item.crew].topStar) {
+              crewMap[item.crew].topStar = item.star;
+              crewMap[item.crew].topId = item.id || "";
+              crewMap[item.crew].topName = item.name || "";
+            }
+          });
+          var list = Object.keys(crewMap).map(function (name) {
+            var d = crewMap[name];
+            return { crew: name, count: d.count, topId: d.topId, topName: d.topName, topStar: d.topStar };
+          }).sort(function (a, b) { return b.topStar - a.topStar; });
+          var box = document.getElementById("crewCountList");
+          if (!box) return;
+          box.innerHTML = "";
+          list.forEach(function (item, index) {
+            var rank = index + 1;
+            var rankColor = "var(--text-dim)";
+            if (rank === 1) rankColor = "#f59e0b";
+            else if (rank === 2) rankColor = "#a78bfa";
+            else if (rank === 3) rankColor = "#34d399";
+            var div = document.createElement("div");
+            div.className = "side-item";
+            div.innerHTML =
+              '<div style="display:flex; align-items:center; gap:8px; min-width:0;">' +
+              '<span style="width:18px; color:' + rankColor + '; font-size:12px; font-weight:700; flex-shrink:0;">' + rank + '</span>' +
+              '<div class="avatar" style="width:24px; height:24px; flex-shrink:0;">' +
+              '<img src="' + window.soopImg(item.topId) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
+              '<span class="side-item-name" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + item.topName + '</span>' +
+              '<span style="font-size:11px; color:var(--text-dim); flex-shrink:0;">' + item.crew + '</span></div>' +
+              '<span class="side-item-value">' + item.topStar.toLocaleString() + ' <span style="font-size:70%; opacity:0.7;">개</span></span>';
+            box.appendChild(div);
+          });
+        }
+
+        function renderStarChart() {
+          var ranges = [
+            { label: "50만 이상", min: 500000, max: Infinity, color: "#22d3ee" },
+            { label: "30만~50만", min: 300000, max: 499999, color: "#a78bfa" },
+            { label: "20만~30만", min: 200000, max: 299999, color: "#f472b6" },
+            { label: "15만~20만", min: 150000, max: 199999, color: "#fbbf24" },
+            { label: "10만~15만", min: 100000, max: 149999, color: "#34d399" },
+            { label: "5만~10만", min: 50000, max: 99999, color: "#818cf8" },
+            { label: "5만 미만", min: 0, max: 49999, color: "#64748b" }
+          ];
+          var data = window.womenCrewSource(crewSource, "star");
+          var counts = ranges.map(function (r) {
+            return Object.assign({}, r, { count: data.filter(function (item) { return item.star >= r.min && item.star <= r.max; }).length });
+          }).filter(function (r) { return r.count > 0; });
+          var total = counts.reduce(function (sum, r) { return sum + r.count; }, 0);
+          var box = document.getElementById("starChartBars");
+          if (!box) return;
+          if (!total) { box.innerHTML = ""; return; }
+          var maxCount = Math.max.apply(null, counts.map(function (r) { return r.count; }));
+          var sortedStars = data.map(function (item) { return item.star; }).sort(function (a, b) { return a - b; });
+          var median = 0;
+          if (sortedStars.length) {
+            var mid = Math.floor(sortedStars.length / 2);
+            median = sortedStars.length % 2 === 0
+              ? Math.round((sortedStars[mid - 1] + sortedStars[mid]) / 2)
+              : sortedStars[mid];
+          }
+          box.innerHTML = counts.map(function (r) {
+            var pct = Math.round((r.count / total) * 100);
+            var widthPct = Math.round((r.count / maxCount) * 100);
+            return '<div class="row-v4"><div class="lbl-v4">' + r.label + '</div>' +
+              '<div class="track-v4"><div class="fill-v4" style="width:' + widthPct + '%;color:' + r.color + ';"></div></div>' +
+              '<div class="val-v4" style="color:' + r.color + ';">' + pct + '% <span class="cnt-v4">(' + r.count + '명)</span></div></div>';
+          }).join("") + '<div class="dist-median">중위값 ' + median.toLocaleString() + '개</div>';
+        }
+
+        function renderMore() {
+          var list = document.getElementById("rankList");
+          if (!hasMetric) {
+            list.innerHTML = window.emptyHtml();
+            window.paintPager(0, 1, true);
+            return;
+          }
+          var data = getFilteredData();
+          var sliced = window.pageSlice(data, listPage, window.PAGE_SIZE);
+          listPage = sliced.page;
+          list.innerHTML = "";
+          sliced.rows.forEach(function (item) {
+            var rank = item.rank;
+            var li = document.createElement("li");
+            li.className = "rank-item" + (rank === 1 ? " top-1" : rank === 2 ? " top-2" : rank === 3 ? " top-3" : "");
+            li.innerHTML =
+              '<span class="rank-num">' + rank + '</span>' +
+              '<div class="avatar"><img src="' + window.soopImg(item.id) + '" alt="" onerror="this.style.display=\'none\'"></div>' +
+                            '<div class="rank-info"><div class="rank-name">' + item.name + '</div><div class="rank-crew">' + ((window.getPeriod && window.getPeriod() && window.getPeriod().range) ? (item.liveCrew || item.crew) : item.crew) + '</div></div>' +
+              '<div class="rank-stat">' + (!item.star ? "-" : item.star.toLocaleString() + '<span style="font-size:70%;opacity:0.7;margin-left:1px;position:relative;top:-1px;">개</span>' + ((window.getPeriod && window.getPeriod() && window.getPeriod().range && item.monthCount > 1) ? '<div style="font-size:10px;color:#9aa0a6;margin-top:0px;,font-weight:500;">평균 ' + Math.round(item.star / item.monthCount).toLocaleString() + '</div>' : '')) + '</div>';            list.appendChild(li);
+          });
+          if (selectedCrew) {
+            window.paintPager(sliced.page, sliced.maxPage, true);
+          } else {
+            window.fillEmptyRows(list, window.PAGE_SIZE - sliced.rows.length);
+            window.paintPager(sliced.page, sliced.maxPage, false);
+          }
+        }
+
+        window.clearCrewFilter = function () {
+          selectedCrew = null; window.keepCrew = null;
+          var title = document.getElementById("rankTitle");
+          if (title) title.innerHTML = '여자 개인별 <span style="font-size:11px; color:var(--text-dim); font-weight:400; margin-left:6px;">남자 준비중</span>';
+          var topBtn = document.getElementById("clearCrewBtn");
+          if (topBtn) topBtn.style.display = "none";
+          var bottomBtn = document.getElementById("clearCrewBottomBtn");
+          if (bottomBtn) bottomBtn.style.display = "none";
+          var crewBox = document.getElementById("crewCountList");
+          if (crewBox && crewBox.parentElement) crewBox.parentElement.style.display = "";
+          var faWrap = document.getElementById("faToggleLabel");
+          if (faWrap) faWrap.style.display = "flex";
+          resetAndRender();
+        };
+
+        function resetAndRender() {
+          listPage = 0;
+          document.getElementById("rankList").innerHTML = "";
+          renderMore();
+          renderCrewAvg();
+          renderStarChart();
+          renderCrewCount();
+        }
+
+        resetAndRender();
+        var crewQ = new URLSearchParams(location.search).get("crew");
+        if (crewQ) {
+          selectedCrew = crewQ; window.keepCrew = crewQ;
+          var title = document.getElementById("rankTitle");
+          if (title) title.textContent = crewQ;
+          var bottomBtn = document.getElementById("clearCrewBottomBtn");
+          if (bottomBtn) bottomBtn.style.display = "block";
+          var crewBox = document.getElementById("crewCountList");
+          if (crewBox && crewBox.parentElement) crewBox.parentElement.style.display = "none";
+          var faWrap = document.getElementById("faToggleLabel");
+          if (faWrap) faWrap.style.display = "none";
+          resetAndRender();
+        }
+        var area = document.getElementById("rankArea");
+        if (area) area.style.visibility = "visible";
+
+        var now = new Date();
+        var updateEl = document.getElementById("updateTime");
+        if (updateEl) {
+          updateEl.textContent = "최근 업데이트 " +
+            String(now.getMonth() + 1).padStart(2, "0") + "." +
+            String(now.getDate()).padStart(2, "0") + " " +
+            String(now.getHours()).padStart(2, "0") + ":" +
+            String(now.getMinutes()).padStart(2, "0");
+        }
+
+        var prevBtn = document.getElementById("prevPage");
+        var nextBtn = document.getElementById("nextPage");
+        if (prevBtn) prevBtn.onclick = function () {
+          if (listPage > 0) { listPage--; renderMore(); window.goListTop(); }
+        };
+        if (nextBtn) nextBtn.onclick = function () {
+          listPage++; renderMore(); window.goListTop();
+        };
+        var clearCrewBtn = document.getElementById("clearCrewBtn");
+        if (clearCrewBtn) clearCrewBtn.onclick = window.clearCrewFilter;
+        var clearCrewBottomBtn = document.getElementById("clearCrewBottomBtn");
+        if (clearCrewBottomBtn) clearCrewBottomBtn.onclick = window.clearCrewFilter;
+
+        var crewAvgDetailBtn = document.getElementById("crewAvgDetailBtn");
+        if (crewAvgDetailBtn) {
+          crewAvgDetailBtn.addEventListener("click", function () {
+            var pop = document.getElementById("avgMethodPop");
+            if (pop) pop.style.display = pop.style.display === "block" ? "none" : "block";
+            var head = crewAvgDetailBtn.parentElement;
+            if (head && !head.getAttribute("data-avg-leave")) {
+              head.setAttribute("data-avg-leave", "1");
+              head.addEventListener("mouseleave", function () {
+                if (pop) pop.style.display = "none";
+              });
+            }
+          });
+        }
+        var menBtn = document.getElementById("menFilterBtn");
+        var faBtn = document.getElementById("faFilterBtn");
+        if (menBtn) {
+          menBtn.classList.toggle("active", showMen);
+          menBtn.onclick = function () {
+            showMen = !showMen;
+            window.keepMen = showMen;
+            menBtn.classList.toggle("active", showMen);
+            resetAndRender();
+          };
+        }
+        if (faBtn) {
+          faBtn.classList.toggle("active", showFa);
+          faBtn.onclick = function () {
+            showFa = !showFa;
+            window.keepFa = showFa;
+            faBtn.classList.toggle("active", showFa);
+            resetAndRender();
+          };
+        }
+        var filterBtn = document.getElementById("filterFaBtn");
+        if (filterBtn) {
+          filterBtn.onclick = function () {
+            showFa = !showFa;
+            filterBtn.textContent = showFa ? "FA 제외" : "FA 포함";
+            filterBtn.style.color = showFa ? "#8b8f9a" : "#22d3ee";
+            resetAndRender();
+          };
+        }
+      } catch (err) {
+        var list = document.getElementById("rankList");
+        var why = (err && err.message) ? String(err.message) : String(err);
+        if (list) list.innerHTML = "<li style='padding:28px 16px;color:#f87171;text-align:center;'>데이터 불러오지 못했습니다 F5 새로고침을 해주세요<br><span style='display:block;margin-top:8px;color:#8b8f9a;font-size:12px;'>" + why + "</span></li>";
+        var area = document.getElementById("rankArea");
+        if (area) area.style.visibility = "visible";
+        console.error(err);
+      }
+    }
+    window.onPeriodChange = function () { loadData(); };
+    loadData();
+  </script>
+</body>
+</html>

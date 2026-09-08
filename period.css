@@ -1,0 +1,188 @@
+.period-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.period-ico {
+  display: inline-flex;
+  align-items: center;
+  color: #e8eaed;
+}
+.period-divider {
+  display: none !important;
+}
+.period-box {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1.6px solid var(--border);
+  background: transparent;
+  color: #c0c4cc;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 32px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.period-box:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.06);
+}
+.period-box.active,
+.period-box.year-active {
+  color: #22d3ee;
+  background: rgba(34,211,238,0.1);
+  border: 1.6px solid var(--border);
+}
+.period-box.dim {
+  color: var(--text-dim);
+  border: 1.6px solid var(--border);
+  background: transparent;
+}
+.period-box.dim:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.06);
+}
+.period-month-wrap,
+.period-total {
+  display: inline-block;
+  width: max-content;
+  position: relative;
+}
+#yearBtn {
+  width: auto !important;
+  min-width: 88px;
+  padding: 1px 24px 1px 13px !important;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+#monthBtn {
+  width: auto !important;
+  min-width: 72px;
+  padding: 0px 26px 0px 12px !important;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+#totalBtn {
+  width: 90px !important;
+  min-width: 90px !important;
+  max-width: 90px !important;
+  padding: 0px 24px 0px 14px !important;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+#yearBtn,
+#monthBtn,
+#totalBtn { position: relative; }
+#yearBtn::after,
+#monthBtn::after,
+#totalBtn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+#yearBtn::after { right: 10px; }
+#monthBtn::after { right: 15px; }
+#totalBtn::after { right: 20px; }
+.period-total-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  background: var(--bg-panel, var(--bg-card));
+  border: 1.6px solid var(--border);
+  border-radius: 10px;
+  padding: 6px;
+  z-index: 40;
+}
+.period-month-wrap.open .period-total-menu,
+.period-total.open .period-total-menu { display: block; }
+.period-total-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* 1. 연도 토글 안쪽 버튼 패딩 (12시 3시 6시 9시 방향) */
+#yearMenu button {
+  padding: 8px 12px 8px 12px !important;
+}
+
+/* 2. 월 토글 안쪽 버튼 패딩 (12시 3시 6시 9시 방향) */
+#monthMenu button {
+  padding: 8px 12px 8px 12px !important;
+}
+
+/* 3. 누적 토글 안쪽 버튼 패딩 (12시 3시 6시 9시 방향) */
+#totalMenu button {
+  padding: 8px 12px 8px 12px !important;
+}
+.period-total-menu button:hover,
+.period-total-menu button.active {
+  color: #22d3ee;
+  background: rgba(34,211,238,0.1);
+}
+.period-total-menu button:disabled {
+  opacity: 0.35;
+  cursor: default;
+  color: var(--text-dim);
+}
+.period-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--bg-panel, var(--bg-card));
+  border: 1.6px solid var(--border);
+  border-radius: var(--radius, 12px);
+}
+.period-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.period-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+.crew-panel { display: none; }
+.crew-panel.on { display: block; }
+.crew-empty {
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--text-dim);
+  background: var(--bg-panel, var(--bg-card));
+  border: 1.6px solid var(--border);
+  border-radius: var(--radius, 12px);
+}

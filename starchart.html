@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>대학별 차트</title>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      background: #11141d;
+      color: #e8eaed;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    html, body {
+      background: #11141d;
+      color: #e8eaed;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      background: #11141d;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    /* 1. 상단 차트 단독 박스 */
+    #chartArea {
+      width: 100%;
+      height: 740px;
+      background: #11141d;
+      border: 1px solid #1e2330;
+      border-radius: 10px;
+      padding: 4px 8px 0 8px;
+    }
+    #loading {
+      height: 740px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 14px;
+      background: #11141d;
+    }
+
+    /* 2. 하단 범례 카드 패널 */
+    #customLegendArea {
+      background: #151923;
+      border: 1px solid #1e2330;
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .legend-control-mini {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 2px;
+      margin-right: 6px;
+      border-right: 1px solid #283144;
+      padding-right: 8px;
+    }
+    .btn-toggle-mini {
+      background: #0d1017;
+      border: 1px solid #283144;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      line-height: 1.3;
+    }
+    .btn-toggle-mini:hover {
+      border-color: #3b4661;
+      color: #e2e8f0;
+      background: #171d2b;
+    }
+
+    /* 3. 하단 필터 카드 패널 */
+    #extraFilterBox {
+      background: #151923;
+      border: 1px solid #1e2330;
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px 14px;
+    }
+    .filter-section {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-sec-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #64748b;
+      margin-right: 2px;
+    }
+    .filter-sec-btn {
+      background: #131722;
+      border: 1px solid #232a3b;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .filter-sec-btn:hover {
+      border-color: #3b4661;
+      color: #f1f5f9;
+    }
+    .filter-sec-btn.active {
+      background: rgba(34, 211, 238, 0.12);
+      border-color: rgba(34, 211, 238, 0.4);
+      color: #22d3ee;
+    }
+    .legend-group-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px 8px;
+    }
+    .legend-group-title {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 4px;
+      letter-spacing: -0.2px;
+      flex-shrink: 0;
+      margin-right: 4px;
+    }
+    .legend-group-title.active-title {
+      background: rgba(34, 211, 238, 0.12);
+      color: #22d3ee;
+      border: 1px solid rgba(34, 211, 238, 0.3);
+    }
+    .legend-group-title.closed-title {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .crew-badge-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: #0d1017;
+      border: 1px solid #232a3b;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .crew-badge-btn:hover {
+      border-color: #3b4661;
+      color: #e2e8f0;
+    }
+    .crew-badge-btn .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      opacity: 0.3;
+      transition: opacity 0.15s ease;
+    }
+    .crew-badge-btn.is-active {
+      background: #171d2b;
+      color: #f1f5f9;
+      border-color: #3b4760;
+    }
+    .crew-badge-btn.is-active .badge-dot {
+      opacity: 1;
+      box-shadow: 0 0 5px currentColor;
+    }
+    .crew-badge-btn.is-off {
+      opacity: 0.45;
+    }
+    .crew-badge-btn.is-off:hover {
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. 단독 차트 카드 영역 -->
+  <div id="chartArea">
+    <div id="loading">구글 시트 연산 중...</div>
+  </div>
+
+  <!-- 2. 단독 범례 카드 영역 (전체켜기/끄기 포함) -->
+  <div id="customLegendArea" style="display: none;">
+    <div class="legend-group-row" id="activeCrewsRow">
+      <span class="legend-group-title active-title">현존대학</span>
+      <div class="legend-control-mini">
+        <button type="button" class="btn-toggle-mini" id="btnSelectAll">전체켜기</button>
+        <button type="button" class="btn-toggle-mini" id="btnDeselectAll">전체끄기</button>
+      </div>
+    </div>
+    <div class="legend-group-row" id="closedCrewsRow">
+      <span class="legend-group-title closed-title">해체대학</span>
+    </div>
+  </div>
+
+  <!-- 3. 단독 추가 필터 카드 영역 (기간 및 체급) -->
+  <div id="extraFilterBox" style="display: none;">
+    <div class="filter-section">
+      <span class="filter-sec-title">기간</span>
+      <button type="button" class="filter-sec-btn active" id="btnRange12m">최근 12개월</button>
+      <button type="button" class="filter-sec-btn" id="btnRangeThisYear">올해 (2026)</button>
+      <button type="button" class="filter-sec-btn" id="btnRangeLastYear">작년 (2025)</button>
+    </div>
+    <div class="filter-section">
+      <span class="filter-sec-title">체급</span>
+      <button type="button" class="filter-sec-btn" id="btnTierTop5">TOP 5</button>
+      <button type="button" class="filter-sec-btn" id="btnTierMid">중위권 (6~12위)</button>
+    </div>
+  </div>
+
+  <script>
+    const DATA_URL = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=1588738461";
+    const ROSTER_URL = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=0";
+
+    const CREW_ALIAS_MAP = {
+      "츠캄": "캄몬스타즈",
+      "캄몬": "캄몬스타즈",
+      "츠캄몬스타즈": "캄몬스타즈",
+      "캄몬스타즈": "캄몬스타즈",
+      "장독대": "뉴캣슬",
+      "뉴캣슬": "뉴캣슬",
+      "마범대": "엠비대",
+      "엠비대": "엠비대",
+      "영정": "수술대",
+      "수술대": "수술대",
+      "HM": "HM",
+      "hm": "HM"
+    };
+
+    const CREW_COLOR_MAP = {
+      "씨나인": "#FFC0D3",
+      "씨나인1": "#FFC0D3",
+      "흑카데미": "#e2e8f0",
+      "JSA": "#BA5412",
+      "케이대": "#382F2A",
+      "캄몬스타즈": "#0099CC",
+      "츠캄": "#0099CC",
+      "캄몬": "#0099CC",
+      "엠비대": "#1B224B",
+      "마범대": "#1B224B",
+      "와플대": "#C2A154",
+      "뉴캣슬": "#4B367C",
+      "장독대": "#4B367C",
+      "BGM": "#E08283",
+      "DM": "#415B76",
+      "신세계": "#72161A",
+      "더블비": "#F9D864",
+      "YB": "#F9D864",
+      "드림즈": "#E05375",
+      "수술대": "#E94B8A",
+      "영정": "#E94B8A",
+      "HM": "#3B82F6",
+      "이노대": "#10B981",
+      "정선대": "#F97316",
+      "늪지대": "#84CC16",
+      "뽀인구단": "#EC4899"
+    };
+
+    const FALLBACK_COLORS = [
+      '#22d3ee', '#a78bfa', '#34d399', '#94a3b8', '#fbbf24',
+      '#60a5fa', '#a3e635', '#2dd4bf', '#818cf8', '#cbd5e1'
+    ];
+
+    function normalizeCrew(name) {
+      if (!name) return "";
+      const clean = String(name).replace(/\s+/g, "").trim();
+      return CREW_ALIAS_MAP[clean] || clean;
+    }
+
+    function transformY(val) {
+      if (val == null) return null;
+      if (val <= 90000) {
+        return val / 30000;
+      } else if (val <= 100000) {
+        return 3 + (val - 90000) / 10000;
+      } else if (val <= 240000) {
+        return 4 + (val - 100000) / 10000;
+      } else {
+        return 18 + (val - 240000) / 30000;
+      }
+    }
+
+    function revertY(tVal) {
+      if (tVal == null) return null;
+      const t = Math.round(tVal * 1000) / 1000;
+      if (t <= 3) {
+        return t * 30000;
+      } else if (t <= 4) {
+        return 90000 + (t - 3) * 10000;
+      } else if (t <= 18) {
+        return 100000 + (t - 4) * 10000;
+      } else {
+        return 240000 + (t - 18) * 30000;
+      }
+    }
+
+    function parseCsvLine(text) {
+      const result = [];
+      let cur = '';
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (c === '"') inQuotes = !inQuotes;
+        else if (c === ',' && !inQuotes) {
+          result.push(cur.trim());
+          cur = '';
+        } else {
+          cur += c;
+        }
+      }
+      result.push(cur.trim());
+      return result;
+    }
+
+    async function build() {
+      const loadingEl = document.getElementById("loading");
+
+      try {
+        const [rText, dText] = await Promise.all([
+          fetch(ROSTER_URL).then(res => res.text()),
+          fetch(DATA_URL).then(res => res.text())
+        ]);
+
+        const rLines = rText.split("\n").map(l => l.trim()).filter(Boolean);
+        const menSet = new Set();
+        const activeCrewsSet = new Set();
+
+        for (let i = 1; i < rLines.length; i++) {
+          const c = parseCsvLine(rLines[i]);
+          if (c.length < 6) continue;
+          const id = (c[0] || "").replace(/^"|"$/g, "").trim().toLowerCase();
+          const name = (c[1] || "").replace(/^"|"$/g, "").trim().toLowerCase();
+          const aliases = (c[2] || "").replace(/^"|"$/g, "").split(",").map(x => x.trim().toLowerCase());
+          const currentCrewRaw = (c[4] || "").replace(/^"|"$/g, "").trim();
+          const gender = (c[5] || "").replace(/^"|"$/g, "").trim();
+
+          if (gender === "남" || gender === "M" || gender === "남자") {
+            if (name) menSet.add(name);
+            if (id) menSet.add(id);
+            aliases.forEach(a => { if (a) menSet.add(a); });
+          } else {
+            const norm = normalizeCrew(currentCrewRaw);
+            if (norm && norm !== "FA" && norm !== "-" && norm !== "무소속") {
+              activeCrewsSet.add(norm);
+            }
+          }
+        }
+
+        function getTimeline(mode) {
+          const list = [];
+          if (mode === "this-year") {
+            for (let m = 1; m <= 8; m++) {
+              list.push({ key: `2026-${String(m).padStart(2, "0")}`, label: `${m}월`, y: 2026, m: m });
+            }
+          } else if (mode === "last-year") {
+            for (let m = 1; m <= 12; m++) {
+              list.push({ key: `2025-${String(m).padStart(2, "0")}`, label: `25.${m}월`, y: 2025, m: m });
+            }
+          } else {
+            const baseYear = 2026;
+            const baseMonth = 8;
+            for (let i = 11; i >= 0; i--) {
+              let m = baseMonth - i;
+              let y = baseYear;
+              while (m <= 0) { m += 12; y -= 1; }
+              list.push({
+                key: `${y}-${String(m).padStart(2, "0")}`,
+                label: y === 2026 ? `${m}월` : `${String(y).slice(2)}.${m}월`,
+                y: y,
+                m: m
+              });
+            }
+          }
+          return list;
+        }
+
+        let currentRangeMode = "12m";
+        let targetMonths = getTimeline(currentRangeMode);
+
+        const monthCrewMap = {};
+        targetMonths.forEach(tm => { monthCrewMap[tm.key] = {}; });
+
+        const dLines = dText.split("\n").map(l => l.trim()).filter(Boolean);
+
+        for (let r = 1; r < dLines.length; r++) {
+          const c = parseCsvLine(dLines[r]);
+          if (c.length < 3) continue;
+
+          const dateStr = (c[0] || "").replace(/^"|"$/g, "").trim();
+          const name = (c[1] || "").replace(/^"|"$/g, "").trim();
+          const starVal = parseInt((c[2] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          const crewRaw = (c[9] || "").replace(/^"|"$/g, "").trim();
+
+          if (!dateStr || !name || name === "닉네임" || starVal <= 0) continue;
+
+          const ymMatch = dateStr.match(/(\d{2,4})\D+(\d{1,2})/);
+          if (!ymMatch) continue;
+          let yr = parseInt(ymMatch[1], 10);
+          if (yr < 100) yr += 2000;
+          const mo = parseInt(ymMatch[2], 10);
+          const ymKey = `${yr}-${String(mo).padStart(2, "0")}`;
+
+          if (!monthCrewMap[ymKey]) continue;
+
+          const cleanName = name.replace(/\s+/g, "").toLowerCase();
+          if (menSet.has(cleanName)) continue;
+
+          let cName = normalizeCrew(crewRaw);
+          if (!cName || cName === "FA" || cName === "-" || cName === "무소속") continue;
+
+          if (!monthCrewMap[ymKey][cName]) {
+            monthCrewMap[ymKey][cName] = { total: 0, count: 0 };
+          }
+          monthCrewMap[ymKey][cName].total += starVal;
+          monthCrewMap[ymKey][cName].count += 1;
+        }
+
+        const monthRawAvgMap = {};
+        const monthRankMap = {};
+        const allCrews = {};
+
+        targetMonths.forEach(tm => {
+          monthRawAvgMap[tm.key] = {};
+          monthRankMap[tm.key] = {};
+
+          const list = Object.keys(monthCrewMap[tm.key]).map(cName => {
+            const obj = monthCrewMap[tm.key][cName];
+            return {
+              crew: cName,
+              avg: obj.count > 0 ? Math.round(obj.total / obj.count) : 0,
+              count: obj.count
+            };
+          }).filter(x => x.avg > 0);
+
+          list.sort((a, b) => b.avg - a.avg);
+
+          list.forEach((item, idx) => {
+            monthRawAvgMap[tm.key][item.crew] = item.avg;
+            monthRankMap[tm.key][item.crew] = idx + 1;
+
+            if (!allCrews[item.crew]) {
+              allCrews[item.crew] = { totalAvg: 0, months: 0, latestAvg: 0 };
+            }
+            allCrews[item.crew].totalAvg += item.avg;
+            allCrews[item.crew].months += 1;
+            allCrews[item.crew].latestAvg = item.avg;
+          });
+        });
+
+        const top20 = Object.keys(allCrews).sort((a, b) => {
+          const aActive = activeCrewsSet.has(a) ? 1 : 0;
+          const bActive = activeCrewsSet.has(b) ? 1 : 0;
+          if (aActive !== bActive) return bActive - aActive;
+
+          // 실제 평균 별풍선 액수 기준 정렬 (최신 월 액수 우선, 같으면 누적 평균 우선)
+          const aLatest = allCrews[a].latestAvg || 0;
+          const bLatest = allCrews[b].latestAvg || 0;
+          if (bLatest !== aLatest) return bLatest - aLatest;
+
+          const aOverall = allCrews[a].months > 0 ? (allCrews[a].totalAvg / allCrews[a].months) : 0;
+          const bOverall = allCrews[b].months > 0 ? (allCrews[b].totalAvg / allCrews[b].months) : 0;
+          return bOverall - aOverall;
+        }).slice(0, 20);
+
+        const seriesData = top20.map(cName => {
+          return {
+            name: cName,
+            data: targetMonths.map(tm => {
+              const rawVal = monthRawAvgMap[tm.key] ? monthRawAvgMap[tm.key][cName] : null;
+              return rawVal ? transformY(rawVal) : null;
+            })
+          };
+        });
+
+        let fallbackIdx = 0;
+        const assignedColors = top20.map(name => {
+          if (CREW_COLOR_MAP[name]) return CREW_COLOR_MAP[name];
+          const c = FALLBACK_COLORS[fallbackIdx % FALLBACK_COLORS.length];
+          fallbackIdx++;
+          return c;
+        });
+
+        const colorMapByCrew = {};
+        top20.forEach((name, idx) => {
+          colorMapByCrew[name] = assignedColors[idx];
+        });
+
+        const markerFillColors = top20.map((name, idx) => {
+          return (name === "흑카데미") ? "#111827" : assignedColors[idx];
+        });
+
+        let maxRawVal = 510000;
+        top20.forEach(cName => {
+          targetMonths.forEach(tm => {
+            const v = monthRawAvgMap[tm.key] ? monthRawAvgMap[tm.key][cName] : 0;
+            if (v > maxRawVal) maxRawVal = v;
+          });
+        });
+
+        const ceilingVal = Math.ceil((maxRawVal + 20000) / 30000) * 30000;
+        const yMaxUnit = Math.round(transformY(ceilingVal));
+        const totalYGridSteps = yMaxUnit - 1;
+
+const MANUAL_CREW_PINS = {
+          "더블비":     { y: 2026, m: 8,  deg: 180, len: 55 },
+          "YB":         { y: 2026, m: 1,  deg: 90,  len: 25 },
+          "뉴캣슬":     { y: 2026, m: 1,  deg: 60,  len: 20 },
+          "장독대":     { y: 2026, m: 1,  deg: 60,  len: 40 },
+          "HM":         { y: 2026, m: 5,  deg: 0,   len: 78 },
+          "hm":         { y: 2026, m: 7,  deg: 0,   len: 48 },
+          "이노대":     { y: 2026, m: 1,  deg: 90,  len: 30 },
+          "정선대":     { y: 2025, m: 12, deg: 90,  len: 20 },
+          "흑카데미":   { y: 2025, m: 12, deg: 270, len: 52 },
+          "늪지대":     { y: 2026, m: 2,  deg: 340, len: 62 },
+          "뽀인구단":   { y: 2025, m: 9, deg: 60, len: 100 },
+          "씨나인":     { y: 2026, m: 6,  deg: 70,  len: 35 },
+          "씨나인1":    { y: 2026, m: 6,  deg: 70,  len: 35 },
+          "신세계":     { y: 2026, m: 7,  deg: 90,  len: 8 },
+          "캄몬스타즈": { y: 2026, m: 5,  deg: 90,  len: 15 },
+          "츠캄":       { y: 2026, m: 5,  deg: 90,  len: 15 },
+          "케이대":     { y: 2026, m: 4,  deg: 90,  len: 25 },
+          "와플대":     { y: 2026, m: 5,  deg: 30,  len: 90 },
+          "수술대":     { y: 2026, m: 6,  deg: 30,  len: 55 },
+          "영정":       { y: 2026, m: 6,  deg: 30,  len: 55 },
+          "JSA":        { y: 2025, m: 11, deg: 60,  len: 55 },
+          "DM":         { y: 2026, m: 3,  deg: 30,  len: 35 },
+          "엠비대":     { y: 2025, m: 10, deg: 120, len: 35 },
+          "마범대":     { y: 2025, m: 10, deg: 120, len: 35 },
+          "BGM":        { y: 2026, m: 4,  deg: 270, len: 50 },
+          "드림즈":     { y: 2026, m: 8,  deg: 60,  len: 35 }
+        };
+
+        const annotationsByCrew = {};
+
+        function distToSegment(px, py, x1, y1, x2, y2) {
+          const l2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+          if (l2 === 0) return Math.hypot(px - x1, py - y1);
+          let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+          t = Math.max(0, Math.min(1, t));
+          return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
+        }
+
+        const diagonalAngles = [30, 45, 60, 120, 135, 150, 210, 225, 240, 300, 315, 330];
+        const reachLengths = [48, 70, 95, 125, 155];
+
+        seriesData.forEach((s, sIdx) => {
+          const validIdxs = [];
+          s.data.forEach((val, idx) => {
+            if (val !== null && !targetMonths[idx].isFuture) validIdxs.push(idx);
+          });
+          if (!validIdxs.length) return;
+
+          const crewColor = assignedColors[sIdx];
+          const labelTextColor = (s.name === "흑카데미") ? '#111827' : '#ffffff';
+
+          let chosenIdx = null;
+          let chosenOX = 0;
+          let chosenOY = 0;
+          let isManualApplied = false;
+          let hideLine = false;
+
+          const manual = MANUAL_CREW_PINS[s.name];
+          if (manual) {
+            const foundIdx = targetMonths.findIndex(tm => Number(tm.y) === Number(manual.y) && Number(tm.m) === Number(manual.m));
+            if (foundIdx !== -1) {
+              chosenIdx = foundIdx;
+              const rad = manual.deg * (Math.PI / 180);
+              chosenOX = Math.round(Math.cos(rad) * manual.len);
+              chosenOY = Math.round(-Math.sin(rad) * manual.len);
+              isManualApplied = true;
+            }
+          }
+
+          const pointAnno = {
+            id: 'anno_p_' + sIdx,
+            x: '',
+            y: 0,
+            marker: { size: 0 },
+            label: {
+              borderColor: crewColor,
+              borderWidth: 1.5,
+              offsetY: 0,
+              offsetX: 0,
+              style: {
+                color: labelTextColor,
+                background: crewColor,
+                fontSize: '14px',
+                fontWeight: 800,
+                padding: { left: 7, right: 7, top: 3, bottom: 3 }
+              },
+              text: s.name
+            }
+          };
+
+          let bestOption = null;
+          if (!isManualApplied) {
+            let minTotalPenalty = Infinity;
+            const placedBoxes = Object.values(annotationsByCrew).map(it => it.pos);
+
+            validIdxs.forEach(candIdx => {
+              const candY = s.data[candIdx];
+
+              diagonalAngles.forEach(deg => {
+                reachLengths.forEach(len => {
+                  const rad = deg * (Math.PI / 180);
+                  const testOffsetX = Math.round(Math.cos(rad) * len);
+                  const testOffsetY = Math.round(-Math.sin(rad) * len);
+
+                  if (candIdx <= 0 && testOffsetX < -15) return;
+                  if (candIdx >= targetMonths.length - 2 && testOffsetX > 25) return;
+
+                  const vY = candY - (testOffsetY / 28);
+                  if (vY > yMaxUnit - 0.2 || vY < 1.2) return;
+
+                  let penalty = 0;
+
+                  seriesData.forEach(otherS => {
+                    otherS.data.forEach((otherVal, mIdx) => {
+                      if (otherVal === null) return;
+                      const dotX = (mIdx - candIdx) * 65;
+                      const dotY = -(otherVal - candY) * 28;
+                      if (Math.abs(testOffsetX - dotX) < 55 && Math.abs(testOffsetY - dotY) < 24) {
+                        penalty += 2000000;
+                      }
+                    });
+                  });
+
+                  seriesData.forEach(otherS => {
+                    for (let i = 0; i < otherS.data.length - 1; i++) {
+                      const y1 = otherS.data[i];
+                      const y2 = otherS.data[i + 1];
+                      if (y1 === null || y2 === null) continue;
+
+                      const segX1 = (i - candIdx) * 65;
+                      const segY1 = -(y1 - candY) * 28;
+                      const segX2 = (i + 1 - candIdx) * 65;
+                      const segY2 = -(y2 - candY) * 28;
+
+                      const d = distToSegment(testOffsetX, testOffsetY, segX1, segY1, segX2, segY2);
+                      if (d < 46) {
+                        penalty += (50 - d) * 10000;
+                      }
+                    }
+                  });
+
+                  placedBoxes.forEach(p => {
+                    const bDist = Math.hypot((p.xIdx - candIdx) * 65 + (p.ox - testOffsetX), -(p.yVal - candY) * 28 + (p.oy - testOffsetY));
+                    if (bDist < 52) penalty += (55 - bDist) * 15000;
+                  });
+
+                  penalty += len * 0.3;
+
+                  if (penalty < minTotalPenalty) {
+                    minTotalPenalty = penalty;
+                    bestOption = {
+                      idx: candIdx,
+                      y: candY,
+                      ox: testOffsetX,
+                      oy: testOffsetY
+                    };
+                  }
+                });
+              });
+            });
+          }
+
+          let finalTargetIdx = null;
+          let finalY = null;
+          let finalOX = 0;
+          let finalOY = 0;
+
+          if (isManualApplied) {
+            finalTargetIdx = chosenIdx;
+            finalY = s.data[chosenIdx];
+            finalOX = chosenOX;
+            finalOY = chosenOY;
+          } else if (bestOption) {
+            finalTargetIdx = bestOption.idx;
+            finalY = bestOption.y;
+            finalOX = bestOption.ox;
+            finalOY = bestOption.oy;
+          }
+
+          if (finalTargetIdx !== null) {
+            pointAnno.x = targetMonths[finalTargetIdx].label;
+            pointAnno.y = finalY;
+            pointAnno.label.offsetX = finalOX;
+            pointAnno.label.offsetY = finalOY;
+
+            const bannerCenterX = finalOX;
+            const bannerCenterY = finalOY - 12;
+
+            const halfW = 34;
+            const halfH = 12;
+
+            let targetLineEndX = bannerCenterX;
+            let targetLineEndY = bannerCenterY;
+
+            if (bannerCenterX !== 0 || bannerCenterY !== 0) {
+              const scale = Math.min(
+                bannerCenterX !== 0 ? halfW / Math.abs(bannerCenterX) : Infinity,
+                bannerCenterY !== 0 ? halfH / Math.abs(bannerCenterY) : Infinity
+              );
+              targetLineEndX = Math.round(bannerCenterX - bannerCenterX * scale);
+              targetLineEndY = Math.round(bannerCenterY - bannerCenterY * scale);
+            }
+
+            const svgW = Math.max(Math.abs(targetLineEndX) * 2 + 10, 20);
+            const svgH = Math.max(Math.abs(targetLineEndY) * 2 + 10, 20);
+            const cX = svgW / 2;
+            const cY = svgH / 2;
+            const endX = cX + targetLineEndX;
+            const endY = cY + targetLineEndY;
+
+            const leaderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}"><line x1="${cX}" y1="${cY}" x2="${endX}" y2="${endY}" stroke="${crewColor}" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/></svg>`;
+            const encodedSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent(leaderSvg);
+
+            const lineAnno = {
+              id: 'anno_l_' + sIdx,
+              x: targetMonths[finalTargetIdx].label,
+              y: finalY,
+              marker: { size: 0 },
+              image: {
+                path: encodedSvg,
+                width: svgW,
+                height: svgH,
+                offsetX: 0,
+                offsetY: 0
+              }
+            };
+
+            annotationsByCrew[s.name] = {
+              point: pointAnno,
+              line: lineAnno,
+              pos: { xIdx: finalTargetIdx, yVal: finalY, ox: finalOX, oy: finalOY }
+            };
+          }
+        });
+
+        const initialPointAnnotations = [];
+        top20.forEach(cName => {
+          if (activeCrewsSet.has(cName) && annotationsByCrew[cName]) {
+            if (annotationsByCrew[cName].point) initialPointAnnotations.push(annotationsByCrew[cName].point);
+            if (annotationsByCrew[cName].line) initialPointAnnotations.push(annotationsByCrew[cName].line);
+          }
+        });
+
+        const visibilityMap = {};
+        top20.forEach(cName => {
+          visibilityMap[cName] = activeCrewsSet.has(cName);
+        });
+
+        loadingEl.remove();
+
+        const options = {
+          chart: {
+            type: 'line',
+            height: 820,
+            toolbar: { show: true },
+            background: 'transparent',
+            animations: { enabled: false }
+          },
+          annotations: {
+            points: initialPointAnnotations
+          },
+          series: seriesData,
+          colors: assignedColors,
+          stroke: {
+            curve: 'smooth',
+            width: 2.2,
+            lineCap: 'round'
+          },
+          markers: {
+            size: 4.5,
+            colors: markerFillColors,
+            strokeColors: assignedColors,
+            strokeWidth: 2,
+            hover: { size: 7.5 }
+          },
+          grid: {
+            borderColor: '#1e2330',
+            strokeDashArray: 3,
+            padding: {
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0
+            },
+            xaxis: { lines: { show: true } },
+            yaxis: { lines: { show: true } }
+          },
+          xaxis: {
+            categories: targetMonths.map(tm => tm.label),
+            labels: { 
+              style: { colors: '#8b8f9a', fontSize: '11px', fontWeight: 600 },
+              hideOverlappingLabels: false
+            },
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+            range: undefined
+          },
+          yaxis: {
+            min: 1,
+            max: yMaxUnit,
+            tickAmount: totalYGridSteps,
+            labels: {
+              minWidth: 32,
+              maxWidth: 36,
+              offsetX: -5,
+              style: { colors: '#94a3b8', fontSize: '11px', fontWeight: 600 },
+              formatter: function(tVal) {
+                if (tVal == null) return '';
+                const realVal = Math.round(revertY(tVal));
+                const manVal = Math.round(realVal / 10000);
+                if (manVal <= 0) return '';
+                return manVal + '만';
+              }
+            }
+          },
+          legend: {
+            show: false
+          },
+          tooltip: {
+            theme: 'dark',
+            shared: false,
+            intersect: false,
+            x: {
+              formatter: (val, opts) => {
+                const idx = opts ? opts.dataPointIndex : -1;
+                return idx >= 0 ? `${targetMonths[idx].y}년 ${targetMonths[idx].m}월` : val;
+              }
+            },
+            y: {
+              formatter: (tVal, opts) => {
+                if (!tVal) return '기록 없음 / 해체';
+                const realVal = Math.round(revertY(tVal));
+                const cName = opts.w.config.series[opts.seriesIndex].name;
+                const tmKey = targetMonths[opts.dataPointIndex].key;
+                const r = monthRankMap[tmKey] && monthRankMap[tmKey][cName] ? `${monthRankMap[tmKey][cName]}위 · ` : '';
+                return `${r}${realVal.toLocaleString()}개`;
+              }
+            }
+          }
+        };
+
+        const chart = new ApexCharts(document.getElementById("chartArea"), options);
+        await chart.render();
+
+        top20.forEach((cName) => {
+          if (!activeCrewsSet.has(cName)) {
+            chart.hideSeries(cName);
+          }
+        });
+
+        const legendArea = document.getElementById("customLegendArea");
+        const activeRow = document.getElementById("activeCrewsRow");
+        const closedRow = document.getElementById("closedCrewsRow");
+
+        function syncAnnotations() {
+          const activeAnnos = [];
+          top20.forEach(name => {
+            if (visibilityMap[name] && annotationsByCrew[name]) {
+              if (annotationsByCrew[name].point) activeAnnos.push(annotationsByCrew[name].point);
+              if (annotationsByCrew[name].line) activeAnnos.push(annotationsByCrew[name].line);
+            }
+          });
+          chart.clearAnnotations();
+          activeAnnos.forEach(anno => chart.addPointAnnotation(anno, false));
+        }
+
+        top20.forEach(cName => {
+          const isActive = activeCrewsSet.has(cName);
+          const color = colorMapByCrew[cName];
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "crew-badge-btn " + (isActive ? "is-active" : "is-off");
+          btn.innerHTML = `<span class="badge-dot" style="background-color: ${color}; color: ${color};"></span><span>${cName}</span>`;
+
+          btn.onclick = function() {
+            chart.toggleSeries(cName);
+            visibilityMap[cName] = !visibilityMap[cName];
+
+            if (visibilityMap[cName]) {
+              btn.classList.add("is-active");
+              btn.classList.remove("is-off");
+            } else {
+              btn.classList.remove("is-active");
+              btn.classList.add("is-off");
+            }
+            syncAnnotations();
+          };
+
+          if (isActive) {
+            activeRow.appendChild(btn);
+          } else {
+            closedRow.appendChild(btn);
+          }
+        });
+
+        legendArea.style.display = "flex";
+        const extraFilterBox = document.getElementById("extraFilterBox");
+        if (extraFilterBox) extraFilterBox.style.display = "flex";
+
+        function updateSeriesBatch(predicate) {
+          top20.forEach(cName => {
+            const shouldShow = predicate(cName);
+            visibilityMap[cName] = shouldShow;
+            if (shouldShow) {
+              chart.showSeries(cName);
+            } else {
+              chart.hideSeries(cName);
+            }
+          });
+          document.querySelectorAll(".crew-badge-btn").forEach(btn => {
+            const name = btn.querySelector("span:last-child").textContent;
+            if (visibilityMap[name]) {
+              btn.classList.add("is-active");
+              btn.classList.remove("is-off");
+            } else {
+              btn.classList.remove("is-active");
+              btn.classList.add("is-off");
+            }
+          });
+          syncAnnotations();
+        }
+
+        const btnAll = document.getElementById("btnSelectAll");
+        if (btnAll) btnAll.onclick = () => updateSeriesBatch(() => true);
+
+        const btnNone = document.getElementById("btnDeselectAll");
+        if (btnNone) btnNone.onclick = () => updateSeriesBatch(() => false);
+
+        const btnT5 = document.getElementById("btnTierTop5");
+        if (btnT5) btnT5.onclick = () => updateSeriesBatch(name => {
+          const idx = top20.indexOf(name);
+          return idx >= 0 && idx < 5;
+        });
+
+        const btnMid = document.getElementById("btnTierMid");
+        if (btnMid) btnMid.onclick = () => updateSeriesBatch(name => {
+          const idx = top20.indexOf(name);
+          return idx >= 5 && idx < 12;
+        });
+
+        async function switchRange(mode) {
+          currentRangeMode = mode;
+          document.querySelectorAll("#extraFilterBox .filter-sec-btn").forEach(b => {
+            if (b.id.startsWith("btnRange")) b.classList.remove("active");
+          });
+          if (mode === "12m") document.getElementById("btnRange12m").classList.add("active");
+          if (mode === "this-year") document.getElementById("btnRangeThisYear").classList.add("active");
+          if (mode === "last-year") document.getElementById("btnRangeLastYear").classList.add("active");
+
+          targetMonths = getTimeline(mode);
+
+          const updatedSeries = top20.map(cName => {
+            return {
+              name: cName,
+              data: targetMonths.map(tm => {
+                const rawVal = monthRawAvgMap[tm.key] ? monthRawAvgMap[tm.key][cName] : null;
+                return rawVal ? transformY(rawVal) : null;
+              })
+            };
+          });
+
+          await chart.updateOptions({
+            xaxis: { categories: targetMonths.map(tm => tm.label) },
+            series: updatedSeries
+          }, false, true);
+
+          syncAnnotations();
+        }
+
+        const b12m = document.getElementById("btnRange12m");
+        if (b12m) b12m.onclick = () => switchRange("12m");
+
+        const bThis = document.getElementById("btnRangeThisYear");
+        if (bThis) bThis.onclick = () => switchRange("this-year");
+
+        const bLast = document.getElementById("btnRangeLastYear");
+        if (bLast) bLast.onclick = () => switchRange("last-year");
+
+      } catch (err) {
+        console.error(err);
+        loadingEl.textContent = "오류 발생: " + err.message;
+      }
+    }
+
+    build();
+  </script>
+</body>
+</html>

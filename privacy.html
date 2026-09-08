@@ -1,0 +1,316 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>개인정보 처리방침 - 스버스</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <style>
+    :root {
+      --bg: #0a0b0f;
+      --bg-elevated: #12141a;
+      --bg-card: #16181f;
+      --border: rgba(255, 255, 255, 0.06);
+      --text: #e8eaed;
+      --text-muted: #8b8f9a;
+      --text-dim: #5c606b;
+      --cyan: #22d3ee;
+      --header-h: 56px;
+      --content-max: 1280px;
+    }
+    html { scrollbar-gutter: stable; }
+    html.light {
+      --cyan: #16325c;
+      --bg: #f3f4f7;
+      --bg-elevated: #ffffff;
+      --bg-card: #ffffff;
+      --border: rgba(15, 18, 24, 0.1);
+      --text: #1a1d24;
+      --text-muted: #5c606b;
+      --text-dim: #8a8f99;
+    }
+    html.light .header,
+    html.light .sub-nav {
+      background: rgba(243, 244, 247, 0.9);
+    }
+    html.light .footer { background: #eceef2; }
+    html.light .search-drop,
+    html.light .partner-pop { background: #ffffff; }
+    html.light .fa-switch-slider { background: rgba(0,0,0,0.18); }
+    .theme-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .theme-icon svg { width: 20px; height: 20px; display: block; }
+    .theme-sun { display: none !important; }
+    .theme-moon { display: block !important; }
+    html.light .theme-moon { display: none !important; }
+    html.light .theme-sun { display: block !important; }
+    .fa-switch-wrap {
+      display: flex; align-items: center; gap: 6px;
+      cursor: pointer; flex-shrink: 0; user-select: none;
+    }
+    .fa-switch-input { display: none; }
+    .fa-switch-slider {
+      width: 36px; height: 20px; background: rgba(255,255,255,0.12);
+      border-radius: 999px; position: relative;
+    }
+    .fa-switch-slider::before {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; background: #c0c4cc; border-radius: 50%;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .fa-switch-input:checked + .fa-switch-slider { background: rgba(245,158,11,0.35); }
+    .fa-switch-input:checked + .fa-switch-slider::before {
+      transform: translateX(16px); background: #f59e0b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; line-height: 1.5;
+      display: flex; flex-direction: column;
+    }
+    .header {
+      position: sticky; top: 0; z-index: 100; height: var(--header-h);
+      background: rgba(10, 11, 15, 0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border); display: flex; justify-content: center;
+    }
+    .header-inner {
+      max-width: var(--content-max); width: 100%;
+      display: flex; align-items: center; padding: 0 24px; gap: 16px;
+    }
+        .logo {
+      display: flex; align-items: center; gap: 4px;
+      text-decoration: none; color: var(--text); font-weight: 700; font-size: 17px; flex-shrink: 0;
+      line-height: 1;
+    }
+    .logo img {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      display: block;
+      position: relative;
+      top: 0;
+    }
+    .logo-text {
+      display: flex;
+      align-items: center;
+      position: relative;
+      top: 2px;
+    }
+    .logo-sub {
+      font-size: 70%;
+      font-weight: 500;
+      color: var(--text-dim);
+      margin-left: 8px;
+    }
+    .search-wrap { flex: 1; max-width: 360px; margin-left: auto; position: relative; }
+    .search-input {
+      width: 100%; height: 36px; background: var(--bg-elevated);
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 0 40px 0 16px; color: var(--text); font-size: 13px; outline: none;
+    }
+    .search-input::placeholder { color: var(--text-dim); }
+    .search-icon {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-dim); pointer-events: none;
+    }
+    .search-drop {
+      display: none; position: absolute; top: 42px; left: 0; right: 0;
+      background: #16181f; border: 1px solid var(--border); border-radius: 12px;
+      max-height: 280px; overflow: auto; z-index: 120;
+    }
+    .search-drop.open { display: block; }
+    .search-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; cursor: pointer; font-size: 13px;
+    }
+    .search-item:hover { background: rgba(34,211,238,0.1); }
+    .search-item img {
+      width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #1a1c24;
+    }
+    .search-item small { color: var(--text-dim); margin-left: auto; }
+    .icon-btn {
+      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      border-radius: 8px; border: none; background: transparent; color: var(--text-muted); cursor: pointer;
+    }
+    .main {
+      flex: 1; max-width: 860px; width: 100%;
+      margin: 0 auto; padding: 32px 24px 56px;
+    }
+    .legal-kicker { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; }
+    .legal-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .legal-date { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+    .legal-summary {
+      background: rgba(34,211,238,0.06);
+      border: 1px solid rgba(34,211,238,0.18);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .legal-box {
+      background: #15151a;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 28px 12px;
+    }
+    .legal-box h2 {
+      font-size: 16px; font-weight: 700; margin: 22px 0 8px;
+    }
+    .legal-box h2:first-child { margin-top: 0; }
+    .legal-box p, .legal-box li {
+      font-size: 14px;
+      color: var(--text-muted); line-height: 1.75; margin-bottom: 8px;
+    }
+    .legal-box ol { padding-left: 20px; margin-bottom: 8px; }
+    .legal-box a { color: var(--cyan); text-decoration: none; }
+    .footer {
+      margin-top: auto; border-top: 1px solid var(--border);
+      background: #08090c; padding: 28px 0 32px;
+      overflow: visible;
+    }
+    .footer-inner {
+      max-width: var(--content-max); margin: 0 auto;
+      padding: 0 24px;
+      font-size: 12px; color: var(--text-dim); line-height: 1.7;
+    }
+    .footer-inner p { margin-bottom: 6px; }
+    .footer-copyright {
+      margin-top: 14px; padding-top: 20px;
+      border-top: 1px solid var(--border); color: var(--text-muted);
+    }
+    .footer-doc {
+      margin-left: 12px;
+      color: inherit;
+      font-weight: 400;
+      text-decoration: none;
+    }
+    .footer-doc:hover { font-weight: 700; }
+    .footer-dot { margin: 0 8px; }
+    .footer-row {
+      position: relative;
+      display: block;
+      padding-right: 88px;
+    }
+    .partner-wrap {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-top: 0;
+    }
+    .partner-btn {
+      display: inline-block;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0e1016;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      list-style: none;
+    }
+    .partner-btn::-webkit-details-marker { display: none; }
+    .partner-btn:hover { color: #22d3ee; border-color: rgba(34,211,238,0.35); }
+    .partner-pop {
+      display: none;
+      position: absolute;
+      right: 0;
+      left: auto;
+      bottom: calc(100% + 8px);
+      width: 280px;
+      padding: 14px 16px;
+      background: #16181f;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.7;
+      z-index: 200;
+    }
+    .partner-wrap[open] .partner-pop { display: block; }
+    .footer-doc { margin-left: 12px; color: inherit; font-weight: 400; text-decoration: none; }
+    .footer-doc:hover { font-weight: 700; }
+    .footer-dot { margin: 0 8px; }
+    .footer-row { position: relative; display: block; padding-right: 88px; }
+    .partner-wrap { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+    .partner-btn {
+      display: inline-block; padding: 6px 10px; border: 1px solid var(--border);
+      border-radius: 8px; background: #0e1016; color: var(--text-muted);
+      font-size: 12px; cursor: pointer;
+    }
+    .partner-btn:hover { color: #22d3ee; border-color: rgba(34,211,238,0.35); }
+    .partner-pop {
+      display: none; position: absolute; left: 0; bottom: calc(100% + 8px);
+      width: 280px; padding: 14px 16px; background: #16181f;
+      border: 1px solid var(--border); border-radius: 10px;
+      color: var(--text); font-size: 13px; line-height: 1.7; z-index: 20;
+    }
+    .partner-wrap:hover .partner-pop { display: block; }
+  </style>
+</head>
+<body>
+    <div id="site-top"></div>
+
+  <main class="main">
+    <h1 class="legal-title">개인정보 처리방침</h1>
+    <p class="legal-date">시행일 2026년 9월 1일</p>
+    <div class="legal-summary">
+      요약_ 스버스는 따로 회원 정보를 받거나 가입을 받지 않고 있는 순수 정보제공 사이트이며 이름·연락처 같은 개인 식별 정보를 받는 과정이 없습니다
+      쿠키등의 기술적 기록이 잠깐 남을 수 있으나 삭제처리 됩니다
+    </div>
+    <div class="legal-box">
+      <h2>1. 이 글의 목적</h2>
+      <p>개인정보 보호법에서 정한 안내에 맞춰, 스버스가 무엇을 다루고 무엇을 다루지 않는지 밝힙니다.</p>
+
+      <h2>2. 개인 식별 정보는 받지 않음</h2>
+      <p>계정 만들기, 로그인, 프로필 작성 절차가 없습니다. 이용자 실명, 이메일, 전화번호, 주소는 받지 않습니다.</p>
+      <p>제휴 문의 메일을 보내는 경우에만, 이용자가 직접 쓴 메일 주소가 운영자 수신함에 도착합니다. 그 내용은 문의 답변 외에 쓰지 않습니다.</p>
+
+      <h2>3. 기계가 남기는 기록</h2>
+      <p>사이트가 열리고 닫히는 과정에서 아래가 남을 수 있습니다.</p>
+      <ol>
+        <li>접속 기록 — 아이피, 들어온 시각, 브라우저 종류</li>
+        <li>쿠키 — 화면 설정처럼 단순한 표시 상태</li>
+        <li>방문 통계 — 몇 명이 어떤 페이지를 봤는지 보는 익명 집계</li>
+      </ol>
+      <p>이 기록으로 누구인지 알아내려 하지 않고, 오류를 찾고 화면을 고치는 데만 씁니다.</p>
+
+      <h2>4. 화면에 보이는 방송 통계</h2>
+      <p>별풍선, 시청 수치, 방송시간, 전적처럼 플랫폼에 공개된 방송 관련 숫자만 모읍니다. 그건 스트리머가 플랫폼에 공개한 정보이고, 사이트는 그 숫자를 표로 다시 보여줄 뿐입니다.</p>
+
+      <h2>5. 제3자 제공</h2>
+      <p>이용자 개인정보를 모아 두지도 않고, 팔거나 빌려주지도 않습니다.</p>
+
+      <h2>6. 쿠키를 끄고 싶을 때</h2>
+      <p>브라우저 설정에서 쿠키를 막을 수 있습니다. 막으면 다크모드 같은 설정이 다음 방문에 기억되지 않을 수 있습니다.</p>
+
+      <h2>7. 광고가 붙는 경우</h2>
+      <p>나중에 외부 광고가 붙으면 그 광고 회사가 자체 쿠키를 쓸 수 있습니다. 그 처리 방식은 해당 광고 회사 방침을 보면 됩니다.</p>
+
+      <h2>8. 연락</h2>
+      <p>개인정보 관련 문의 창구는 스버스 운영 메일입니다.</p>
+      <p>메일: <a href="mailto:starcraftverse@gmail.com">starcraftverse@gmail.com</a></p>
+
+      <h2>9. 이 글이 바뀔 때</h2>
+      <p>법이나 사이트 운영 방식이 바뀌면 이 페이지를 고칩니다. 고친 내용은 이 화면에 올리는 시점부터 적용됩니다.</p>
+    </div>
+  </main>
+      <div id="site-bottom"></div>
+
+  <script src="common.js"></script>
+</body>
+</html>

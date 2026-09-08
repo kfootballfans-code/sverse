@@ -1,0 +1,412 @@
+.header {
+  position: sticky; top: 0; z-index: 100;
+  height: var(--header-h);
+  background: rgba(10, 11, 15, 0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: center;
+}
+.header-inner {
+  max-width: var(--content-max); width: 100%;
+  display: flex; align-items: center;
+  padding: 0 24px; gap: 16px;
+}
+.logo {
+  display: flex; align-items: center; gap: 4px;
+  text-decoration: none; color: var(--text); font-weight: 700; font-size: 17px; flex-shrink: 0;
+  line-height: 1;
+}
+.logo img {
+  width: 28px; height: 28px; border-radius: 4px; display: block;
+}
+.logo-text {
+  display: flex; align-items: center; position: relative; top: 2px;
+}
+.logo-sub {
+  font-size: 70%; font-weight: 500; color: var(--text-dim); margin-left: 8px;
+}
+.search-wrap {
+  flex: 1; max-width: 360px; margin-left: auto; position: relative;
+}
+.search-input {
+  width: 100%; height: 36px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 40px 0 16px;
+  color: var(--text); font-size: 13px; outline: none;
+}
+.search-input::placeholder { color: var(--text-dim); }
+.search-icon {
+  position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%); color: var(--text-dim); pointer-events: none;
+}
+.search-drop {
+  display: none; position: absolute; top: 42px; left: 0; right: 0;
+  background: #16181f; border: 1px solid var(--border); border-radius: 12px;
+  max-height: 280px; overflow: auto; z-index: 120;
+}
+.search-drop.open { display: block; }
+.search-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; cursor: pointer; font-size: 13px;
+}
+.search-item:hover { background: rgba(34,211,238,0.1); }
+.search-item img {
+  width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #1a1c24;
+}
+.search-item small { color: var(--text-dim); margin-left: auto; }
+.theme-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; color: var(--text); flex-shrink: 0;
+}
+.theme-icon svg { width: 20px; height: 20px; display: block; }
+.theme-sun { display: none !important; }
+.theme-moon { display: block !important; }
+html.light .theme-moon { display: none !important; }
+html.light .theme-sun { display: block !important; }
+.fa-switch-wrap {
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer; flex-shrink: 0; user-select: none;
+}
+.fa-switch-input { display: none; }
+.fa-switch-slider {
+  width: 36px; height: 20px; background: rgba(255,255,255,0.12);
+  border-radius: 999px; position: relative;
+}
+.fa-switch-slider::before {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; background: #c0c4cc; border-radius: 50%;
+  transition: transform 0.15s, background 0.15s;
+}
+.fa-switch-input:checked + .fa-switch-slider { background: rgba(245,158,11,0.35); }
+.fa-switch-input:checked + .fa-switch-slider::before {
+  transform: translateX(16px); background: #f59e0b;
+}
+.sub-nav {
+  position: sticky; top: var(--header-h); z-index: 99;
+  background: rgba(10, 11, 15, 0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: center;
+}
+.sub-nav-inner {
+  max-width: var(--content-max); width: 100%;
+  display: flex; align-items: stretch; padding: 0 24px; height: 49px; gap: 8px;
+}
+.sub-nav a {
+  color: #f1f3f5 !important; /* [1] 호버 전 글자색 (밝은 화이트) */
+  text-decoration: none;
+  font-size: 14px; font-weight: 500;
+  padding: 0 12px; white-space: nowrap;
+  display: inline-flex; align-items: center; justify-content: center;
+  position: relative;
+  background: transparent !important;
+  transition: color 0.15s;
+}
+.sub-nav a::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: transparent;
+  border-radius: 2px 2px 0 0;
+  transition: background-color 0.15s;
+}
+/* 일반 호버 시 글자색 */
+.sub-nav a:hover {
+  color: #22d3ee !important; /* [2] 호버 후 글자색 (청록색) */
+}
+/* 선택된 메뉴 (.active) */
+.sub-nav a.active {
+  color: #22d3ee !important;
+  font-weight: 700;
+}
+.sub-nav a.active::after {
+  background: #22d3ee !important;
+}
+
+/* index처럼 활성화된(.active) 메뉴가 하나도 없을 때만 호버 시 밑줄 표시 */
+.sub-nav-inner:not(:has(.active)) a:hover::after {
+  background: #22d3ee !important;
+}
+html.light .footer { background: #eceef2; }
+html.light .search-drop,
+html.light .partner-pop { background: #ffffff; }
+html.light .fa-switch-slider { background: rgba(0,0,0,0.18); }
+.footer {
+  margin-top: auto; border-top: 1px solid var(--border);
+  background: #08090c; padding: 28px 0 32px;
+  overflow: visible;
+}
+.footer-inner {
+  max-width: var(--content-max); margin: 0 auto;
+  padding: 0 24px;
+  font-size: 12px; color: var(--text-dim); line-height: 1.7;
+}
+.footer-inner p { margin-bottom: 6px; }
+.footer-copyright {
+  margin-top: 14px; padding-top: 20px;
+  border-top: 1px solid var(--border); color: var(--text-muted);
+}
+.footer-doc {
+  margin-left: 12px; color: inherit; font-weight: 400; text-decoration: none;
+}
+.footer-doc:hover { font-weight: 700; }
+.footer-dot { margin: 0 8px; }
+.footer-row {
+  position: relative; display: block; padding-right: 88px;
+}
+.partner-wrap {
+  position: absolute; right: 0; top: 50%;
+  transform: translateY(-50%);
+}
+.partner-btn {
+  display: inline-block; padding: 6px 10px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: #0e1016; color: var(--text-muted);
+  font-size: 12px; cursor: pointer; list-style: none;
+}
+.partner-btn::-webkit-details-marker { display: none; }
+.partner-btn:hover { color: #22d3ee; border-color: rgba(34,211,238,0.35); }
+.partner-pop {
+  display: none !important; 
+  position: absolute; right: 0; left: auto;
+  bottom: calc(100% + 8px);
+  width: max-content;
+  max-width: 240px;
+  
+  /* 위아래 너비(높이) 강제 적용: 첫 번째 숫자(18px) 조절 */
+  padding: 18px 14px !important; 
+  
+  background: #16181f !important;
+  border: 1px solid var(--border) !important; 
+  
+  /* 모서리 곡선 강제 적용 */
+  border-radius: 10px !important; 
+  
+  /* 폰트 색상 및 굵기 강제 적용 */
+  color: #ffffff !important; 
+  font-weight: 700 !important; 
+  
+  font-size: 13px; 
+  line-height: 1.6; 
+  z-index: 200 !important;
+  white-space: normal;
+}
+
+/* 호버될 때 다시 보이게 만드는 규칙에도 !important 보완 */
+.partner-wrap:hover .partner-pop { display: block !important; }
+
+/* 4. 폰트 굵기 조절용 (팝업 안에 들어가는 글자들의 굵기 설정 추가) */
+.partner-pop {
+  font-weight: 400; /* 기본 굵기 (400: 일반, 500: 보통 굵게, 700: 두껍게) */
+}
+.partner-wrap:hover .partner-pop { display: block; }
+.filter-combination-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.combo1-btn {
+  background: #15181f;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 5px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.combo1-btn span {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.combo1-btn .icon-box {
+  width: 14px;
+  height: 14px;
+  background: #242936;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+.combo1-btn .icon-box::after {
+  content: "✓";
+  font-size: 10px;
+  font-weight: 900;
+  color: transparent;
+  transition: color 0.1s ease;
+}
+.combo1-btn.active {
+  border-color: #22d3ee;
+}
+.combo1-btn.active .icon-box {
+  background: #22d3ee;
+}
+.combo1-btn.active .icon-box::after {
+  color: #0f1115;
+}
+.combo1-btn.active span {
+  color: #22d3ee;
+}
+/* =========================================================
+   [전역 공통] 메인 랭킹/데이터 테이블 박스 규격 강제 고정
+========================================================= */
+
+/* 좌우 분할 뼈대 비율 & 간격 영구 고정 */
+.rank-layout {
+  display: flex !important;
+  gap: 24px !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 파워랭킹 / 역대상금 메인 박스가 들어가는 좌측 영역 (6:4 비율) */
+.rank-left {
+  width: 60% !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 파워랭킹, 역대상금 메인 테이블을 감싸는 박스 스타일 통일 (곡률 12px, 테두리, 배경) */
+.rank-left .side-box,
+.rank-main-box {
+  background: var(--bg-card, #12141a) !important;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08)) !important;
+  border-radius: 12px !important; /* 곡률 무조건 12px로 통일 */
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* 탭 바뀔 때 높이 덜컹거림 방지용 최소 높이 (1~50위 데이터 로딩 시 안정화) */
+#panel-power .rank-left,
+#panel-prize .rank-left {
+  min-height: 650px;
+}
+/* =========================================================
+   [전역 공통] elo 스타일 상단메뉴바 및 내부 기간/누적 버튼 시스템
+========================================================= */
+
+/* 1. 상단메뉴바 전체 틀 (1.6px 테두리, 라운드 6px) */
+.period-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  min-height: 54px !important;
+  
+  /* 패딩(상하, 좌우) 조절: 여기서 위아래 여백과 좌우 여백을 바꿀 수 있어 */
+  padding: 1px 20px !important; 
+  
+  background: var(--bg-panel, var(--bg-card, #16181f)) !important;
+  border: 1.6px solid var(--border) !important;
+  border-radius: 7px !important;
+  margin-bottom: 20px !important;
+  box-sizing: border-box !important;
+  flex-wrap: wrap !important;
+  
+  /* 요소들 사이의 간격(거리) 조절 */
+  gap: 12px !important; 
+}
+
+/* 2. 상단 탭 그룹 */
+.period-tabs {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.period-tabs .crew-tab {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-muted, #8b8f9a) !important;
+  font-weight: 700 !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  height: auto !important;
+  min-width: auto !important;
+  margin: -4px 0 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: color 0.15s ease !important;
+}
+.period-tabs .crew-tab:hover {
+  color: #22d3ee !important;
+  background: transparent !important;
+}
+.period-tabs .crew-tab.active {
+  color: #22d3ee !important;
+  background: transparent !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+
+/* 3. 기간/누적 라벨 및 구분선 */
+.period-label {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--text, #e8eaed) !important;
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+.period-ico {
+  display: inline-flex !important;
+  align-items: center !important;
+  color: #e8eaed !important;
+}
+.period-divider {
+  width: 1px !important;
+  height: 32px !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  margin: 0 1px 0 12px !important;
+  flex-shrink: 0 !important;
+  align-self: center !important;
+}
+
+/* 4. elo.html 원본 내부 버튼 규격 (.period-box) */
+.period-box {
+  min-width: 32px !important;
+  min-height: 32px !important;
+  height: auto !important;
+  padding: 0 10px !important;
+  border: 1.6px solid var(--border) !important;
+  background: transparent !important;
+  color: #c0c4cc !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  font-variant-numeric: tabular-nums !important;
+  white-space: nowrap !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+}
+.period-box:hover {
+  color: var(--text, #e8eaed) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+.period-box.active, 
+.period-box.year-active {
+  color: #22d3ee !important;
+  background: rgba(34, 211, 238, 0.1) !important;
+  border-color: rgba(34, 211, 238, 0.3) !important;
+}

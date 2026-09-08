@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>스트리머 - 스버스</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="period.css">
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+  <style>
+    :root {
+      --bg: #05070a;
+      --bg-elevated: #0b0e14;
+      --bg-card: #0b0e14;
+      --border: #141923;
+      --text: #e8eaed;
+      --text-muted: #8b8f9a;
+      --text-dim: #475569;
+      --cyan: #22d3ee;
+      --neon-green: #00ff9d;
+      --neon-red: #ff3344;
+      --orange: #f59e0b;
+      --header-h: 56px;
+      --content-max: 1440px;
+
+      /* ==========================================
+         [★ 전체 조절 리모컨 ★]
+         ========================================== */
+      --card-radius: 12px;       /* 큰 카드 상자들 모서리 둥글기 */
+      --btn-radius: 6px;         /* 모든 버튼/토글/칩 모서리 둥글기 */
+      --btn-height: 32px;        /* 토글/버튼 높이 */
+      --btn-padding-x: 12px;     /* 토글/버튼 좌우 여백 */
+    }
+
+    html { scrollbar-gutter: stable; }
+    html.light {
+      --cyan: #16325c;
+      --bg: #f3f4f7;
+      --bg-elevated: #ffffff;
+      --bg-card: #ffffff;
+      --border: rgba(15, 18, 24, 0.1);
+      --text: #1a1d24;
+      --text-muted: #5c606b;
+      --text-dim: #8a8f99;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; line-height: 1.5;
+      display: flex; flex-direction: column;
+    }
+
+    .main {
+      flex: 1; max-width: var(--content-max); width: 100%;
+      margin: 0 auto; padding: 20px 24px 40px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+
+    @keyframes profileSpin { to { transform: rotate(360deg); } }
+    #profileLoading {
+      display: flex; min-height: 400px; align-items: center; justify-content: center;
+      flex-direction: column; gap: 14px; color: var(--text-dim); font-size: 14px;
+    }
+    #profileLoading .profile-spin {
+      width: 28px; height: 28px; border: 2px solid var(--border);
+      border-top-color: var(--cyan); border-radius: 50%;
+      animation: profileSpin 0.8s linear infinite;
+    }
+
+    .side-box,
+    .profile-vertical-card,
+    .chart-box-card,
+    .streak-container-shader {
+      border-radius: var(--card-radius) !important;
+    }
+
+    .side-box {
+      background: var(--bg-card); border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .side-box-header {
+      padding: 11px 16px; background: #11141d; border-bottom: 1px solid var(--border);
+      font-size: 13px; font-weight: 700; color: #cbd5e1;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .dashboard-split-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 16px;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .dashboard-left-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-width: 0;
+    }
+    .top-dual-grid {
+      display: grid;
+      grid-template-columns: 310px 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+    .dashboard-right-rail {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 340px;
+    }
+
+    /* [좌측] 프로필 카드 */
+    .profile-vertical-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .profile-avatar {
+      width: 80px; height: 80px; border-radius: 50%; overflow: hidden;
+      border: 2px solid var(--cyan); background: #1a1c24; margin-bottom: 10px;
+    }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-name {
+      font-size: 20px; font-weight: 700; line-height: 1.2;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .race-letter { font-size: 22px; font-weight: 800; line-height: 1; }
+    .race-letter.T { color: #3b93ff; }
+    .race-letter.P { color: #fbbf24; }
+    .race-letter.Z { color: #c084fc; }
+    .name-emblem { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; }
+    .name-emblem img { max-width: 22px; max-height: 22px; object-fit: contain; }
+
+    .profile-badges { display: flex; gap: 5px; margin: 6px 0 10px; }
+    .meta-badge {
+      font-size: 11px; padding: 2px 7px; border-radius: var(--btn-radius);
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text-muted); font-weight: 500;
+    }
+    .tick-num {
+      font-family: 'Orbitron', sans-serif; font-weight: 800; color: #ff4fa3; font-size: 12px;
+    }
+
+    .profile-stat-rows {
+      width: 100%; border-top: 1px solid var(--border); padding-top: 10px;
+      display: flex; flex-direction: column; gap: 6.5px; font-size: 12px;
+    }
+    .stat-row-item {
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--text-dim);
+    }
+    .stat-row-val { color: var(--text); font-weight: 600; }
+    .stat-row-val b { color: var(--cyan); }
+
+    /* 30px 정사각형 SNS 버튼 */
+    .sns-links-grid {
+      display: flex; gap: 10px; align-items: center; justify-content: center;
+      margin-top: 14px;
+    }
+    .sns-icon-btn {
+      width: 30px; height: 30px; border-radius: var(--btn-radius);
+      background: #11141d; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none; position: relative; overflow: hidden;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sns-icon-btn img {
+      width: 18px; height: 18px; object-fit: contain;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .sns-icon-btn.soop:hover {
+      border-color: #22d3ee; background: #151a26; transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(34, 211, 238, 0.35);
+    }
+    .sns-icon-btn.soop:hover img {
+      transform: scale(1.1); filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.6));
+    }
+    .sns-icon-btn.insta:hover {
+      border-color: #e1306c; background: #19121c; transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(225, 48, 108, 0.4);
+    }
+    .sns-icon-btn.insta:hover img {
+      transform: scale(1.1); filter: drop-shadow(0 0 3px rgba(225, 48, 108, 0.6));
+    }
+
+    /* [좌측] 핵심통계분석 차트 박스 */
+    .chart-box-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden; min-width: 0;
+    }
+    .chart-box-top {
+      padding: 10px 16px; background: #11141d; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .chart-tab-group { display: flex; gap: 5px; }
+    .chart-tab-btn {
+      padding: 5px var(--btn-padding-x); border-radius: var(--btn-radius); border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .chart-tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+    .chart-tab-btn.active {
+      color: #05070a; background: var(--cyan); border-color: var(--cyan); font-weight: 700;
+    }
+
+    .chart-render-area {
+      flex: 1; padding: 6px 10px 0; min-height: 285px; position: relative;
+      display: flex; flex-direction: column;
+    }
+    #mainApexChartContainer {
+      width: 100%; height: 100%; min-height: 280px;
+    }
+
+    .chart-bottom-info {
+      display: flex; justify-content: space-around; align-items: center;
+      padding: 10px 14px; border-top: 1px solid var(--border);
+      background: rgba(255,255,255,0.01);
+    }
+    .chart-info-cell { text-align: center; }
+    .chart-info-lbl { font-size: 11px; color: var(--text-dim); margin-bottom: 2px; }
+    .chart-info-num { font-size: 15px; font-weight: 700; color: var(--cyan); font-variant-numeric: tabular-nums; }
+    .chart-info-sub { font-size: 11px; color: var(--text-muted); margin-left: 3px; }
+
+    /* [좌측] RECENT FORM */
+    .streak-container-shader {
+      background-color: #0b0e14; border: 1px solid var(--border);
+      padding: 12px 20px; width: 100%;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .streak-tag {
+      font-size: 12px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px;
+    }
+    .shader-track-bar {
+      display: flex; width: 340px; height: 8px; background-color: #0d111a;
+      border-radius: 4px; overflow: hidden; position: relative;
+    }
+    .shader-match-segment {
+      height: 100%; flex: 1; margin-right: 2px;
+      background-color: #1a2233;
+      transition: background-color 0.25s ease, transform 0.25s ease, filter 0.2s ease;
+      cursor: pointer;
+    }
+    .shader-match-segment:last-child { margin-right: 0; }
+    .shader-match-segment.win { background-color: var(--neon-green); }
+    .shader-match-segment.loss { background-color: var(--neon-red); }
+    .shader-match-segment:hover { filter: brightness(1.5); transform: scaleY(1.3); }
+
+    .shader-scan-beam {
+      position: absolute; top: 0; left: -40px;
+      width: 40px; height: 100%;
+      background: linear-gradient(90deg, transparent, var(--cyan), #fff, transparent);
+      opacity: 0; pointer-events: none;
+    }
+
+    @keyframes streakHotGlow {
+      0% { filter: brightness(1) drop-shadow(0 0 1px var(--neon-green)); }
+      50% { filter: brightness(1.7) drop-shadow(0 0 6px var(--neon-green)); }
+      100% { filter: brightness(1) drop-shadow(0 0 1px var(--neon-green)); }
+    }
+    .streak-hot { animation: streakHotGlow 1.2s infinite ease-in-out; }
+
+    .streak-stat-text {
+      font-size: 12.5px; font-weight: 700; color: #cbd5e1;
+      white-space: nowrap; font-variant-numeric: tabular-nums;
+    }
+
+    /* [좌측] 경기 전적 필터 */
+    .filter-check-group { display: flex; gap: 6px; align-items: center; }
+    .filter-check-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 0 var(--btn-padding-x);
+      height: var(--btn-height);
+      border-radius: var(--btn-radius);
+      border: 1px solid var(--border);
+      background: #0e121a; color: var(--text-muted); font-size: 12px; font-weight: 600;
+      cursor: pointer; user-select: none; transition: all 0.15s ease;
+    }
+    .filter-check-chip:hover { border-color: #2e3b54; color: var(--text); }
+    .filter-check-chip .chip-box {
+      width: 12px; height: 12px; border-radius: 3px;
+      border: 1px solid #334155; background: #080b11;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .filter-check-chip.active {
+      color: #f1f5f9; border-color: var(--border); background: #0e121a;
+    }
+    .filter-check-chip.active .chip-box {
+      background: var(--cyan); border-color: var(--cyan);
+    }
+    .filter-check-chip.active .chip-box::after {
+      content: ''; width: 3px; height: 6px; border: solid #05070a;
+      border-width: 0 1.8px 1.8px 0; transform: rotate(45deg) translate(-0.5px, -0.5px);
+    }
+
+    .match-row {
+      display: grid; grid-template-columns: 50px 2fr 1fr 110px;
+      gap: 12px; align-items: center; padding: 9px 20px; font-size: 13px;
+    }
+    .match-row:nth-child(odd) { background: rgba(255,255,255,0.015); }
+    .match-row:hover { background: rgba(34,211,238,0.08); }
+    .wl-badge {
+      width: 24px; height: 24px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800;
+    }
+    .wl-w { background: rgba(0, 255, 157, 0.15); color: var(--neon-green); }
+    .wl-l { background: rgba(255, 51, 68, 0.15); color: var(--neon-red); }
+    .match-map { color: var(--text-muted); margin-left: 18px; font-size: 12px; }
+    .match-pager {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 10px; font-size: 12px; border-top: 1px solid var(--border);
+    }
+    .match-pager button {
+      width: 28px; height: 28px; border-radius: var(--btn-radius); border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); cursor: pointer;
+    }
+    .match-pager button:hover:not(:disabled) { color: #67e8f9; border-color: rgba(34,211,238,0.35); }
+
+    /* [우측] 토글 셀렉트 박스 */
+    .filter-select-toggle-big,
+    #radarPeriodSelect {
+      height: var(--btn-height) !important;
+      padding: 0 var(--btn-padding-x) !important;
+      border-radius: var(--btn-radius) !important;
+      border: 1px solid var(--border) !important;
+      background: #11141d !important;
+      color: #cbd5e1 !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      outline: none; cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .filter-select-toggle-big:focus, .filter-select-toggle-big:hover,
+    #radarPeriodSelect:focus, #radarPeriodSelect:hover {
+      border-color: var(--cyan) !important; color: var(--cyan) !important;
+    }
+
+    .filter-side-card {
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: #0b0e14;
+    }
+
+    /* 5각 레이더 카드 */
+    .radar-card-wrap {
+      display: flex; flex-direction: column; align-items: center; padding: 10px 14px 14px;
+    }
+    .radar-svg-area { width: 220px; height: 195px; position: relative; }
+    @keyframes radarPulse {
+      0% { r: 3.5px; stroke-opacity: 1; stroke-width: 1.5; }
+      50% { r: 9px; stroke-opacity: 0.3; stroke-width: 3; }
+      100% { r: 3.5px; stroke-opacity: 1; stroke-width: 1.5; }
+    }
+    .radar-top-pulse { animation: radarPulse 1.8s infinite ease-in-out; transform-origin: center; }
+
+    /* 최근 대회 승률 (육각 코어) */
+    .tech-body-compact {
+      display: grid; grid-template-columns: 90px 1fr; gap: 12px; align-items: center; padding: 12px 14px;
+    }
+    .variant-hexagon {
+      position: relative; width: 85px; height: 85px; display: flex; justify-content: center; align-items: center; margin: 0 auto;
+    }
+    .svg-hexagon { width: 85px; height: 85px; transform: rotate(-90deg); transform-origin: center center; }
+    .hex-bg { fill: none; stroke: #161b26; stroke-width: 7; stroke-linejoin: round; }
+    .hex-fill {
+      fill: none; stroke: var(--neon-green); stroke-width: 7; stroke-linejoin: round;
+      stroke-dasharray: 275; stroke-dashoffset: 275; stroke-linecap: round;
+      filter: drop-shadow(0 0 6px rgba(0,255,157,0.6));
+      transition: stroke-dashoffset 1.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .center-num-style { position: absolute; font-size: 17px; font-weight: 800; color: var(--neon-green); }
+    .tech-list-stack { display: flex; flex-direction: column; gap: 6px; list-style: none; }
+    .tech-row-chip {
+      display: flex; justify-content: space-between; align-items: center;
+      background-color: #11141d; border: 1px solid #1c2030; border-radius: var(--btn-radius);
+      padding: 5px 9px; transition: all 0.15s ease; cursor: pointer;
+    }
+    .tech-row-chip:hover { border-color: #2e3b54; background-color: #141824; }
+    .tech-name-side { font-size: 11.5px; font-weight: 600; color: #cbd5e1; }
+    .tech-stat-side { display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+    .tech-score { font-size: 10.5px; color: #64748b; font-weight: 500; }
+    .tech-score .w { color: #8b8f9a; margin-right: 2px; }
+    .tech-rate { font-size: 11.5px; font-weight: 700; color: var(--neon-green); width: 30px; text-align: right; }
+    .tech-row-chip.low-perf .tech-rate { color: #f59e0b; }
+
+    /* 방송 활동 지표 */
+    .arch-chart-zone {
+      position: relative; width: 100%; height: 115px; display: flex; justify-content: center; align-items: flex-end; overflow: hidden;
+    }
+    .arch-svg {
+      width: 200px; height: 200px; transform: rotate(-180deg); transform-origin: center center; position: absolute; bottom: -100px;
+    }
+    .arch-track { fill: none; stroke-width: 14; stroke-linecap: round; }
+    .arch-bg { stroke: #141923; }
+    .arch-fill { transition: stroke-dashoffset 1.2s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .color-total { stroke: #0d9488; }
+    .color-terran { stroke: #2563eb; }
+    .color-zerg { stroke: #8b5cf6; }
+    .color-protoss { stroke: #f97316; }
+
+    .race-legend-row {
+      display: flex; justify-content: space-between; align-items: center;
+      list-style: none; padding: 8px 14px; border-top: 1px solid var(--border); margin: 0;
+    }
+    .race-legend-inline-item { display: flex; align-items: center; gap: 4px; font-size: 11px; }
+    .legend-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+    .legend-dot.total { background-color: #0d9488; }
+    .legend-dot.terran { background-color: #2563eb; }
+    .legend-dot.zerg { background-color: #8b5cf6; }
+    .legend-dot.protoss { background-color: #f97316; }
+    .race-label-txt { color: #8b8f9a; font-weight: 600; }
+    .race-val-txt { color: #f1f5f9; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+    @media (max-width: 1100px) {
+      .dashboard-split-layout { grid-template-columns: 1fr; }
+      .top-dual-grid { grid-template-columns: 1fr; }
+      .dashboard-right-rail { width: 100%; }
+      .shader-track-bar { width: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="site-top"></div>
+
+  <main class="main" id="app">
+    <div id="profileLoading">
+      <div class="profile-spin"></div>
+      <div>데이터를 읽는중입니다</div>
+    </div>
+  </main>
+
+  <div id="site-bottom"></div>
+
+  <script src="common.js"></script>
+  <script src="period.js"></script>
+  <script>
+    const SHEET = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv";
+    const ROSTER_CSV = SHEET + "&gid=0";
+    const DATA_CSV = SHEET + "&gid=1588738461";
+    const MATCH_GID = { 7: "1341589360", 8: "1402849856" };
+
+    const CREW_LOGO = {
+      "바스포드": "logo/basford_em.webp", "BGM": "logo/bgm_em.webp", "흑카데미": "logo/black_em.webp",
+      "보신대": "logo/bsu_em.webp", "씨나인": "logo/c9_em.webp", "캄몬스타즈": "logo/calm_em.webp",
+      "츠캄몬스타즈": "logo/calm_em.webp", "츠캄": "logo/calm_em.webp", "DM": "logo/dm_em.webp",
+      "드림즈": "logo/dreams_em.webp", "더블비": "logo/dubbleb_em.webp", "거성대": "logo/gsu_em.webp",
+      "HM": "logo/hm_em.webp", "JSA": "logo/jsa_em.webp", "정선대": "logo/ju_em.webp",
+      "케이대": "logo/ku_em.webp", "엠비대": "logo/mbu_em.webp", "뉴캣슬": "logo/newcat_em.webp",
+      "NSU": "logo/nsu_em.webp", "늪지대": "logo/nzu_em.webp", "섭이대": "logo/siu_em.webp",
+      "철와대": "logo/su_em.webp", "우끼끼즈": "logo/ukks_em.webp", "MSG": "logo/msg_em.webp",
+      "와플대": "logo/waffleu_em.webp", "YB": "logo/yb_em.webp", "염석대": "logo/yuam_em.webp",
+      "학버드": "logo/hak_em.webp", "철기중대": "logo/chulgi_em.webp", "패션스타": "logo/fstar_em.webp",
+      "나사": "logo/nasa_em.webp", "ASG": "logo/asg_em.webp", "캄성여대": "logo/cswu_em.webp",
+      "수술대": "logo/ssu_em.webp", "신세계": "logo/ssg_em.webp", "뽀인구단": "logo/bboin_em.webp",
+      "장독대": "logo/jdu_em.webp", "이노대": "logo/ino_em.webp", "방치클럽": "logo/bangchi_em.webp",
+      "복덕방": "logo/bdb_em.webp", "CP": "logo/cp_em.webp", "DP": "logo/dp_em.webp",
+      "묵섭대": "logo/mook_em.webp", "광수대": "logo/gwangsu_em.webp", "캄브릿지": "logo/calmb_em.webp",
+      "마종대": "logo/majong_em.webp", "TPZ": "logo/tpz_em.webp", "범진대": "logo/bj_em.webp",
+      "파이스트": "logo/pist_em.webp", "미다스공대": "logo/midas2_em.webp", "MGS": "logo/mgs_em.webp",
+      "라저대": "logo/rthat_em.webp", "아마대": "logo/ama_em.webp", "츠나대": "logo/tsuna_em.webp",
+      "무창클럽": "logo/moo_em.webp", "카사대": "logo/casa_em.webp", "철거반": "logo/cgb_em.webp",
+      "노가다대": "logo/nogada_em.webp", "마싯대": "logo/masit_em.webp", "점문예대": "logo/jm_em.webp",
+      "라이트클럽": "logo/lightclub_em.webp", "고대": "logo/go_em.webp", "친박연대": "logo/chinpark_em.webp",
+      "철기대": "logo/cgd_em.webp", "석사관학교": "logo/seoksa_em.webp", "할없녀": "logo/halgirl_em.webp",
+      "무친대": "logo/mcu_em.webp", "소림사": "logo/sorimsa_em.webp"
+    };
+
+    function qs(name) { return new URLSearchParams(location.search).get(name) || ""; }
+    function norm(s) { return String(s || "").replace(/[^가-힣a-zA-Z0-9]/g, "").toLowerCase(); }
+    function num(s) { return parseInt(String(s || "").replace(/[^0-9]/g, ""), 10) || 0; }
+    function formatAir(min) {
+      if (!min) return "-";
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return h + '시간 ' + String(m).padStart(2, "0") + '분';
+    }
+    function formatNum(n, unit) {
+      if (!n) return "-";
+      return n.toLocaleString() + (unit ? unit : "");
+    }
+    function profileImg(id) {
+      if (!id) return "";
+      return "https://stimg.sooplive.com/LOGO/" + id.substring(0, 2).toLowerCase() + "/" + id + "/" + id + ".jpg";
+    }
+    function crewLogo(name) {
+      if (!name) return "";
+      var n = String(name).replace(/\s+/g, "").trim();
+      if (n === "츠캄몬스타즈" || n === "츠캄" || n === "캄몬" || n === "츠캄몬") n = "캄몬스타즈";
+      return CREW_LOGO[n] || "";
+    }
+    function raceLabel(r) {
+      var s = String(r || "").trim().toUpperCase();
+      if (s === "T" || s === "테" || s.indexOf("TERRAN") !== -1 || s === "테란") return "TERRAN";
+      if (s === "Z" || s === "저" || s.indexOf("ZERG") !== -1 || s === "저그") return "ZERG";
+      if (s === "P" || s === "프" || s.indexOf("PROTO") !== -1 || s === "프로토스") return "PROTOSS";
+      return r ? String(r).toUpperCase() : "";
+    }
+    function rankOf(list, id, key) {
+      var sorted = list.slice().filter(x => (x[key] || 0) > 0).sort((a, b) => b[key] - a[key]);
+      for (var i = 0; i < sorted.length; i++) {
+        if (sorted[i].id === id) return i + 1;
+      }
+      return null;
+    }
+
+    var ALL_ROSTER = [];
+    var MATCH_PAGE = 1;
+    var MATCH_PAGE_SIZE = 12;
+    var MATCH_DUMMY = [];
+    var SELECTED_MATCH_TYPES = [];
+    var mainApexChart = null;
+
+    function renderEmpty(msg) {
+      document.getElementById("app").innerHTML = '<div style="padding:48px 20px; text-align:center; color:var(--text-dim); background:var(--bg-card); border:1px solid var(--border); border-radius:var(--card-radius);">' + msg + "</div>";
+    }
+
+    function renderProfile(person, statsList, matchMap) {
+      var reversedStats = statsList.slice().reverse();
+      var mine = reversedStats.find(s => {
+        var sName = norm(s.name);
+        return sName === norm(person.name) || person.aliases.some(a => norm(a) === sName);
+      }) || {
+        star: 0, peak: 0, avgView: 0, viewership: 0, airMinutes: 0, chat: 0
+      };
+
+      var linked = statsList.map(s => {
+        var r = ALL_ROSTER.find(p => norm(p.name) === norm(s.name) || p.aliases.some(a => norm(a) === norm(s.name)));
+        return {
+          id: r ? r.id : "", crew: r ? r.crew : "FA",
+          star: s.star, peak: s.peak, avgView: s.avgView, viewership: s.viewership, airMinutes: s.airMinutes, chat: s.chat
+        };
+      });
+
+      var starRank = rankOf(linked, person.id, "star");
+      var avgRank = rankOf(linked, person.id, "avgView");
+      var viewRank = rankOf(linked, person.id, "viewership");
+      var airRank = rankOf(linked, person.id, "airMinutes");
+      var peakRank = rankOf(linked, person.id, "peak");
+
+      var rec = matchMap[norm(person.name)];
+      if (!rec) {
+        for (var k = 0; k < person.aliases.length; k++) {
+          if (matchMap[norm(person.aliases[k])]) { rec = matchMap[norm(person.aliases[k])]; break; }
+        }
+      }
+      var games = rec ? rec.games : 0;
+      var win = rec ? rec.win : 0;
+      var lose = rec ? rec.lose : 0;
+      var wr = games ? Math.round(win / games * 1000) / 10 : null;
+
+      // 스폰 승률 순위 계산 (3경기 이상 기준)
+      var allMatchList = Object.values(matchMap).filter(m => m.games >= 3);
+      allMatchList.sort((a, b) => (b.win / b.games) - (a.win / a.games));
+      var spRank = null;
+      if (games >= 3) {
+        var sIdx = allMatchList.findIndex(m => norm(m.name) === norm(person.name));
+        if (sIdx !== -1) spRank = sIdx + 1;
+      }
+      var tourRank = 3;
+
+      var logo = crewLogo(person.crew);
+      var img = profileImg(person.id);
+      var startDays = 0;
+      if (person.started) {
+        var sm = String(person.started).trim().match(/(\d{2,4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+        if (sm) {
+          var sy = parseInt(sm[1], 10);
+          if (sy < 100) sy += 2000;
+          var sd = new Date(sy, parseInt(sm[2], 10) - 1, parseInt(sm[3], 10));
+          if (!isNaN(sd.getTime())) startDays = Math.max(0, Math.floor((Date.now() - sd.getTime()) / 86400000));
+        }
+      }
+
+      var formBits = [];
+      for (var f = 0; f < 15; f++) formBits.push(Math.random() > 0.45 ? "W" : "L");
+      var formWin = formBits.filter(x => x === "W").length;
+      var formLose = formBits.filter(x => x === "L").length;
+
+      MATCH_DUMMY = [];
+      var maps = ["투혼", "청풍", "신 청풍", "데스티니", "네오 실피드"];
+      var names = ["한별", "도윤", "서준", "하린", "지호", "민재", "유나", "태윤", "소율", "준혁"];
+      var races = ["T", "Z", "P"];
+      var notes = ["대회", "CK", "스폰"];
+      for (var d = 1; d <= 24; d++) {
+        MATCH_DUMMY.push({
+          wl: Math.random() > 0.45 ? "W" : "L",
+          race: races[d % 3],
+          vs: names[d % names.length],
+          map: maps[(d - 1) % maps.length],
+          note: notes[d % 3],
+          date: "08." + String(((28 - d + 30) % 28) + 1).padStart(2, "0")
+        });
+      }
+
+      var birthTxt = person.birthday ? String(person.birthday) : "-";
+      var instaRaw = String(person.insta || "").trim();
+      var instaHref = instaRaw ? (/^https?:\/\//i.test(instaRaw) ? instaRaw : ("https://instagram.com/" + instaRaw.replace(/^@/, ""))) : "";
+
+      document.title = person.name + " - 스버스";
+
+      document.getElementById("app").innerHTML = `
+        <div class="dashboard-split-layout">
+          
+          <div class="dashboard-left-stream">
+            <div class="top-dual-grid">
+              
+              <div class="profile-vertical-card">
+                <div class="profile-avatar">
+                  <img src="${img}" alt="" onerror="this.style.display='none'">
+                </div>
+                <div class="profile-name">
+                  <span class="name-emblem">${logo ? '<img src="'+logo+'" alt="">' : "FA"}</span>
+                  <span class="race-letter ${raceLabel(person.race).charAt(0)}">${raceLabel(person.race).charAt(0)}</span>
+                  <span>${person.name}</span>
+                </div>
+                <div class="profile-badges">
+                  <span class="meta-badge">${person.crew || "FA"}</span>
+                  <span class="meta-badge">${raceLabel(person.race)}</span>
+                  <span class="meta-badge">ID: ${person.id || "-"}</span>
+                </div>
+
+                <div style="width: 100%; font-size: 11.5px; color: var(--text-dim); margin: 4px 0 10px; display: flex; align-items: center; justify-content: center; gap: 14px;">
+                  <span>생일 <span style="color: var(--text-dim); font-size: 11.5px; font-weight: normal;">${birthTxt}</span></span>
+                  <span>스타시작 <span class="tick-num" id="startTick">0</span> 일</span>
+                </div>
+
+                <div class="profile-stat-rows">
+                  <div class="stat-row-item">
+                    <span>대회승률</span>
+                    <span class="stat-row-val">
+                      <span style="color: var(--text-dim); font-size: 11px; font-weight: normal; margin-right: 5px;">3승 3패</span>
+                      <span style="color: #00ff9d; font-weight: 600;">66.0%</span>
+                      <b>(${tourRank}위)</b>
+                    </span>
+                  </div>
+                  <div class="stat-row-item">
+                    <span>스폰승률</span>
+                    <span class="stat-row-val">
+                      ${games ? '<span style="color: var(--text-dim); font-size: 11px; font-weight: normal; margin-right: 5px;">' + win + '승 ' + lose + '패</span>' : ''}
+                      <span style="color: var(--cyan); font-weight: 600;">${wr !== null ? wr + '%' : '-'}</span>
+                      ${spRank ? '<b>(' + spRank + '위)</b>' : ''}
+                    </span>
+                  </div>
+                  <div class="stat-row-item">
+                    <span>뷰어십</span>
+                    <span class="stat-row-val">${formatNum(mine.viewership, "시간")} ${viewRank ? '<b>(' + viewRank + '위)</b>' : ''}</span>
+                  </div>
+                  <div class="stat-row-item">
+                    <span>별풍선</span>
+                    <span class="stat-row-val">${formatNum(mine.star, "개")} ${starRank ? '<b>(' + starRank + '위)</b>' : ''}</span>
+                  </div>
+                  <div class="stat-row-item">
+                    <span>방송시간</span>
+                    <span class="stat-row-val">${formatAir(mine.airMinutes)} ${airRank ? '<b>(' + airRank + '위)</b>' : ''}</span>
+                  </div>
+                  <div class="stat-row-item">
+                    <span>평청자</span>
+                    <span class="stat-row-val">${formatNum(mine.avgView, "명")} ${avgRank ? '<b>(' + avgRank + '위)</b>' : ''}</span>
+                  </div>
+                  <div class="stat-row-item">
+                    <span>최고시청자</span>
+                    <span class="stat-row-val">${formatNum(mine.peak, "명")} ${peakRank ? '<b>(' + peakRank + '위)</b>' : ''}</span>
+                  </div>
+                  <div class="stat-row-item">
+                    <span>채팅수</span>
+                    <span class="stat-row-val">${formatNum(mine.chat, "회")}</span>
+                  </div>
+                </div>
+
+                <div class="sns-links-grid">
+                  <a class="sns-icon-btn soop" 
+                     href="${person.id ? 'https://play.sooplive.co.kr/' + person.id : 'javascript:void(0);'}" 
+                     target="${person.id ? '_blank' : '_self'}" 
+                     title="숲 방송국" 
+                     onclick="${person.id ? '' : 'alert(\'업데이트 중입니다.\'); return false;'}">
+                    <img src="logo/soop_logo.webp" alt="SOOP" onerror="this.src='logo/soop_logo.png'">
+                  </a>
+                  <a class="sns-icon-btn insta" 
+                     href="${instaHref ? instaHref : 'javascript:void(0);'}" 
+                     target="${instaHref ? '_blank' : '_self'}" 
+                     title="인스타그램" 
+                     onclick="${instaHref ? '' : 'alert(\'업데이트 중입니다.\'); return false;'}">
+                    <img src="logo/insta_logo.webp" alt="Instagram" onerror="this.src='logo/insta_logo.png'">
+                  </a>
+                </div>
+              </div>
+
+              <!-- 핵심통계분석 차트 -->
+              <div class="chart-box-card">
+                <div class="chart-box-top">
+                  <span style="font-size:12.5px; font-weight:700; color:#cbd5e1;">핵심통계분석</span>
+                  <div class="chart-tab-group">
+                    <button type="button" class="chart-tab-btn active" onclick="switchMainChart('viewership')">뷰어십</button>
+                    <button type="button" class="chart-tab-btn" onclick="switchMainChart('star')">별풍선</button>
+                    <button type="button" class="chart-tab-btn" onclick="switchMainChart('winrate')">경기승률</button>
+                  </div>
+                </div>
+                <div class="chart-render-area" id="mainApexChartContainer"></div>
+                <div class="chart-bottom-info">
+                  <div class="chart-info-cell">
+                    <div class="chart-info-lbl">뷰어십</div>
+                    <div><span class="chart-info-num">${formatNum(mine.viewership)}</span><span class="chart-info-sub">시간</span></div>
+                  </div>
+                  <div style="width:1px; height:20px; background:var(--border);"></div>
+                  <div class="chart-info-cell">
+                    <div class="chart-info-lbl">별풍선</div>
+                    <div><span class="chart-info-num" style="color:#f59e0b;">${formatNum(mine.star)}</span><span class="chart-info-sub">개</span></div>
+                  </div>
+                  <div style="width:1px; height:20px; background:var(--border);"></div>
+                  <div class="chart-info-cell">
+                    <div class="chart-info-lbl">방송시간</div>
+                    <div><span class="chart-info-num" style="color:#00ff9d;">${Math.floor(mine.airMinutes/60)}</span><span class="chart-info-sub">시간</span></div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- 최근폼 -->
+            <div class="streak-container-shader">
+              <span class="streak-tag">RECENT FORM</span>
+              <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="shader-track-bar" id="shaderTrackBar">
+                  <div class="shader-scan-beam" id="shaderScanBeam"></div>
+                  ${formBits.map((x, i) => '<div class="shader-match-segment" id="seg-' + i + '" data-real="' + x + '" title="' + (x === 'W' ? '승리' : '패배') + '"></div>').join("")}
+                </div>
+                <div class="streak-stat-text">
+                  15전 ${formWin}승 ${formLose}패
+                </div>
+              </div>
+            </div>
+
+            <!-- 경기전적기록 -->
+            <div class="side-box">
+              <div class="side-box-header">
+                <span>경기전적기록</span>
+                <div class="filter-check-group" id="matchFilterChips">
+                  <div class="filter-check-chip active" data-type="all" onclick="toggleMatchChip('all')">
+                    <span class="chip-box"></span>전체
+                  </div>
+                  <div class="filter-check-chip" data-type="대회" onclick="toggleMatchChip('대회')">
+                    <span class="chip-box"></span>대회
+                  </div>
+                  <div class="filter-check-chip" data-type="CK" onclick="toggleMatchChip('CK')">
+                    <span class="chip-box"></span>CK
+                  </div>
+                  <div class="filter-check-chip" data-type="스폰" onclick="toggleMatchChip('스폰')">
+                    <span class="chip-box"></span>스폰
+                  </div>
+                </div>
+              </div>
+              <div id="matchBody"></div>
+              <div class="match-pager" id="matchPager"></div>
+            </div>
+
+          </div>
+
+          <!-- 우측 레일 -->
+          <aside class="dashboard-right-rail">
+            
+            <div class="side-box">
+              <div class="side-box-header">
+                <span>FILTER</span>
+              </div>
+              <div class="filter-side-card">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 12px; font-weight: 700; color: var(--text-dim);">기간</span>
+                    <select class="filter-select-toggle-big" id="filterYearSelect" onchange="onPeriodChange()">
+                      <option value="2025">2025</option>
+                      <option value="2026" selected>2026</option>
+                      <option value="2027">2027</option>
+                    </select>
+                    <select class="filter-select-toggle-big" id="filterMonthSelect" onchange="onPeriodChange()">
+                      <option value="1">1월</option><option value="2">2월</option><option value="3">3월</option>
+                      <option value="4">4월</option><option value="5">5월</option><option value="6">6월</option>
+                      <option value="7">7월</option><option value="8" selected>8월</option><option value="9">9월</option>
+                      <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+                    </select>
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 12px; font-weight: 700; color: var(--text-dim);">누적</span>
+                    <select class="filter-select-toggle-big" id="filterRangeSelect" onchange="onRangeChange(this.value)">
+                      <option value="3m">3개월</option>
+                      <option value="6m">6개월</option>
+                      <option value="12m">12개월</option>
+                      <option value="thisYear" selected>올해</option>
+                      <option value="nextYear">내년</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="side-box">
+              <div class="side-box-header">
+                <span>종합 전적 밸런스</span>
+                <select id="radarPeriodSelect" onchange="switchRadarPeriod(this.value)">
+                  <option value="thisMonth">이번달</option>
+                  <option value="lastMonth">지난달</option>
+                  <option value="30d" selected>최근 30일</option>
+                  <option value="90d">최근 90일</option>
+                  <option value="year">올해</option>
+                  <option value="lastYear">작년</option>
+                </select>
+              </div>
+              <div class="radar-card-wrap">
+                <div class="radar-svg-area">
+                  <svg id="radarSvg" viewBox="0 0 220 195" style="width:100%; height:100%;"></svg>
+                </div>
+                <div id="radarStatList" style="width:100%; border-top:1px solid var(--border); margin-top:6px; display:flex; flex-direction:column; gap:5px; font-size:11.5px;"></div>
+              </div>
+            </div>
+
+            <div class="side-box">
+              <div class="side-box-header">
+                <span>최근대회승률</span>
+              </div>
+              <div class="tech-body-compact">
+                <div class="variant-hexagon">
+                  <svg class="svg-hexagon" viewBox="0 0 100 100">
+                    <polygon class="hex-bg" points="50,10 85,30 85,70 50,90 15,70 15,30" />
+                    <polygon id="hexFill" class="hex-fill" points="50,10 85,30 85,70 50,90 15,70 15,30" />
+                  </svg>
+                  <div class="center-num-style" id="hexText">0%</div>
+                </div>
+                <ul class="tech-list-stack">
+                  <li class="tech-row-chip">
+                    <span class="tech-name-side">ASL 3</span>
+                    <div class="tech-stat-side"><span class="tech-score"><span class="w">3승</span><span class="l">3패</span></span><span class="tech-rate">66%</span></div>
+                  </li>
+                  <li class="tech-row-chip">
+                    <span class="tech-name-side">ASL 2</span>
+                    <div class="tech-stat-side"><span class="tech-score"><span class="w">3승</span><span class="l">3패</span></span><span class="tech-rate">55%</span></div>
+                  </li>
+                  <li class="tech-row-chip low-perf">
+                    <span class="tech-name-side">KSL 2</span>
+                    <div class="tech-stat-side"><span class="tech-score"><span class="w">2승</span><span class="l">2패</span></span><span class="tech-rate">48%</span></div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="side-box">
+              <div class="side-box-header">
+                <span>방송 활동 지표</span>
+              </div>
+              <div style="padding-top: 6px;">
+                <div class="arch-chart-zone">
+                  <svg class="arch-svg" viewBox="0 0 200 200">
+                    <circle class="arch-track arch-bg" cx="100" cy="100" r="85" stroke-dasharray="267 534" />
+                    <circle id="archTotal" class="arch-track arch-fill color-total" cx="100" cy="100" r="85" stroke-dasharray="267 534" stroke-dashoffset="267" />
+                    <circle class="arch-track arch-bg" cx="100" cy="100" r="68" stroke-dasharray="213 426" />
+                    <circle id="archTerran" class="arch-track arch-fill color-terran" cx="100" cy="100" r="68" stroke-dasharray="213 426" stroke-dashoffset="213" />
+                    <circle class="arch-track arch-bg" cx="100" cy="100" r="51" stroke-dasharray="160 320" />
+                    <circle id="archZerg" class="arch-track arch-fill color-zerg" cx="100" cy="100" r="51" stroke-dasharray="160 320" stroke-dashoffset="160" />
+                    <circle class="arch-track arch-bg" cx="100" cy="100" r="34" stroke-dasharray="106 212" />
+                    <circle id="archProtoss" class="arch-track arch-fill color-protoss" cx="100" cy="100" r="34" stroke-dasharray="106 212" stroke-dashoffset="106" />
+                  </svg>
+                </div>
+                <ul class="race-legend-row" style="padding:8px 12px;">
+                  <li class="race-legend-inline-item"><span class="legend-dot total"></span><span class="race-label-txt">방송시간</span><span class="race-val-txt">${Math.floor(mine.airMinutes/60)}h</span></li>
+                  <li class="race-legend-inline-item"><span class="legend-dot terran"></span><span class="race-label-txt">평청자</span><span class="race-val-txt">${formatNum(mine.avgView)}</span></li>
+                  <li class="race-legend-inline-item"><span class="legend-dot zerg"></span><span class="race-label-txt">최고시청수</span><span class="race-val-txt">${formatNum(mine.peak)}</span></li>
+                  <li class="race-legend-inline-item"><span class="legend-dot protoss"></span><span class="race-label-txt">채팅수</span><span class="race-val-txt">${formatNum(mine.chat)}</span></li>
+                </ul>
+              </div>
+            </div>
+
+          </aside>
+
+        </div>
+      `;
+
+      renderMatchPage(1);
+      if (document.getElementById("startTick")) {
+        document.getElementById("startTick").textContent = startDays.toLocaleString();
+      }
+
+      runRandomStreakAnimation(formBits);
+
+      setTimeout(() => {
+        drawRadarChart('30d');
+
+        const hexFill = document.getElementById("hexFill");
+        const hexText = document.getElementById("hexText");
+        const targetRate = 66;
+        if (hexFill) hexFill.style.strokeDashoffset = 275 * (1 - targetRate / 100);
+        if (hexText) {
+          let cur = 0;
+          const step = () => {
+            cur += 2;
+            if (cur <= targetRate) {
+              hexText.textContent = cur + '%';
+              requestAnimationFrame(step);
+            } else {
+              hexText.textContent = targetRate + '%';
+            }
+          };
+          requestAnimationFrame(step);
+        }
+
+        const maxAir = Math.max(...statsList.map(s => s.airMinutes || 0), 1);
+        const maxAvg = Math.max(...statsList.map(s => s.avgView || 0), 1);
+        const maxPeak = Math.max(...statsList.map(s => s.peak || 0), 1);
+        const maxChat = Math.max(...statsList.map(s => s.chat || 0), 1);
+
+        const airPct = Math.min(100, Math.max(10, Math.round(((mine.airMinutes || 0) / maxAir) * 100)));
+        const avgPct = Math.min(100, Math.max(10, Math.round(((mine.avgView || 0) / maxAvg) * 100)));
+        const peakPct = Math.min(100, Math.max(10, Math.round(((mine.peak || 0) / maxPeak) * 100)));
+        const chatPct = Math.min(100, Math.max(10, Math.round(((mine.chat || 0) / maxChat) * 100)));
+
+        const aTotal = document.getElementById("archTotal");
+        const aT = document.getElementById("archTerran");
+        const aZ = document.getElementById("archZerg");
+        const aP = document.getElementById("archProtoss");
+
+        if (aTotal) aTotal.style.strokeDashoffset = 267 * (1 - airPct / 100);
+        if (aT) aT.style.strokeDashoffset = 213 * (1 - avgPct / 100);
+        if (aZ) aZ.style.strokeDashoffset = 160 * (1 - peakPct / 100);
+        if (aP) aP.style.strokeDashoffset = 106 * (1 - chatPct / 100);
+      }, 60);
+
+      initApexChart(mine);
+    }
+
+    function runRandomStreakAnimation(realBits) {
+      const mode = Math.floor(Math.random() * 5) + 1;
+      const segs = realBits.map((_, i) => document.getElementById(`seg-${i}`));
+      const beam = document.getElementById('shaderScanBeam');
+
+      if (mode === 1) {
+        realBits.forEach((b, idx) => {
+          setTimeout(() => {
+            if (segs[idx]) segs[idx].className = 'shader-match-segment ' + (b === 'W' ? 'win' : 'loss');
+          }, idx * 45);
+        });
+      } else if (mode === 2) {
+        let step = 0;
+        const interval = setInterval(() => {
+          segs.forEach((el, idx) => {
+            if (!el) return;
+            if (idx >= Math.floor(step / 2)) {
+              el.className = 'shader-match-segment ' + (Math.random() > 0.5 ? 'win' : 'loss');
+            } else {
+              el.className = 'shader-match-segment ' + (realBits[idx] === 'W' ? 'win' : 'loss');
+            }
+          });
+          step++;
+          if (step > 30) {
+            clearInterval(interval);
+            segs.forEach((el, idx) => {
+              if (el) el.className = 'shader-match-segment ' + (realBits[idx] === 'W' ? 'win' : 'loss');
+            });
+          }
+        }, 40);
+      } else if (mode === 3) {
+        if (beam) {
+          beam.style.opacity = '1';
+          beam.style.transition = 'left 0.4s ease-in-out';
+          beam.style.left = '100%';
+          setTimeout(() => {
+            beam.style.transition = 'left 0.4s ease-in-out';
+            beam.style.left = '-40px';
+            realBits.forEach((b, idx) => {
+              setTimeout(() => {
+                if (segs[idx]) segs[idx].className = 'shader-match-segment ' + (b === 'W' ? 'win' : 'loss');
+              }, idx * 25);
+            });
+            setTimeout(() => { beam.style.opacity = '0'; }, 400);
+          }, 450);
+        }
+      } else if (mode === 4) {
+        realBits.forEach((b, idx) => {
+          if (!segs[idx]) return;
+          segs[idx].style.transform = 'scaleY(0)';
+          segs[idx].style.transformOrigin = 'bottom';
+          setTimeout(() => {
+            segs[idx].className = 'shader-match-segment ' + (b === 'W' ? 'win' : 'loss');
+            segs[idx].style.transform = 'scaleY(1)';
+          }, idx * 50);
+        });
+      } else if (mode === 5) {
+        realBits.forEach((b, idx) => {
+          setTimeout(() => {
+            if (!segs[idx]) return;
+            segs[idx].className = 'shader-match-segment ' + (b === 'W' ? 'win' : 'loss');
+          }, idx * 40);
+        });
+
+        setTimeout(() => {
+          let maxStreak = 0, curStreak = 0, maxStart = -1, curStart = -1;
+          realBits.forEach((b, idx) => {
+            if (b === 'W') {
+              if (curStreak === 0) curStart = idx;
+              curStreak++;
+              if (curStreak > maxStreak) {
+                maxStreak = curStreak;
+                maxStart = curStart;
+              }
+            } else {
+              curStreak = 0;
+            }
+          });
+          if (maxStreak >= 3) {
+            for (let k = maxStart; k < maxStart + maxStreak; k++) {
+              if (segs[k]) segs[k].classList.add('streak-hot');
+            }
+          }
+        }, 15 * 40 + 100);
+      }
+    }
+
+    window.toggleMatchChip = function(type) {
+      const container = document.getElementById('matchFilterChips');
+      if (!container) return;
+
+      if (type === 'all') {
+        SELECTED_MATCH_TYPES = [];
+        container.querySelectorAll('.filter-check-chip').forEach(c => c.classList.remove('active'));
+        container.querySelector('[data-type="all"]').classList.add('active');
+      } else {
+        container.querySelector('[data-type="all"]').classList.remove('active');
+        const idx = SELECTED_MATCH_TYPES.indexOf(type);
+        const chip = container.querySelector(`[data-type="${type}"]`);
+        
+        if (idx >= 0) {
+          SELECTED_MATCH_TYPES.splice(idx, 1);
+          if (chip) chip.classList.remove('active');
+        } else {
+          SELECTED_MATCH_TYPES.push(type);
+          if (chip) chip.classList.add('active');
+        }
+
+        if (SELECTED_MATCH_TYPES.length === 0) {
+          container.querySelector('[data-type="all"]').classList.add('active');
+        }
+      }
+      renderMatchPage(1);
+    };
+
+    function renderMatchPage(page) {
+      MATCH_PAGE = page;
+      var filtered = SELECTED_MATCH_TYPES.length === 0
+        ? MATCH_DUMMY
+        : MATCH_DUMMY.filter(r => SELECTED_MATCH_TYPES.includes(r.note));
+
+      var start = (page - 1) * MATCH_PAGE_SIZE;
+      var rows = filtered.slice(start, start + MATCH_PAGE_SIZE);
+      var body = document.getElementById("matchBody");
+      if (!body) return;
+
+      if (rows.length === 0) {
+        body.innerHTML = '<div style="padding:24px; text-align:center; color:var(--text-dim); font-size:12.5px;">해당 조건의 경기 기록이 없습니다.</div>';
+      } else {
+        body.innerHTML = rows.map(r => `
+          <div class="match-row">
+            <span class="wl-badge ${r.wl === 'W' ? 'wl-w' : 'wl-l'}">${r.wl}</span>
+            <span><span style="font-weight:700; color:${r.race==='T'?'#38bdf8':r.race==='Z'?'#c084fc':'#fbbf24'}; margin-right:8px;">${r.race}</span>${r.vs}<span class="match-map">${r.map}</span></span>
+            <span style="color:var(--text-dim);">${r.note}</span>
+            <span style="color:var(--text-dim); text-align:right;">${r.date}</span>
+          </div>
+        `).join("");
+      }
+
+      var pager = document.getElementById("matchPager");
+      if (!pager) return;
+      var pages = Math.max(1, Math.ceil(filtered.length / MATCH_PAGE_SIZE));
+      pager.innerHTML = `
+        <button type="button" id="mPrev">‹</button>
+        <span>${page} / ${pages}</span>
+        <button type="button" id="mNext">›</button>
+      `;
+      document.getElementById("mPrev").disabled = page <= 1;
+      document.getElementById("mPrev").onclick = () => { if (MATCH_PAGE > 1) renderMatchPage(MATCH_PAGE - 1); };
+      document.getElementById("mNext").disabled = page >= pages;
+      document.getElementById("mNext").onclick = () => { if (MATCH_PAGE < pages) renderMatchPage(MATCH_PAGE + 1); };
+    }
+
+    window.onPeriodChange = function() {
+      const y = document.getElementById('filterYearSelect') ? document.getElementById('filterYearSelect').value : '2026';
+      const m = document.getElementById('filterMonthSelect') ? document.getElementById('filterMonthSelect').value : '8';
+      console.log('선택 기간:', y + '년 ' + m + '월');
+    };
+
+    window.onRangeChange = function(val) {
+      console.log('선택 누적 범위:', val);
+    };
+
+    function drawRadarChart(rangeKey) {
+      const svg = document.getElementById("radarSvg");
+      if (!svg) return;
+
+      const dataMap = {
+        'thisMonth': [
+          { label: "대회", games: 4, win: 3, lose: 1, rate: 75.0, color: "#00ff9d" },
+          { label: "스폰", games: 20, win: 13, lose: 7, rate: 65.0, color: "#22d3ee" },
+          { label: "테란", games: 8, win: 5, lose: 3, rate: 62.5, color: "#38bdf8" },
+          { label: "저그", games: 8, win: 6, lose: 2, rate: 75.0, color: "#c084fc" },
+          { label: "토스", games: 4, win: 2, lose: 2, rate: 50.0, color: "#fbbf24" }
+        ],
+        'lastMonth': [
+          { label: "대회", games: 6, win: 3, lose: 3, rate: 50.0, color: "#00ff9d" },
+          { label: "스폰", games: 26, win: 15, lose: 11, rate: 57.7, color: "#22d3ee" },
+          { label: "테란", games: 11, win: 5, lose: 6, rate: 45.5, color: "#38bdf8" },
+          { label: "저그", games: 9, win: 6, lose: 3, rate: 66.7, color: "#c084fc" },
+          { label: "토스", games: 6, win: 4, lose: 2, rate: 66.7, color: "#fbbf24" }
+        ],
+        '30d': [
+          { label: "대회", games: 6, win: 4, lose: 2, rate: 66.7, color: "#00ff9d" },
+          { label: "스폰", games: 28, win: 18, lose: 10, rate: 64.3, color: "#22d3ee" },
+          { label: "테란", games: 12, win: 6, lose: 6, rate: 50.0, color: "#38bdf8" },
+          { label: "저그", games: 10, win: 8, lose: 2, rate: 80.0, color: "#c084fc" },
+          { label: "토스", games: 6, win: 4, lose: 2, rate: 66.7, color: "#fbbf24" }
+        ],
+        '90d': [
+          { label: "대회", games: 16, win: 10, lose: 6, rate: 62.5, color: "#00ff9d" },
+          { label: "스폰", games: 78, win: 47, lose: 31, rate: 60.3, color: "#22d3ee" },
+          { label: "테란", games: 32, win: 17, lose: 15, rate: 53.1, color: "#38bdf8" },
+          { label: "저그", games: 26, win: 19, lose: 7, rate: 73.1, color: "#c084fc" },
+          { label: "토스", games: 20, win: 11, lose: 9, rate: 55.0, color: "#fbbf24" }
+        ],
+        'year': [
+          { label: "대회", games: 24, win: 15, lose: 9, rate: 62.5, color: "#00ff9d" },
+          { label: "스폰", games: 140, win: 85, lose: 55, rate: 60.7, color: "#22d3ee" },
+          { label: "테란", games: 55, win: 29, lose: 26, rate: 52.7, color: "#38bdf8" },
+          { label: "저그", games: 48, win: 36, lose: 12, rate: 75.0, color: "#c084fc" },
+          { label: "토스", games: 37, win: 20, lose: 17, rate: 54.1, color: "#fbbf24" }
+        ],
+        'lastYear': [
+          { label: "대회", games: 20, win: 11, lose: 9, rate: 55.0, color: "#00ff9d" },
+          { label: "스폰", games: 112, win: 62, lose: 50, rate: 55.4, color: "#22d3ee" },
+          { label: "테란", games: 42, win: 20, lose: 22, rate: 47.6, color: "#38bdf8" },
+          { label: "저그", games: 38, win: 26, lose: 12, rate: 68.4, color: "#c084fc" },
+          { label: "토스", games: 32, win: 16, lose: 16, rate: 50.0, color: "#fbbf24" }
+        ]
+      };
+
+      const items = dataMap[rangeKey] || dataMap['30d'];
+      const cx = 110, cy = 100, r = 64;
+      const totalAxes = 5;
+
+      let webLines = "";
+      for (let level = 1; level <= 4; level++) {
+        const curR = (r / 4) * level;
+        let points = [];
+        for (let i = 0; i < totalAxes; i++) {
+          const angle = (Math.PI * 2 / totalAxes) * i - Math.PI / 2;
+          points.push(`${cx + curR * Math.cos(angle)},${cy + curR * Math.sin(angle)}`);
+        }
+        webLines += `<polygon points="${points.join(" ")}" fill="none" stroke="#1c2230" stroke-width="1" />`;
+      }
+
+      let axisLines = "";
+      let labelTags = "";
+      for (let i = 0; i < totalAxes; i++) {
+        const angle = (Math.PI * 2 / totalAxes) * i - Math.PI / 2;
+        const x = cx + r * Math.cos(angle);
+        const y = cy + r * Math.sin(angle);
+        axisLines += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#1c2230" stroke-width="1" />`;
+
+        const lx = cx + (r + 17) * Math.cos(angle);
+        const ly = cy + (r + 17) * Math.sin(angle) + 4;
+        labelTags += `<text x="${lx}" y="${ly}" fill="${items[i].color}" font-size="11" font-weight="700" text-anchor="middle">${items[i].label}</text>`;
+      }
+
+      let dataPoints = [];
+      let maxRate = -1;
+      let maxIndex = 0;
+
+      for (let i = 0; i < totalAxes; i++) {
+        if (items[i].rate > maxRate) {
+          maxRate = items[i].rate;
+          maxIndex = i;
+        }
+        const angle = (Math.PI * 2 / totalAxes) * i - Math.PI / 2;
+        const valPct = Math.min(100, Math.max(0, items[i].rate)) / 100;
+        const curR = r * valPct;
+        const px = cx + curR * Math.cos(angle);
+        const py = cy + curR * Math.sin(angle);
+        dataPoints.push({ x: px, y: py });
+      }
+
+      const topPt = dataPoints[maxIndex];
+      const pulseTag = `
+        <circle cx="${topPt.x}" cy="${topPt.y}" r="4" fill="#22d3ee" />
+        <circle class="radar-top-pulse" cx="${topPt.x}" cy="${topPt.y}" r="7" fill="none" stroke="#22d3ee" />
+      `;
+
+      const ptsStr = dataPoints.map(p => `${p.x},${p.y}`).join(" ");
+
+      svg.innerHTML = `
+        ${webLines}
+        ${axisLines}
+        <polygon points="${ptsStr}" fill="rgba(34, 211, 238, 0.22)" stroke="#22d3ee" stroke-width="2.2" />
+        ${pulseTag}
+        ${labelTags}
+      `;
+
+      const listEl = document.getElementById("radarStatList");
+      if (listEl) {
+        listEl.style.padding = "10px 32px 4px";
+        listEl.innerHTML = items.map(item => `
+          <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+            <div style="display:flex; align-items:center; gap:7px;">
+              <span style="width:6px; height:6px; border-radius:50%; background:${item.color}; display:inline-block;"></span>
+              <span style="color:${item.color}; font-weight:700; font-size:12px;">${item.label}</span>
+            </div>
+            <span style="color:var(--text-dim); font-size:11px;">
+              ${item.games}전 ${item.win}승 ${item.lose}패 
+              <b style="color:#f1f5f9; font-size:12px; margin-left:6px; font-variant-numeric:tabular-nums;">${item.rate.toFixed(1)}%</b>
+            </span>
+          </div>
+        `).join("");
+      }
+    }
+
+    window.switchRadarPeriod = function(rangeKey) {
+      drawRadarChart(rangeKey);
+    };
+
+    let currentChartData = {};
+
+    function initApexChart(mine) {
+      currentChartData = {
+        viewership: {
+          type: 'area',
+          color: '#22d3ee',
+          name: '뷰어십 (시간)',
+          data: [120, 180, 240, 310, 290, 340, 420, mine.viewership || 380, null, null, null, null],
+          unit: '시간'
+        },
+        star: {
+          type: 'bar',
+          color: '#f59e0b',
+          name: '별풍선 (개)',
+          data: [15000, 22000, 18000, 31000, 28000, 42000, 39000, mine.star || 48000, null, null, null, null],
+          unit: '개'
+        },
+        winrate: {
+          type: 'area',
+          color: '#00ff9d',
+          name: '월별 승률 (%)',
+          data: [48, 52, 50, 58, 62, 55, 60, 64, null, null, null, null],
+          unit: '%'
+        }
+      };
+
+      const options = getApexOptions('viewership');
+      const container = document.getElementById('mainApexChartContainer');
+      if (container) {
+        mainApexChart = new ApexCharts(container, options);
+        mainApexChart.render();
+      }
+    }
+
+    function getApexOptions(mode) {
+      const d = currentChartData[mode];
+      let yMin = undefined;
+      let yMax = undefined;
+      if (mode === 'viewership') {
+        yMin = 80; yMax = 460;
+      } else if (mode === 'star') {
+        yMin = 10000; yMax = 52000;
+      } else if (mode === 'winrate') {
+        yMin = 40; yMax = 75;
+      }
+
+      return {
+        chart: {
+          type: d.type,
+          height: 285,
+          toolbar: { show: false },
+          background: 'transparent',
+          fontFamily: 'Inter, sans-serif',
+          parentHeightOffset: 0
+        },
+        series: [{ name: d.name, data: d.data }],
+        colors: [d.color],
+        dataLabels: { enabled: false },
+        stroke: { curve: 'smooth', width: 2.8 },
+        fill: {
+          type: d.type === 'area' ? 'gradient' : 'solid',
+          gradient: { 
+            shadeIntensity: 1, 
+            opacityFrom: 0.45, 
+            opacityTo: 0.05, 
+            stops: [0, 90, 100] 
+          }
+        },
+        grid: {
+          borderColor: '#141923',
+          strokeDashArray: 3,
+          padding: { top: 5, right: 10, bottom: 0, left: 10 },
+          xaxis: { lines: { show: true } },
+          yaxis: { lines: { show: true } }
+        },
+        xaxis: {
+          categories: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+          labels: { style: { colors: '#64748b', fontSize: '11px' } },
+          axisBorder: { show: false },
+          axisTicks: { show: false }
+        },
+        yaxis: {
+          min: yMin,
+          max: yMax,
+          tickAmount: 4,
+          labels: {
+            style: { colors: '#64748b', fontSize: '11px' },
+            formatter: (v) => v ? Math.round(v).toLocaleString() : ''
+          }
+        },
+        tooltip: {
+          theme: 'dark',
+          y: { formatter: (val) => val ? val.toLocaleString() + ' ' + d.unit : '-' }
+        }
+      };
+    }
+
+    window.switchMainChart = function(mode) {
+      document.querySelectorAll('.chart-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = Array.from(document.querySelectorAll('.chart-tab-btn')).find(b => b.getAttribute('onclick').includes(mode));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (mainApexChart) {
+        const opts = getApexOptions(mode);
+        mainApexChart.updateOptions(opts, true, true);
+      }
+    };
+
+    function splitCsvRow(line) {
+      var cells = [];
+      var cur = '';
+      var inQuotes = false;
+      for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (ch === '"') {
+          inQuotes = !inQuotes;
+        } else if (ch === ',' && !inQuotes) {
+          cells.push(cur.replace(/^"|"$/g, '').trim());
+          cur = '';
+        } else {
+          cur += ch;
+        }
+      }
+      cells.push(cur.replace(/^"|"$/g, '').trim());
+      return cells;
+    }
+
+    function parseRoster(text) {
+      var lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) return [];
+
+      var headers = splitCsvRow(lines[0]);
+      var birthIdx = headers.findIndex(h => h.includes("생일") || h.includes("생년월일") || h.toLowerCase().includes("birth"));
+      if (birthIdx === -1) birthIdx = 8;
+
+      var instaIdx = headers.findIndex(h => h.includes("인스타") || h.toLowerCase().includes("insta"));
+      if (instaIdx === -1) instaIdx = 7;
+
+      var startIdx = headers.findIndex(h => h.includes("스타시작") || h.includes("시작일") || h.includes("시작"));
+      if (startIdx === -1) startIdx = 6;
+
+      var list = [];
+      for (var i = 1; i < lines.length; i++) {
+        var c = splitCsvRow(lines[i]);
+        if (!c[0] && !c[1]) continue;
+        list.push({
+          id: c[0] || "",
+          name: c[1] || "",
+          aliases: (c[2] || "").split(",").map(x => x.trim()).filter(Boolean),
+          race: c[3] || "",
+          crew: c[4] || "FA",
+          gender: c[5] || "",
+          started: c[startIdx] || "",
+          insta: c[instaIdx] || "",
+          birthday: c[birthIdx] || ""
+        });
+      }
+      return list;
+    }
+
+    function parseStats(text) {
+      var lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+      var list = [];
+      for (var i = 1; i < lines.length; i++) {
+        var c = splitCsvRow(lines[i]);
+        var name = (c[1] || "").trim();
+        if (!name || name === "닉네임") continue;
+
+        list.push({
+          date: (c[0] || "").trim(),
+          name: name,
+          star: num(c[2]),
+          peak: num(c[3]),
+          avgView: num(c[4]),
+          viewership: num(c[5]),
+          airMinutes: num(c[6]),
+          chat: num(c[7])
+        });
+      }
+      return list;
+    }
+
+    async function start() {
+      const app = document.getElementById("app");
+      if (app) {
+        app.innerHTML = `
+          <div id="profileLoading">
+            <div class="profile-spin"></div>
+            <div>데이터를 읽는중입니다</div>
+          </div>
+        `;
+      }
+      try {
+        var rosterText = await (await fetch(ROSTER_CSV)).text();
+        ALL_ROSTER = parseRoster(rosterText);
+        var q = qs("id") || qs("name");
+        if (!q) {
+          renderEmpty("스트리머 아이디 또는 이름을 입력해 주세요.");
+          return;
+        }
+        var person = ALL_ROSTER.find(r => r.id.toLowerCase() === q.toLowerCase() || norm(r.name) === norm(q) || r.aliases.some(a => norm(a) === norm(q)));
+        if (!person) {
+          renderEmpty("해당 스트리머를 찾을 수 없습니다.");
+          return;
+        }
+
+        var statsText = await (await fetch(DATA_CSV)).text();
+        var statsList = parseStats(statsText);
+        var matchMap = {};
+        try {
+          var matchText = await (await fetch(SHEET + "&gid=" + MATCH_GID[8])).text();
+          var mLines = matchText.split("\n").map(l => l.trim()).filter(Boolean);
+          for (var mi = 1; mi < mLines.length; mi++) {
+            var mc = splitCsvRow(mLines[mi]);
+            var mName = mc[0] || "";
+            if (mName) {
+              var w = num(mc[3]);
+              var l = num(mc[4]);
+              matchMap[norm(mName)] = { name: mName, win: w, lose: l, games: w + l };
+            }
+          }
+        } catch(e) {}
+
+        renderProfile(person, statsList, matchMap);
+      } catch (e) {
+        console.error(e);
+        renderEmpty("데이터를 불러오는 중 오류가 발생했습니다.");
+      }
+    }
+
+    start();
+  </script>
+</body>
+</html>

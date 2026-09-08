@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>스버스 - 메인 랭킹</title>
+  <link rel="icon" href="logo/starverse_logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <style>
+    :root {
+      --bg: #0a0b10;          
+      --bg-panel: #0e1017;    
+      --bg-card: #131620;     
+      --border: rgba(255, 255, 255, 0.035);
+      --cyan: #22d3ee;        
+      --orange: #f59e0b;
+      --purple: #a78bfa;
+      --green: #34d399;
+      --text: #e8eaed;
+      --text-muted: #7c818e;
+      --text-dim: #5c606b;
+      --radius: 12px;
+      --header-h: 56px;
+      --content-max: 1280px;
+    }
+    html { scrollbar-gutter: stable; }
+    html.light {
+      --cyan: #16325c;
+      --bg: #f3f4f7;
+      --bg-panel: #ffffff;
+      --bg-card: #f7f8fb;
+      --border: rgba(15, 18, 24, 0.1);
+      --text: #1a1d24;
+      --text-muted: #5c606b;
+    }
+    html.light .rank-board-box { background: #ffffff; }
+    html.light .hero-ranker-zone { background: #f0fdf4; }
+    html.light .rank-item-row { background: #f8fafc; }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; line-height: 1.5;
+      display: flex; flex-direction: column;
+    }
+
+    .main { flex: 1; max-width: var(--content-max); width: 100%; margin: 0 auto; padding: 24px 24px 40px; }
+
+    .random-section {
+      margin-bottom: 24px; background: var(--bg-panel); border: 1.6px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .random-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; font-size: 14px; font-weight: 600; }
+    .random-nav { display: flex; gap: 6px; }
+    .random-nav button { width: 28px; height: 28px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: transparent; color: #cbd5e1; cursor: pointer; font-size: 14px; transition: all 0.15s; }
+    .random-nav button:hover { color: var(--cyan); border-color: rgba(34, 211, 238, 0.5); background: rgba(34, 211, 238, 0.1); }
+    .random-track-wrap { overflow: hidden; padding: 0 0 16px 16px; }
+    .random-track { display: flex; gap: 12px; transition: transform 0.25s ease; }
+    .random-card { flex: 0 0 200px; background: var(--bg-card); border: 1.6px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: 0.15s; }
+    .random-card:hover { border-color: rgba(34, 211, 238, 0.45); background: rgba(34, 211, 238, 0.08); transform: translateY(-2px); }
+    .random-thumb { width: 100%; aspect-ratio: 16 / 11; background: #1a1c24; overflow: hidden; }
+    .random-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center 37%; transform: scale(1.30); }
+    .random-meta { display: flex; align-items: center; justify-content: center; padding: 10px 12px; gap: 6px; }
+    .random-name { font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .random-crew { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+
+    .rankings-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .rankings-header h2 { font-size: 16px; font-weight: 700; color: var(--text); }
+
+    .ranking-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+
+    .rank-board-box {
+      background: var(--bg-panel); border: 1.6px solid var(--border);
+      border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column;
+    }
+
+    .board-top-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px;
+    }
+    
+    .board-name { 
+      font-size: 14px; font-weight: 700; color: var(--text); text-decoration: none; 
+      display: flex; align-items: center; position: relative; cursor: pointer;
+    }
+    .board-name:hover { color: var(--cyan); }
+    
+    .board-name::after {
+      content: '상세보기 클릭';
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-left: 8px;
+      background: transparent;
+      border: none;
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 0;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s, visibility 0.15s;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .board-name:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .board-nav-arrows { display: flex; gap: 4px; }
+    .board-nav-arrows { 
+      display: flex; 
+      gap: 6px; 
+    }
+    .board-nav-arrows button,
+    .arrow-btn {
+      width: 26px; 
+      height: 26px; 
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12); 
+      background: transparent;
+      color: #cbd5e1; 
+      cursor: pointer; 
+      font-size: 14px; 
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .board-nav-arrows button:hover:not(:disabled),
+    .arrow-btn:hover:not(:disabled) {
+      color: var(--cyan); 
+      background: rgba(34, 211, 238, 0.1);
+      border-color: rgba(34, 211, 238, 0.5);
+    }
+    .board-nav-arrows button:disabled,
+    .arrow-btn:disabled {
+      opacity: 0.25;
+      cursor: default;
+      color: var(--text-muted);
+      border-color: var(--border);
+      background: transparent;
+    }
+
+    .hero-slot { min-height: 0; margin-bottom: 0; }
+    .hero-ranker-zone {
+      background: #08111a; border: 1px solid rgba(34,211,238,0.15);
+      border-radius: 8px; padding: 10px 12px; display: flex; align-items: center;
+      gap: 12px; margin-bottom: 6px; position: relative; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .hero-ranker-zone:hover { background: rgba(34,211,238,0.08); }
+    .hero-ranker-zone.is-first::after {
+      content: '1위'; position: absolute; top: -5px; left: -5px;
+      background: var(--cyan); color: #000; font-size: 9px; font-weight: 900;
+      padding: 1px 5px; border-radius: 3px;
+    }
+    .hero-avatar { width: 34px; height: 34px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--cyan); background: #1a1c24; flex-shrink: 0; }
+    .hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-meta { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+    .hero-meta .p-name { font-size: 13px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hero-meta .c-name { font-size: 10.5px; color: var(--text-muted); margin-top: 1px; }
+    .hero-val { font-size: 13px; font-weight: 800; color: var(--cyan); flex-shrink: 0; }
+
+    .sub-rank-list { display: flex; flex-direction: column; gap: 6px; min-height: 180px; }
+    
+    .rank-item-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 10px; border-radius: 6px; position: relative;
+      overflow: hidden; background: #07080c; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .rank-item-row:hover { background: rgba(34, 211, 238, 0.08); }
+    
+    .bar-bg {
+      position: absolute; top: 0; left: 0; height: 100%;
+      background: rgba(34, 211, 238, 0.03); z-index: 1; pointer-events: none;
+    }
+    .item-left { display: flex; align-items: center; gap: 8px; z-index: 2; min-width: 0; }
+    .item-num { font-size: 11px; font-weight: bold; color: var(--text-muted); width: 16px; text-align: center; flex-shrink: 0; }
+    .item-avatar { width: 26px; height: 26px; border-radius: 50%; overflow: hidden; border: 1px solid var(--border); background: #1a1c24; flex-shrink: 0; }
+    .item-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .avatar.crew-emblem img { width: auto; height: auto; max-width: 24px; max-height: 24px; object-fit: contain; }
+    
+    .item-name-group { display: flex; flex-direction: column; min-width: 0; }
+    .item-p-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-c-name { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+    
+    .item-val { font-size: 12px; font-weight: 700; color: #cbd5e1; z-index: 2; flex-shrink: 0; }
+    .item-val.cyan { color: var(--cyan); }
+    .item-val.orange { color: var(--orange); }
+    .item-val.purple { color: var(--purple); }
+    .item-val.green { color: var(--green); }
+    .item-val.rose { color: #fb7185; }
+    .item-val.teal { color: #2dd4bf; }
+
+    @media (max-width: 1024px) {
+      .ranking-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 650px) {
+      .ranking-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 헤더 -->
+   <div id="site-top"></div>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="main">
+    <div class="random-section" id="homeRandom" style="visibility:hidden;">
+      <div class="random-header">
+        <span>LIVE</span>
+        <div class="random-nav">
+          <button type="button" id="randomPrev" aria-label="이전">‹</button>
+          <button type="button" id="randomNext" aria-label="다음">›</button>
+        </div>
+      </div>
+      <div class="random-track-wrap">
+        <div class="random-track" id="randomGrid"></div>
+      </div>
+    </div>
+
+    <div class="ranking-grid" id="homeRankings" style="visibility:hidden;">
+      
+      <!-- 1. 여자 뷰어십 -->
+      <div class="rank-board-box">
+        <div class="board-top-bar">
+          <a href="viewer.html" class="board-name">여자 뷰어십</a>
+          <div class="board-nav-arrows">
+            <button type="button" id="prevViewer">‹</button>
+            <button type="button" id="nextViewer">›</button>
+          </div>
+        </div>
+        <div class="hero-slot" id="heroViewer"></div>
+        <div class="sub-rank-list" id="listViewer"></div>
+      </div>
+
+      <!-- 2. ELO 승률 -->
+      <div class="rank-board-box">
+        <div class="board-top-bar">
+          <a href="elo.html" class="board-name">ELO 승률</a>
+          <div class="board-nav-arrows">
+            <button class="arrow-btn" id="prevElo">‹</button>
+            <button class="arrow-btn" id="nextElo">›</button>
+          </div>
+        </div>
+        <div class="hero-slot" id="heroElo"></div>
+        <div class="sub-rank-list" id="listElo"></div>
+      </div>
+
+      <!-- 3. 크루별 별풍평균 -->
+      <div class="rank-board-box">
+        <div class="board-top-bar">
+          <a href="crew.html" class="board-name">크루별 별풍평균</a>
+          <div class="board-nav-arrows">
+            <button class="arrow-btn" id="prevCrew">‹</button>
+            <button class="arrow-btn" id="nextCrew">›</button>
+          </div>
+        </div>
+        <div class="hero-slot" id="heroCrew"></div>
+        <div class="sub-rank-list" id="listCrew"></div>
+      </div>
+    </div>
+
+    <style>
+      .mid-banner-section {
+        display: grid;
+        grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.3fr);
+        gap: 16px;
+        margin: 24px 0;
+        align-items: stretch;
+      }
+      .mid-box {
+        background: var(--bg-panel);
+        border: 1.6px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .mid-box-title {
+        font-size: 13px;
+        font-weight: bold;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .ticker-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        background: #07080c;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: bold;
+      }
+      .ticker-row:last-child { margin-bottom: 0; }
+      .ticker-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #1a1c24;
+        border: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .ticker-name { color: var(--text); }
+      .ticker-crew { color: var(--text-dim); font-size: 11px; margin-left: 6px; }
+      .trend-up { color: #10b981; font-size: 11.5px; font-weight: 700; }
+      .trend-down { color: #fb7185; font-size: 11.5px; font-weight: 700; }
+      .trend-cur { color: var(--cyan); font-size: 11.5px; font-weight: 700; }
+
+      .ad-box-inner { display: none; }
+      .mid-random { display: flex; flex-direction: column; height: 100%; }
+      .mid-random-head {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .mid-random-track-wrap { overflow: hidden; }
+      .mid-random-track { display: flex; gap: 10px; transition: transform 0.25s ease; }
+      .mid-random-card {
+        flex: 0 0 calc((100% - 20px) / 3);
+        background: var(--bg-card);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .mid-random-card:hover { border-color: rgba(34,211,238,0.45); }
+      .mid-random-card { position: relative; }
+      .mid-random-thumb { width: 100%; aspect-ratio: 16 / 10; background: #1a1c24; overflow: hidden; position: relative; }
+      .mid-random-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center 37%; transform: scale(1.2); display: block; }
+      .mid-random-thumb::after {
+        content: "";
+        position: absolute; left: 0; right: 0; bottom: 0; height: 42%;
+        background: linear-gradient(transparent, rgba(0,0,0,0.78));
+        pointer-events: none;
+      }
+      .mid-random-meta { display: none; }
+      .mid-random-name {
+        position: absolute; right: 8px; bottom: 6px; z-index: 2;
+        font-size: 12px; font-weight: 600; color: #fff;
+        background: rgba(0,0,0,0.55);
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+      }
+      .mid-random-crew { display: none; }
+      .ticker-row { cursor: pointer; }
+      .ticker-row:hover { background: rgba(34,211,238,0.08); }
+
+      @media (max-width: 900px) {
+        .mid-banner-section { grid-template-columns: 1fr; }
+      }
+    </style>
+
+    <div class="mid-banner-section">
+      <div class="mid-box">
+        <div class="mid-box-title" style="border-left: 3px solid var(--cyan); padding-left: 8px; margin-bottom: 14px;">메이저프로리그</div>
+        <div id="riseList"></div>
+      </div>
+
+      <div class="mid-box mid-random">
+        <div class="mid-random-head">
+          <div class="mid-box-title" style="margin-bottom:0;">스타겜비</div>
+          <div class="random-nav">
+            <button type="button" id="midPrev" aria-label="이전">‹</button>
+            <button type="button" id="midNext" aria-label="다음">›</button>
+          </div>
+        </div>
+        <div class="mid-random-track-wrap">
+          <div class="mid-random-track" id="midRandomGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ranking-grid">
+      <!-- 4. 여자 별풍선 -->
+      <div class="rank-board-box">
+        <div class="board-top-bar">
+          <a href="star.html" class="board-name">여자 별풍선</a>
+          <div class="board-nav-arrows">
+            <button class="arrow-btn" id="prevStar">‹</button>
+            <button class="arrow-btn" id="nextStar">›</button>
+          </div>
+        </div>
+        <div class="hero-slot" id="heroStar"></div>
+        <div class="sub-rank-list" id="listStar"></div>
+      </div>
+
+      <!-- 5. 스폰판수 -->
+      <div class="rank-board-box">
+        <div class="board-top-bar">
+          <a href="match.html" class="board-name">스폰판수</a>
+          <div class="board-nav-arrows">
+            <button class="arrow-btn" id="prevMatch">‹</button>
+            <button class="arrow-btn" id="nextMatch">›</button>
+          </div>
+        </div>
+        <div class="hero-slot" id="heroMatch"></div>
+        <div class="sub-rank-list" id="listMatch"></div>
+      </div>
+
+      <!-- 6. 방송시간 -->
+      <div class="rank-board-box">
+        <div class="board-top-bar">
+          <a href="hours.html" class="board-name">방송시간</a>
+          <div class="board-nav-arrows">
+            <button class="arrow-btn" id="prevHours">‹</button>
+            <button class="arrow-btn" id="nextHours">›</button>
+          </div>
+        </div>
+        <div class="hero-slot" id="heroHours"></div>
+        <div class="sub-rank-list" id="listHours"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="site-bottom"></div>
+
+  <script src="common.js"></script>
+  <script>
+    const DATA_CSV = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=1588738461";
+    const ROSTER_CSV = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=0";
+    const MATCH_CSV = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=1402849856";
+    const MONTHLY_MATCH_CSV = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=1178750810";
+
+    const PAGE_SIZE = 5; 
+    const MAX_ITEMS = 20;
+
+    function parseAirtime(text) {
+      const t = (text || "").replace(/"/g, "").replace(/,/g, "").trim();
+      if (!t) return 0;
+      if (t.indexOf("시간") >= 0) {
+        const h = t.match(/(\d+)\s*시간/);
+        const m = t.match(/(\d+)\s*분/);
+        return (h ? parseInt(h[1], 10) : 0) * 60 + (m ? parseInt(m[1], 10) : 0);
+      }
+      return parseInt(t.replace(/[^0-9]/g, ""), 10) || 0;
+    }
+    function formatAirtime(minutes) {
+      if (!minutes || minutes <= 0) return "-";
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return h + '시간 ' + String(m).padStart(2, "0") + '분';
+    }
+    function imgUrl(id) {
+      if (!id) return "";
+      return `https://stimg.sooplive.com/LOGO/${id.substring(0,2).toLowerCase()}/${id}/${id}.jpg`;
+    }
+    function norm(s) {
+      return String(s || "").toLowerCase().replace(/[^가-힣a-z0-9]/g, "");
+    }
+
+    const CREW_LOGO = {
+      "바스포드": "logo/basford_em.webp", "BGM": "logo/bgm_em.webp", "흑카데미": "logo/black_em.webp",
+      "보신대": "logo/bsu_em.webp", "씨나인": "logo/c9_em.webp", "캄몬스타즈": "logo/calm_em.webp",
+      "DM": "logo/dm_em.webp", "드림즈": "logo/dreams_em.webp", "더블비": "logo/dubbleb_em.webp",
+      "거성대": "logo/gsu_em.webp", "HM": "logo/hm_em.webp", "JSA": "logo/jsa_em.webp",
+      "정선대": "logo/ju_em.webp", "케이대": "logo/ku_em.webp", "엠비대": "logo/mbu_em.webp",
+      "뉴캣슬": "logo/newcat_em.webp", "NSU": "logo/nsu_em.webp", "늪지대": "logo/nzu_em.webp",
+      "섭이대": "logo/siu_em.webp", "철와대": "logo/su_em.webp", "우끼끼즈": "logo/ukks_em.webp",
+      "MSG": "logo/msg_em.webp", "와플대": "logo/waffleu_em.webp", "YB": "logo/yb_em.webp",
+      "염석대": "logo/yuam_em.webp", "학버드": "logo/hak_em.webp", "철기중대": "logo/chulgi_em.webp",
+      "패션스타": "logo/fstar_em.webp", "나사": "logo/nasa_em.webp", "ASG": "logo/asg_em.webp",
+      "캄성여대": "logo/cswu_em.webp", "수술대": "logo/ssu_em.webp", "신세계": "logo/ssg_em.webp",
+      "뽀인구단": "logo/bboin_em.webp", "장독대": "logo/jdu_em.webp", "이노대": "logo/ino_em.webp",
+      "방치클럽": "logo/bangchi_em.webp", "복덕방": "logo/bdb_em.webp", "CP": "logo/cp_em.webp",
+      "DP": "logo/dp_em.webp", "묵섭대": "logo/mook_em.webp", "광수대": "logo/gwangsu_em.webp",
+      "캄브릿지": "logo/calmb_em.webp", "마종대": "logo/majong_em.webp", "TPZ": "logo/tpz_em.webp",
+      "범진대": "logo/bj_em.webp", "파이스트": "logo/pist_em.webp", "미다스공대": "logo/midas2_em.webp",
+      "MGS": "logo/mgs_em.webp", "라저대": "logo/rthat_em.webp", "아마대": "logo/ama_em.webp",
+      "츠나대": "logo/tsuna_em.webp", "무창클럽": "logo/moo_em.webp", "카사대": "logo/casa_em.webp",
+      "철거반": "logo/cgb_em.webp", "노가다대": "logo/nogada_em.webp", "마싯대": "logo/masit_em.webp",
+      "점문예대": "logo/jm_em.webp", "라이트클럽": "logo/lightclub_em.webp", "고대": "logo/go_em.webp",
+      "친박연대": "logo/chinpark_em.webp", "철기대": "logo/cgd_em.webp", "석사관학교": "logo/seoksa_em.webp",
+      "할없녀": "logo/halgirl_em.webp", "무친대": "logo/mcu_em.webp", "소림사": "logo/sorimsa_em.webp"
+    };
+
+    function crewLogo(name) {
+      if (!name) return "";
+      var n = String(name).replace(/\s+/g, "").trim();
+      if (n === "츠캄몬스타즈" || n === "츠캄" || n === "캄몬" || n === "츠캄몬") n = "캄몬스타즈";
+      if (n === "마범대") n = "엠비대";
+      if (CREW_LOGO[n]) return CREW_LOGO[n];
+      if (CREW_LOGO[name]) return CREW_LOGO[name];
+      const key = Object.keys(CREW_LOGO).find(k => k.toLowerCase() === n.toLowerCase());
+      return key ? CREW_LOGO[key] : "";
+    }
+    function goProfile(id) {
+      if (!id) return;
+      location.href = "profile.html?id=" + encodeURIComponent(id);
+    }
+
+    function renderRise(matchMonthBag, currentTopPlayer) {
+      const box = document.getElementById("riseList");
+      if (!box) return;
+
+      const months = Object.keys(matchMonthBag || {}).sort();
+      if (months.length < 2) {
+        box.innerHTML = '<div class="ticker-row"><span class="ticker-name">데이터 집계 중</span></div>';
+        return;
+      }
+
+      const curYm = months[months.length - 1];
+      const prevYm = months[months.length - 2];
+
+      let bestUp = null;
+      let worstDown = null;
+
+      // 최소 5판 이상 진행한 선수들 중에서 전달 대비 최대 상승 / 최대 하락 산출
+      Object.keys(matchMonthBag[curYm]).forEach(name => {
+        const cur = matchMonthBag[curYm][name];
+        const prev = matchMonthBag[prevYm] ? matchMonthBag[prevYm][name] : null;
+
+        if (cur && prev && cur.games >= 5 && prev.games >= 5) {
+          const diff = cur.rate - prev.rate;
+          if (!bestUp || diff > bestUp.diff) {
+            bestUp = { name, crew: cur.crew, id: cur.id, diff, rate: cur.rate };
+          }
+          if (!worstDown || diff < worstDown.diff) {
+            worstDown = { name, crew: cur.crew, id: cur.id, diff, rate: cur.rate };
+          }
+        }
+      });
+
+      const items = [];
+
+      // 1. 전달대비 제일 많이 상승
+      if (bestUp && bestUp.diff > 0) {
+        items.push({
+          badge: "최다 상승",
+          name: bestUp.name,
+          crew: bestUp.crew,
+          id: bestUp.id,
+          val: "▲ " + bestUp.diff.toFixed(1) + "%p (" + bestUp.rate.toFixed(1) + "%)",
+          cls: "trend-up"
+        });
+      }
+
+      // 2. 현재 최다 승률
+      if (currentTopPlayer) {
+        items.push({
+          badge: "최다 승률",
+          name: currentTopPlayer.name,
+          crew: currentTopPlayer.crew,
+          id: currentTopPlayer.id,
+          val: Number(currentTopPlayer.rate).toFixed(1) + "%",
+          cls: "trend-cur"
+        });
+      }
+
+      // 3. 전달대비 제일 많이 하락
+      if (worstDown && worstDown.diff < 0) {
+        items.push({
+          badge: "최다 하락",
+          name: worstDown.name,
+          crew: worstDown.crew,
+          id: worstDown.id,
+          val: "▼ " + Math.abs(worstDown.diff).toFixed(1) + "%p (" + worstDown.rate.toFixed(1) + "%)",
+          cls: "trend-down"
+        });
+      }
+
+      if (!items.length) {
+        box.innerHTML = '<div class="ticker-row"><span class="ticker-name">승률 비교 데이터 없음</span></div>';
+        return;
+      }
+
+      box.innerHTML = items.map(p => `
+        <div class="ticker-row" ${p.id ? `onclick="goProfile('${p.id}')"` : ""}>
+          <span>
+            <span style="font-size:11px; color:var(--text-dim); margin-right:6px; font-weight:700;">[${p.badge}]</span>
+            <span class="ticker-name">${p.name}</span>
+            <span class="ticker-crew">${p.crew || ""}</span>
+          </span>
+          <span class="${p.cls}">${p.val}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderBoardCard(key, rows, valueHtml, colorClass, state, isCrew = false) {
+      const heroBox = document.getElementById("hero" + key);
+      const listbox = document.getElementById("list" + key);
+      const prevBtn = document.getElementById("prev" + key);
+      const nextBtn = document.getElementById("next" + key);
+      if (!heroBox || !listbox) return;
+
+      const totalItems = Math.min(rows.length, MAX_ITEMS);
+      const maxPages = Math.ceil(totalItems / PAGE_SIZE) || 1;
+      if (state.page >= maxPages) state.page = maxPages - 1;
+      if (state.page < 0) state.page = 0;
+
+      const start = state.page * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, totalItems);
+      const pageRows = rows.slice(start, end);
+
+      const absoluteMaxVal = (rows.length > 0 && rows[0].rawVal) ? rows[0].rawVal : 1;
+
+      if (state.page === 0 && pageRows.length > 0) {
+        const heroItem = pageRows[0];
+        const heroAvatar = isCrew 
+          ? (crewLogo(heroItem.name) ? `<div class="hero-avatar crew-emblem"><img src="${crewLogo(heroItem.name)}" alt="" onerror="this.style.display='none'"></div>` : `<div class="hero-avatar">🏰</div>`)
+          : `<div class="hero-avatar"><img src="${imgUrl(heroItem.id)}" alt="" onerror="this.style.display='none'"></div>`;
+        
+        const clickAction = isCrew 
+          ? `onclick="location.href='star.html?crew='+encodeURIComponent('${heroItem.name}')"`
+          : `onclick="goProfile('${heroItem.id}')"`;
+
+        heroBox.innerHTML = `
+          <div class="hero-ranker-zone${state.page === 0 ? " is-first" : ""}" ${clickAction}>
+            ${heroAvatar}
+            <div class="hero-meta">
+              <span class="p-name">${heroItem.name}</span>
+              <span class="c-name">${heroItem.crew || "FA"}</span>
+            </div>
+            <span class="hero-val">${valueHtml(heroItem)}</span>
+          </div>
+        `;
+      } else {
+        heroBox.innerHTML = "";
+      }
+
+      const listRows = (state.page === 0) ? pageRows.slice(1) : pageRows;
+
+      listbox.innerHTML = listRows.map((item, i) => {
+        const rank = start + (state.page === 0 ? i + 2 : i + 1);
+        const valNum = item.rawVal || 1;
+        const percent = Math.max(8, Math.min(100, Math.round((valNum / absoluteMaxVal) * 100)));
+        
+        const subAvatar = isCrew
+          ? (crewLogo(item.name) ? `<div class="item-avatar crew-emblem"><img src="${crewLogo(item.name)}" alt="" onerror="this.style.display='none'"></div>` : `<div class="item-avatar">🏰</div>`)
+          : `<div class="item-avatar"><img src="${imgUrl(item.id)}" alt="" onerror="this.style.display='none'"></div>`;
+
+        const clickAction = isCrew
+          ? `onclick="location.href='star.html?crew='+encodeURIComponent('${item.name}')"`
+          : `onclick="goProfile('${item.id}')"`;
+
+        return `
+          <div class="rank-item-row" ${clickAction}>
+            <div class="bar-bg" style="width: ${percent}%;"></div>
+            <div class="item-left">
+              <span class="item-num">${rank}</span>
+              ${subAvatar}
+              <div class="item-name-group">
+                <span class="item-p-name">${item.name}</span>
+                <span class="item-c-name">${item.crew || "FA"}</span>
+              </div>
+            </div>
+            <span class="item-val ${colorClass}">${valueHtml(item)}</span>
+          </div>
+        `;
+      }).join("");
+
+      if (prevBtn) prevBtn.disabled = state.page === 0;
+      if (nextBtn) nextBtn.disabled = state.page >= maxPages - 1;
+
+      if (!state.bound && prevBtn && nextBtn) {
+        prevBtn.addEventListener("click", () => {
+          if (state.page > 0) { state.page--; renderBoardCard(key, rows, valueHtml, colorClass, state, isCrew); }
+        });
+        nextBtn.addEventListener("click", () => {
+          if (state.page < maxPages - 1) { state.page++; renderBoardCard(key, rows, valueHtml, colorClass, state, isCrew); }
+        });
+        state.bound = true;
+      }
+    }
+
+    const pageStates = {
+      Viewer: { page: 0, bound: false },
+      Elo: { page: 0, bound: false },
+      Crew: { page: 0, bound: false },
+      Star: { page: 0, bound: false },
+      Match: { page: 0, bound: false },
+      Hours: { page: 0, bound: false }
+    };
+
+    async function loadData() {
+      try {
+        const rosterRes = await fetch(ROSTER_CSV);
+        const rosterText = await rosterRes.text();
+        const rosterLines = rosterText.split("\n").map(l => l.trim()).filter(l => l);
+        const rosterMap = {};
+        const rosterList = [];
+        for (let i = 1; i < rosterLines.length; i++) {
+          const cols = rosterLines[i].match(/(?:[^",]+|"[^"]*")+/g) || [];
+          const cleanCols = cols.map(c => c.replace(/^"|"$/g, "").trim());
+          const id = (cleanCols[0] || "").trim();
+          const name = (cleanCols[1] || "").trim();
+          const aliases = (cleanCols[2] || "").split(",").map(x => x.trim()).filter(x => x);
+          const crew = (cleanCols[4] || "").trim() || "FA";
+          if (name) {
+            const info = { id: id, crew: crew, gender: (cleanCols[5] || "").trim() };
+            rosterMap[name] = info;
+            rosterMap[name.replace(/[^가-힣a-zA-Z0-9]/g, "")] = info;
+            aliases.forEach(al => {
+              rosterMap[al] = info;
+              rosterMap[al.replace(/[^가-힣a-zA-Z0-9]/g, "")] = info;
+            });
+            rosterList.push({ id: id, name: name, aliases: aliases, crew: crew });
+          }
+        }
+
+        const dataRes = await fetch(DATA_CSV);
+        const dataText = await dataRes.text();
+        const lines = dataText.split("\n").map(l => l.trim()).filter(l => l);
+        let result = [];
+        for (let di = 1; di < lines.length; di++) {
+          const cols = lines[di].match(/(?:[^",]+|"[^"]*")+/g) || [];
+          const c = cols.map(x => x.replace(/^"|"$/g, "").trim());
+          const name = (c[1] || "").trim();
+          if (!name || name === "닉네임") continue;
+          var ym = rowYm(c[0]);
+          var hit = typeof window.periodHit !== "function" || window.periodHit(c[0]);
+          if (!hit && ym !== liveYm) continue;
+          const cleanName = name.replace(/[^가-힣a-zA-Z0-9]/g, "");
+          const info = rosterMap[name] || rosterMap[cleanName] || { id: "", crew: "FA", gender: "" };
+          if ((info.gender || "")[0] !== "여") continue;
+          
+          const starVal = parseInt(String(c[2] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          const viewVal = parseInt(String(c[5] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          const airVal = parseAirtime(c[6]);
+
+          result.push({
+            name: name, crew: info.crew, id: info.id, gender: info.gender || "",
+            star: starVal, viewership: viewVal, airMinutes: airVal
+          });
+        }
+
+        const active = result.filter(r => r.crew !== "FA");
+        const byViewer = [...active].filter(r => r.viewership > 0).sort((a, b) => b.viewership - a.viewership).map(r => ({ ...r, rawVal: r.viewership }));
+        const byStar = [...active].filter(r => r.star > 0).sort((a, b) => b.star - a.star).map(r => ({ ...r, rawVal: r.star }));
+        const byHours = [...active].filter(r => r.airMinutes > 0).sort((a, b) => b.airMinutes - a.airMinutes).map(r => ({ ...r, rawVal: r.airMinutes }));
+
+        const monthBag = {};
+        const liveResult = [];
+        var _now = new Date();
+        var liveYm = _now.getFullYear() * 100 + (_now.getMonth() + 1);
+        function rowYm(s) {
+          var m = String(s || "").match(/(\d{2,4})\D+(\d{1,2})/);
+          if (!m) return 0;
+          var y = parseInt(m[1], 10);
+          if (y < 100) y += 2000;
+          return y * 100 + parseInt(m[2], 10);
+        }
+        for (let di = 1; di < lines.length; di++) {
+          const cols = lines[di].match(/(?:[^",]+|"[^"]*")+/g) || [];
+          const c = cols.map(x => x.replace(/^"|"$/g, "").trim());
+          const ym = (c[0] || "").trim();
+          const name = (c[1] || "").trim();
+          if (!ym || !name || name === "닉네임") continue;
+          const cleanName = name.replace(/[^가-힣a-zA-Z0-9]/g, "");
+          const info = rosterMap[name] || rosterMap[cleanName] || { id: "", crew: "FA", gender: "" };
+          if ((info.gender || "")[0] !== "여") continue;
+          if ((info.crew || "FA") === "FA") continue;
+          if (!monthBag[ym]) monthBag[ym] = {};
+          if (!monthBag[ym][name]) monthBag[ym][name] = { name: name, crew: info.crew, id: info.id, star: 0, view: 0, air: 0 };
+          monthBag[ym][name].star += parseInt(String(c[2] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          monthBag[ym][name].view += parseInt(String(c[5] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          monthBag[ym][name].air += parseAirtime(c[6]);
+        }
+        const crewMap = {};
+        active.forEach(item => {
+          if (!item.crew || item.crew === "FA") return;
+          if (!crewMap[item.crew]) crewMap[item.crew] = { total: 0, count: 0 };
+          crewMap[item.crew].total += item.star;
+          crewMap[item.crew].count += 1;
+        });
+        const crewList = Object.entries(crewMap).map(([name, d]) => ({
+          name, crew: d.count + "명", id: "", avg: Math.round(d.total / d.count), rawVal: Math.round(d.total / d.count)
+        })).sort((a, b) => b.avg - a.avg);
+
+        renderBoardCard("Viewer", byViewer, item => item.viewership.toLocaleString() + '시간', "rose", pageStates.Viewer, false);
+        renderBoardCard("Star", byStar, item => item.star.toLocaleString() + '개', "orange", pageStates.Star, false);
+        renderBoardCard("Hours", byHours, item => formatAirtime(item.airMinutes), "teal", pageStates.Hours, false);
+        renderBoardCard("Crew", crewList, item => item.avg.toLocaleString() + '개', "orange", pageStates.Crew, true);
+
+        const matchRes = await fetch(MATCH_CSV);
+        const matchText = await matchRes.text();
+        const matchLines = matchText.split("\n").map(l => l.trim()).filter(l => l);
+        const matchList = [];
+        for (let mi = 1; mi < matchLines.length; mi++) {
+          const cols = matchLines[mi].match(/(?:[^",]+|"[^"]*")+/g) || [];
+          const c = cols.map(x => x.replace(/^"|"$/g, "").trim());
+          const name = (c[0] || "").trim();
+          if (!name || name === "이름") continue;
+          const race = (c[1] || "").trim();
+          const games = parseInt((c[2] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          const wins = parseInt((c[3] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          const losses = parseInt((c[4] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          const rate = games > 0 ? Math.round((wins / games) * 1000) / 10 : 0;
+          const clean = name.replace(/[^가-힣a-zA-Z0-9]/g, "");
+          const who = rosterMap[name] || rosterMap[clean] || { id: "", crew: "FA" };
+          matchList.push({ name, race, games, wins, losses, rate, id: who.id, crew: who.crew || "FA" });
+        }
+        let maxGames = 0;
+        matchList.forEach(row => { if (row.games > maxGames) maxGames = row.games; });
+        let minGames = maxGames * 0.2;
+        const byElo = matchList.filter(row => row.games > minGames).sort((a, b) => b.rate - a.rate || b.games - a.games).map(r => ({ ...r, rawVal: r.rate }));
+        const byMatch = [...matchList].sort((a, b) => b.games - a.games).map(r => ({ ...r, rawVal: r.games }));
+        
+        renderBoardCard("Elo", byElo, item => Number(item.rate).toFixed(1) + "%", "purple", pageStates.Elo, false);
+        renderBoardCard("Match", byMatch, item => item.games + '판', "green", pageStates.Match, false);
+
+        // 월별 매치 시트(gid=1178750810) 실제 컬럼 순서 반영
+        // 컬럼: c[0] 날짜 | c[1] 종족 | c[2] 이름 | c[3] 총경기수 | c[4] 승 | c[5] 패 | c[6] 승률
+        try {
+          const mRes = await fetch(MONTHLY_MATCH_CSV);
+          const mText = await mRes.text();
+          const mLines = mText.split("\n").map(l => l.trim()).filter(l => l);
+          const matchMonthBag = {};
+
+          for (let i = 1; i < mLines.length; i++) {
+            const cols = mLines[i].match(/(?:[^",]+|"[^"]*")+/g) || [];
+            const c = cols.map(x => x.replace(/^"|"$/g, "").trim());
+            
+            const rawYm = (c[0] || "").trim();
+            if (!rawYm || rawYm === "날짜" || rawYm === "월") continue;
+            
+            // 날짜 형식 파싱 (예: 2026.09, 26.9 등 숫자로 연월 추출)
+            const ymMatch = rawYm.match(/(\d{2,4})\D+(\d{1,2})/);
+            if (!ymMatch) continue;
+            let y = parseInt(ymMatch[1], 10);
+            if (y < 100) y += 2000;
+            const ymKey = y * 100 + parseInt(ymMatch[2], 10);
+
+            // c[1]은 종족, c[2]가 이름!
+            const name = (c[2] || "").trim();
+            if (!name || name === "이름" || name === "닉네임") continue;
+
+            const games = parseInt((c[3] || "").replace(/[^0-9]/g, ""), 10) || 0;
+            const wins = parseInt((c[4] || "").replace(/[^0-9]/g, ""), 10) || 0;
+            const losses = parseInt((c[5] || "").replace(/[^0-9]/g, ""), 10) || 0;
+            
+            // 승률 컬럼 c[6] 확인, 없거나 계산 필요시 승/경기수
+            let rate = 0;
+            if (c[6] && c[6].includes("%")) {
+              rate = parseFloat(c[6].replace(/[^0-9.]/g, "")) || 0;
+            } else if (c[6] && !isNaN(parseFloat(c[6]))) {
+              rate = parseFloat(c[6]);
+              if (rate <= 1 && rate > 0) rate = rate * 100;
+            } else {
+              rate = games > 0 ? (wins / games) * 100 : 0;
+            }
+
+            const cleanName = name.replace(/[^가-힣a-zA-Z0-9]/g, "");
+            const who = rosterMap[name] || rosterMap[cleanName] || { id: "", crew: "FA" };
+
+            if (!matchMonthBag[ymKey]) matchMonthBag[ymKey] = {};
+            matchMonthBag[ymKey][name] = {
+              name: name,
+              crew: who.crew || "FA",
+              id: who.id,
+              games: games,
+              wins: wins,
+              losses: losses,
+              rate: rate
+            };
+          }
+
+          const sortedMonths = Object.keys(matchMonthBag).map(Number).sort((a, b) => a - b);
+          
+          if (sortedMonths.length >= 1) {
+            const curYm = sortedMonths[sortedMonths.length - 1];
+            const prevYm = sortedMonths.length >= 2 ? sortedMonths[sortedMonths.length - 2] : null;
+
+            const curPlayers = Object.values(matchMonthBag[curYm] || {});
+            
+            // 1. 해당 월 최다 승률 (최소 3판 이상 중 1위)
+            const qualified = curPlayers.filter(p => p.games >= 3).sort((a, b) => b.rate - a.rate || b.games - a.games);
+            const curTop = qualified.length > 0 ? qualified[0] : (curPlayers.sort((a, b) => b.rate - a.rate)[0] || null);
+
+            let bestUp = null;
+            let worstDown = null;
+
+            if (prevYm && matchMonthBag[prevYm]) {
+              curPlayers.forEach(cur => {
+                const prev = matchMonthBag[prevYm][cur.name];
+                if (prev && cur.games >= 3 && prev.games >= 3) {
+                  const diff = cur.rate - prev.rate;
+                  if (!bestUp || diff > bestUp.diff) {
+                    bestUp = { name: cur.name, crew: cur.crew, id: cur.id, diff: diff, rate: cur.rate };
+                  }
+                  if (!worstDown || diff < worstDown.diff) {
+                    worstDown = { name: cur.name, crew: cur.crew, id: cur.id, diff: diff, rate: cur.rate };
+                  }
+                }
+              });
+            }
+
+            const riseBox = document.getElementById("riseList");
+            if (riseBox) {
+              const items = [];
+              if (bestUp && bestUp.diff > 0) {
+                items.push(`
+                  <div class="ticker-row" ${bestUp.id ? `onclick="goProfile('${bestUp.id}')"` : ""}>
+                    <span style="display:inline-flex; align-items:center; gap:8px;">
+                      <span style="font-size:11px; color:var(--text-dim); font-weight:700;">[최다 상승]</span>
+                      <img class="ticker-avatar" src="${imgUrl(bestUp.id)}" alt="" onerror="this.style.display='none'">
+                      <span class="ticker-name">${bestUp.name}</span>
+                      <span class="ticker-crew">${bestUp.crew || ""}</span>
+                    </span>
+                    <span class="trend-up">▲ ${bestUp.diff.toFixed(1)}%p (${bestUp.rate.toFixed(1)}%)</span>
+                  </div>
+                `);
+              }
+              if (curTop) {
+                items.push(`
+                  <div class="ticker-row" ${curTop.id ? `onclick="goProfile('${curTop.id}')"` : ""}>
+                    <span style="display:inline-flex; align-items:center; gap:8px;">
+                      <span style="font-size:11px; color:var(--text-dim); font-weight:700;">[최다 승률]</span>
+                      <img class="ticker-avatar" src="${imgUrl(curTop.id)}" alt="" onerror="this.style.display='none'">
+                      <span class="ticker-name">${curTop.name}</span>
+                      <span class="ticker-crew">${curTop.crew || ""}</span>
+                    </span>
+                    <span class="trend-cur">${curTop.rate.toFixed(1)}% (${curTop.games}전)</span>
+                  </div>
+                `);
+              }
+              if (worstDown && worstDown.diff < 0) {
+                items.push(`
+                  <div class="ticker-row" ${worstDown.id ? `onclick="goProfile('${worstDown.id}')"` : ""}>
+                    <span style="display:inline-flex; align-items:center; gap:8px;">
+                      <span style="font-size:11px; color:var(--text-dim); font-weight:700;">[최다 하락]</span>
+                      <img class="ticker-avatar" src="${imgUrl(worstDown.id)}" alt="" onerror="this.style.display='none'">
+                      <span class="ticker-name">${worstDown.name}</span>
+                      <span class="ticker-crew">${worstDown.crew || ""}</span>
+                    </span>
+                    <span class="trend-down">▼ ${Math.abs(worstDown.diff).toFixed(1)}%p (${worstDown.rate.toFixed(1)}%)</span>
+                  </div>
+                `);
+              }
+
+              riseBox.innerHTML = items.length > 0 ? items.join("") : '<div class="ticker-row"><span class="ticker-name">승률 비교 데이터 없음</span></div>';
+            }
+          }
+        } catch (mErr) {
+          console.error("월별 승률 로드 실패:", mErr);
+        }
+
+        document.getElementById("homeRankings").style.visibility = "visible";
+      } catch (err) {
+        console.error(err);
+        document.getElementById("homeRankings").style.visibility = "visible";
+      }
+    }
+
+    let randomIndex = 0;
+    let randomCount = 0;
+    const RANDOM_SHOW = 4;
+    const RANDOM_CARD_W = 212;
+
+    function updateRandomSlide() {
+      const track = document.getElementById("randomGrid");
+      if (!track) return;
+      const maxIndex = Math.max(0, randomCount - RANDOM_SHOW);
+      if (randomIndex > maxIndex) randomIndex = maxIndex;
+      if (randomIndex < 0) randomIndex = 0;
+      track.style.transform = `translateX(-${randomIndex * RANDOM_CARD_W}px)`;
+    }
+
+    async function loadRandomStreamers() {
+      const track = document.getElementById("randomGrid");
+      if (!track) return;
+      try {
+        const [rosterRes, dataRes] = await Promise.all([
+          fetch(ROSTER_CSV),
+          fetch(DATA_CSV)
+        ]);
+        const rosterText = await rosterRes.text();
+        const dataText = await dataRes.text();
+
+        // 1. DATA_CSV에서 월 리스트 수집 및 지난달, 지지난달 파악
+        const dLines = dataText.split("\n").map(l => l.trim()).filter(l => l);
+        const ymSet = new Set();
+        for (let i = 1; i < dLines.length; i++) {
+          const cols = dLines[i].match(/(?:[^",]+|"[^"]*")+/g) || [];
+          const ymRaw = (cols[0] || "").replace(/^"|"$/g, "").trim();
+          if (ymRaw && ymRaw !== "날짜" && ymRaw !== "월") {
+            const m = ymRaw.match(/(\d{2,4})\D+(\d{1,2})/);
+            if (m) {
+              let y = parseInt(m[1], 10);
+              if (y < 100) y += 2000;
+              ymSet.add(y * 100 + parseInt(m[2], 10));
+            }
+          }
+        }
+        const sortedYm = Array.from(ymSet).sort((a, b) => a - b);
+        const prev1Ym = sortedYm.length >= 1 ? sortedYm[sortedYm.length - 1] : null; // 지난달
+        const prev2Ym = sortedYm.length >= 2 ? sortedYm[sortedYm.length - 2] : null; // 지지난달
+
+        // 지난달 또는 지지난달에 크루 활동 기록이 있는 선수 확인
+        const hadCrewRecently = new Set();
+        for (let i = 1; i < dLines.length; i++) {
+          const cols = dLines[i].match(/(?:[^",]+|"[^"]*")+/g) || [];
+          const c = cols.map(x => x.replace(/^"|"$/g, "").trim());
+          const ymRaw = c[0] || "";
+          const name = c[1] || "";
+          const crew = c[4] || "";
+          const m = ymRaw.match(/(\d{2,4})\D+(\d{1,2})/);
+          if (m) {
+            let y = parseInt(m[1], 10);
+            if (y < 100) y += 2000;
+            const ymVal = y * 100 + parseInt(m[2], 10);
+            if ((ymVal === prev1Ym || ymVal === prev2Ym) && crew && crew !== "FA") {
+              hadCrewRecently.add(name);
+              hadCrewRecently.add(name.replace(/[^가-힣a-zA-Z0-9]/g, ""));
+            }
+          }
+        }
+
+        // 2. ROSTER에서 여성이면서, 현재 FA인 경우 최근 2달 크루 활동이 전혀 없으면 제외
+        const lines = rosterText.split("\n").map(l => l.trim()).filter(l => l);
+        const pool = [];
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].match(/(?:[^",]+|"[^"]*")+/g) || [];
+          const clean = cols.map(c => c.replace(/^"|"$/g, "").trim());
+          const id = (clean[0] || "").trim();
+          const name = (clean[1] || "").trim();
+          const crew = (clean[4] || "").trim() || "FA";
+          const gender = (clean[5] || "").trim();
+          const cleanName = name.replace(/[^가-힣a-zA-Z0-9]/g, "");
+
+          if (name && id && gender.charAt(0) === "여") {
+            if (crew === "FA" && !hadCrewRecently.has(name) && !hadCrewRecently.has(cleanName)) {
+              continue;
+            }
+            pool.push({ id, name, crew });
+          }
+        }
+        if (!pool.length) { track.innerHTML = ""; return; }
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        const picked = pool.slice(0, 14);
+        randomCount = picked.length;
+        randomIndex = 0;
+        track.innerHTML = picked.map(item => `
+          <div class="random-card">
+            <a href="${item.id ? "profile.html?id=" + encodeURIComponent(item.id) : "#"}" style="display:block; color:inherit; text-decoration:none;">
+              <div class="random-thumb">
+                <img src="${imgUrl(item.id)}" alt="" onerror="this.style.visibility='hidden'">
+              </div>
+              <div class="random-meta">
+                <div class="random-name">${item.name}</div>
+                <div class="random-crew">${item.crew}</div>
+              </div>
+            </a>
+          </div>`).join("");
+        updateRandomSlide();
+        document.getElementById("homeRandom").style.visibility = "visible";
+        fillMidRandom(picked);
+      } catch (e) {
+        console.error(e);
+        track.innerHTML = "";
+        document.getElementById("homeRandom").style.visibility = "visible";
+      }
+    }
+
+
+    let midIndex = 0;
+    let midCount = 0;
+    const MID_SHOW = 3;
+    function updateMidSlide() {
+      const track = document.getElementById("midRandomGrid");
+      if (!track) return;
+      const maxIndex = Math.max(0, midCount - MID_SHOW);
+      if (midIndex > maxIndex) midIndex = maxIndex;
+      if (midIndex < 0) midIndex = 0;
+      const card = track.querySelector(".mid-random-card");
+      const w = card ? card.getBoundingClientRect().width + 10 : 0;
+      track.style.transform = "translateX(-" + (midIndex * w) + "px)";
+    }
+    function fillMidRandom(pool) {
+      const track = document.getElementById("midRandomGrid");
+      if (!track) return;
+      const list = (pool || []).slice(0, 9);
+      midCount = list.length;
+      midIndex = 0;
+      track.innerHTML = list.map(function (item) {
+        return '<div class="mid-random-card"><a href="' + (item.id ? "profile.html?id=" + encodeURIComponent(item.id) : "#") + '" style="display:block;color:inherit;text-decoration:none;">' +
+          '<div class="mid-random-thumb"><img src="' + imgUrl(item.id) + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
+          '<div class="mid-random-name">' + item.name + '</div></div></a></div>';
+      }).join("");
+      updateMidSlide();
+    }
+    document.getElementById("midPrev") && document.getElementById("midPrev").addEventListener("click", function () { midIndex -= 1; updateMidSlide(); });
+    document.getElementById("midNext") && document.getElementById("midNext").addEventListener("click", function () { midIndex += 1; updateMidSlide(); });
+    window.addEventListener("resize", updateMidSlide);
+
+    document.getElementById("randomPrev")?.addEventListener("click", () => { randomIndex -= 1; updateRandomSlide(); });
+    document.getElementById("randomNext")?.addEventListener("click", () => { randomIndex += 1; updateRandomSlide(); });
+
+    loadData();
+    loadRandomStreamers();
+    setInterval(loadRandomStreamers, 30 * 60 * 1000);
+  </script>
+  <script src="period.js"></script>
+</body>
+</html>

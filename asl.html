@@ -1,0 +1,2713 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASL - 스버스</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700;800&family=Orbitron:wght@800;900&family=Teko:wght@700&family=Russo+One&family=Montserrat:wght@900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <style>
+    :root {
+      --bg: #0a0b0f;
+      --bg-elevated: #12141a;
+      --bg-card: #16181f;
+      --border: rgba(255, 255, 255, 0.06);
+      --text: #e8eaed;
+      --text-muted: #8b8f9a;
+      --text-dim: #5c606b;
+      --cyan: #22d3ee;
+      --orange: #f59e0b;
+      --purple: #c4b5fd;
+      --green: #6ee7b7;
+      --terran: #60a5fa;
+      --protoss: #fbbf24;
+      --zerg: #c084fc;
+      --radius: 10px;
+      --header-h: 56px;
+      --content-max: 1280px;
+    }
+    html { scrollbar-gutter: stable; }
+    html.light {
+      --cyan: #16325c;
+      --bg: #f3f4f7;
+      --bg-elevated: #ffffff;
+      --bg-card: #ffffff;
+      --border: rgba(15, 18, 24, 0.1);
+      --text: #1a1d24;
+      --text-muted: #5c606b;
+      --text-dim: #8a8f99;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; line-height: 1.5;
+      display: flex; flex-direction: column;
+    }
+
+    .main {
+      flex: 1; max-width: var(--content-max); width: 100%;
+      margin: 0 auto; padding: 28px 24px 40px;
+    }
+
+    /* 상단 메뉴바 */
+    .period-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; padding: 8px 16px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-wrap: wrap; gap: 10px;
+    }
+    .period-tabs {
+      display: flex; align-items: center; gap: 6px;
+      flex-wrap: wrap;
+    }
+    .period-tabs .crew-tab {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; border: none; color: var(--text-muted);
+      font-weight: 700 !important; padding: 6px 12px; border-radius: 6px;
+      font-size: 14px; cursor: pointer; line-height: 1.2;
+      transition: color 0.1s ease;
+      white-space: nowrap;
+    }
+    .period-tabs .crew-tab:hover { color: #22d3ee; }
+    .period-tabs .crew-tab.active { color: #22d3ee; font-weight: 700; }
+
+    #panel-season .rank-layout { display: block; }
+    #panel-season .rank-left { width: 100%; }
+
+    .period-tabs .crew-tab[data-tab="asl22"] {
+      font-family: 'Chakra Petch', sans-serif !important;
+      font-weight: 800 !important;
+      font-size: 15px !important;
+      letter-spacing: 0.5px !important;
+    }
+
+    #seasonDivider {
+      height: 18px !important;
+      margin: 0 15px 0 6px !important;
+      align-self: center !important;
+    }
+
+    .season-arrow-icon {
+      transition: transform 0.2s ease, stroke 0.2s ease;
+      stroke: var(--text-muted);
+    }
+    .period-box:hover .season-arrow-icon,
+    .period-box.open .season-arrow-icon {
+      stroke: #22d3ee;
+    }
+    .period-box.open .season-arrow-icon {
+      transform: rotate(180deg);
+    }
+
+    #seasonDropMenu::-webkit-scrollbar,
+    .season-drop-menu::-webkit-scrollbar {
+      width: 5px;
+    }
+    #seasonDropMenu::-webkit-scrollbar-track,
+    .season-drop-menu::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #seasonDropMenu::-webkit-scrollbar-thumb,
+    .season-drop-menu::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+    #seasonDropMenu::-webkit-scrollbar-thumb:hover,
+    .season-drop-menu::-webkit-scrollbar-thumb:hover {
+      background: rgba(34, 211, 238, 0.4);
+    }
+    #seasonDropMenu,
+    .season-drop-menu {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    }
+
+    .period-logo-wrap {
+      display: flex;
+      align-items: center;
+      height: 26px;
+      flex-shrink: 0;
+    }
+    .period-logo-wrap img {
+      height: 100%;
+      width: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .sponsor-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      min-height: 0 !important;
+      padding-top: 15px !important;
+      padding-bottom: 6px !important;
+    }
+
+    .sponsor-box-body {
+      padding-top: 10px;
+      padding-bottom: 16px;
+      padding-left: 20px;
+      padding-right: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sponsor-logo-img {
+      max-width: 250px;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      opacity: 0.9;
+      transition: opacity 0.2s;
+    }
+    .sponsor-logo-img:hover { opacity: 1; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    body.asl-loading .tab-panel { display: none !important; }
+
+    .rank-layout { display: flex; gap: 24px; align-items: flex-start; }
+    .rank-left { width: 60%; flex-shrink: 0; }
+    .rank-right { width: 40%; display: flex; flex-direction: column; gap: 23px; }
+
+    .side-box {
+      background: var(--bg-card); border: none;
+      border-radius: 10px; overflow: hidden;
+    }
+    .side-box-header {
+      padding: 12px 16px;
+      font-size: 15px; font-weight: 700;
+      display: flex; align-items: center; justify-content: space-between;
+      min-height: 52px;
+      box-sizing: border-box;
+    }
+    .side-box-body { padding: 8px 0; }
+    .side-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 16px; font-size: 13px;
+    }
+    .side-item:hover { background: rgba(34, 211, 238, 0.05); }
+    .side-item-name { font-weight: 500; }
+    .side-item-value {
+      color: var(--cyan); font-weight: 600;
+      font-variant-numeric: tabular-nums; font-size: 14px;
+      display: inline-flex; align-items: baseline; gap: 2px;
+    }
+
+    .race-sum-wrap {
+      padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .race-sum-row { display: flex; flex-direction: column; gap: 5px; }
+    .race-sum-top {
+      display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 600;
+    }
+
+    .race-sum-track {
+      background: rgba(255, 255, 255, 0.05); height: 8px; border-radius: 4px; overflow: hidden;
+    }
+    .race-sum-bar { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+    .race-sum-bar.T { background: linear-gradient(90deg, #1d976c, #3b9eff); }
+    .race-sum-bar.P { background: linear-gradient(90deg, #f12711, #f7a000); }
+    .race-sum-bar.Z { background: linear-gradient(90deg, #8a2387, #b346e0); }
+
+    .final-donut-wrap {
+      display: flex; justify-content: space-between; gap: 10px;
+      padding: 16px 14px; background: transparent;
+    }
+    .donut-cell { flex: 1; text-align: center; }
+    .donut-box {
+      position: relative; width: 68px; height: 68px; margin: 0 auto 8px;
+    }
+    .donut-svg {
+      width: 100%; height: 100%; transform: rotate(-90deg);
+    }
+    @keyframes donutFill { from { stroke-dasharray: 0, 100; } }
+    .donut-svg path:last-child {
+      animation: donutFill 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+    .donut-center-pct {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums;
+    }
+    .donut-name { font-size: 11.5px; font-weight: 700; color: #f8fafc; }
+    .donut-desc { font-size: 10.5px; color: #64748b; margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+    .hero-ranker-zone {
+      background: #08111a; border: 1px solid rgba(34,211,238,0.15);
+      border-radius: 10px; padding: 12px 16px; display: flex; align-items: center;
+      gap: 12px; margin: 0 16px 10px 16px; position: relative;
+      transition: background 0.15s;
+    }
+    .hero-ranker-zone:hover { background: rgba(34,211,238,0.08); }
+    .hero-ranker-zone.is-first::after {
+      content: '1위'; position: absolute; top: -5px; left: -5px;
+      background: var(--cyan); color: #000; font-size: 9px; font-weight: 900;
+      padding: 2px 6px; border-radius: 4px;
+    }
+    .hero-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--cyan); background: #1a1c24; flex-shrink: 0; }
+    .hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-meta { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+    .hero-meta .p-name { font-size: 14px; font-weight: bold; color: var(--text); }
+    .hero-meta .rank-race { font-size: 13px; font-weight: 800; }
+    .hero-val { font-size: 15px; font-weight: 800; color: var(--cyan); flex-shrink: 0; display: flex; align-items: center; gap: 10px; }
+    .hero-val.orange { color: var(--orange); }
+
+    .sub-rank-list {
+      display: flex; flex-direction: column; gap: 6px; padding: 0 16px 16px 16px;
+    }
+    .rank-item-row {
+      display: flex; flex-direction: column;
+      padding: 8px 12px; border-radius: 10px; position: relative;
+      overflow: hidden; background: #07080c;
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    .rank-item-row:hover { background: rgba(34, 211, 238, 0.08); }
+    .rank-item-main {
+      display: flex; justify-content: space-between; align-items: center;
+      position: relative; z-index: 2; width: 100%;
+    }
+    .bar-bg {
+      position: absolute; top: 0; left: 0; height: 100%;
+      background: rgba(34, 211, 238, 0.04); z-index: 1; pointer-events: none;
+    }
+    .item-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .item-num { font-size: 12px; font-weight: bold; color: var(--text-muted); width: 18px; text-align: center; flex-shrink: 0; }
+    .item-avatar { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; border: 1px solid var(--border); background: #1a1c24; flex-shrink: 0; }
+    .item-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .item-name-group { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .item-p-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .rank-race { font-size: 11px; font-weight: 700; }
+    .rank-race.T { color: var(--terran); }
+    .rank-race.P { color: var(--protoss); }
+    .rank-race.Z { color: var(--zerg); }
+
+    .item-val {
+      font-size: 13px; font-weight: 700; color: #ffffff;
+      display: flex; gap: 8px; align-items: center; flex-shrink: 0;
+    }
+    .item-val.orange { color: var(--orange); }
+
+    .rank-extra {
+      display: none; width: 100%; font-size: 11px; color: var(--text-dim);
+      padding: 6px 0 2px 40px; z-index: 2; position: relative;
+    }
+    .rank-item-row.open .rank-extra,
+    .hero-ranker-zone.open .rank-extra { display: block; }
+
+    #listNav, .listNav {
+      display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+      background: #1c1f28; border: none; border-radius: 0 0 10px 10px; padding: 10px 16px;
+    }
+    .page-btn {
+      width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); cursor: pointer; font-size: 14px; line-height: 1;
+    }
+    .page-btn:hover:not(:disabled) {
+      color: #67e8f9; border-color: rgba(34,211,238,0.35); background: rgba(34,211,238,0.1);
+    }
+    .page-btn:disabled { opacity: 0.3; cursor: default; }
+    .page-info { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+
+    .hof-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 8px; padding: 4px 14px 14px;
+    }
+    .hof-card-v2 {
+      background: #090c12; border: 1px solid #161b26; border-radius: 10px;
+      padding: 12px 6px 10px; display: flex; flex-direction: column; align-items: center;
+      position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s;
+    }
+    .hof-card-v2:hover {
+      border-color: rgba(34, 211, 238, 0.35); background: #0c1018;
+      transform: translateY(-2px);
+    }
+    .hof-ava-wrap {
+      width: 58px; height: 58px; border-radius: 50%; overflow: hidden;
+      border: 1.5px solid rgba(34, 211, 238, 0.4); background: #131722; margin-bottom: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .hof-ava-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hof-player-name {
+      font-size: 13px; font-weight: 700; color: #f8fafc; margin-bottom: 2px;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .hof-win-badge {
+      font-size: 11.5px; font-weight: 700; color: var(--cyan);
+      background: transparent; border: none; padding: 0; margin-bottom: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .hof-stat-chips {
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.05); width: 100%;
+      font-size: 10.5px; color: var(--text-dim);
+    }
+    .hof-stat-chips b { color: #94a3b8; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .hof-stat-divider { opacity: 0.3; font-size: 8px; }
+    .hof-empty-card {
+      background: transparent; border: 1px dashed rgba(255,255,255,0.06);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); font-size: 11px; min-height: 120px;
+    }
+
+    .round-share-wrap {
+      padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .share-round-row { display: flex; align-items: center; gap: 12px; }
+    .share-round-name {
+      font-size: 12.5px; font-weight: 700; color: #f8fafc; width: 28px; flex-shrink: 0;
+    }
+    .share-inbar-track {
+      flex: 1; height: 22px; border-radius: 6px; overflow: hidden;
+      display: flex; background: rgba(255,255,255,0.03);
+      font-size: 10.5px; font-weight: 700; text-align: center; line-height: 22px;
+    }
+    .share-inbar-seg {
+      height: 100%; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+      transition: width 0.4s ease; overflow: hidden; white-space: nowrap;
+    }
+    .share-inbar-seg.t { background: #3b9eff; }
+    .share-inbar-seg.p { background: #f7a000; }
+    .share-inbar-seg.z { background: #b346e0; }
+    .share-legend-bottom {
+      display: flex; justify-content: center; gap: 18px; margin-top: 6px;
+      padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05);
+      font-size: 11px; font-weight: 600; color: #798499;
+    }
+    .share-legend-item { display: flex; align-items: center; gap: 6px; }
+    .share-legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .share-legend-dot.t { background: #3b9eff; }
+    .share-legend-dot.p { background: #f7a000; }
+    .share-legend-dot.z { background: #b346e0; }
+
+    .attend-toggle-wrap {
+      display: inline-flex; align-items: center; background: #0c0f17;
+      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 2px;
+      gap: 2px;
+    }
+    .attend-toggle-btn {
+      background: transparent; border: none; color: #64748b; font-size: 11px;
+      font-weight: 600; padding: 3px 8px; border-radius: 4px; cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .attend-toggle-btn:hover { color: #94a3b8; }
+    .attend-toggle-btn.active { background: #1e2433; color: #f1f5f9; font-weight: 700; }
+
+    .play-score-list { display: flex; flex-direction: column; gap: 8px; padding: 12px 16px; }
+    .play-score-row { display: flex; align-items: flex-start; gap: 12px; }
+    .play-score-num-box { width: 68px; flex-shrink: 0; display: flex; align-items: baseline; }
+    .play-big-num { font-size: 24px; font-weight: 800; line-height: 1; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+    .play-unit-label { font-size: 11px; margin-left: 3px; font-weight: 600; }
+    .play-score-row.rank-top .play-big-num { color: #3b9eff; }
+    .play-score-row.rank-top .play-unit-label { color: #3b9eff; }
+    .play-score-row.rank-mid .play-big-num { color: #e1e4ea; }
+    .play-score-row.rank-mid .play-unit-label { color: #798499; }
+    .play-score-row.rank-low .play-big-num { color: #64748b; }
+    .play-score-row.rank-low .play-unit-label { color: #64748b; }
+    .play-names-wrap { padding-top: 3px; display: flex; gap: 8px 14px; flex-wrap: wrap; flex: 1; }
+    .play-name-chip { font-size: 13px; line-height: 1.4; font-weight: 500; }
+    .play-score-row.rank-top .play-name-chip { color: #ffffff; font-weight: 700; }
+    .play-score-row.rank-mid .play-name-chip { color: #c8cbd3; }
+    .play-score-row.rank-low .play-name-chip { color: #8b92a3; }
+    .side-card-footer {
+      display: flex; align-items: center; justify-content: flex-end;
+      padding: 8px 16px; border-top: 1px solid var(--border);
+    }
+    .side-nav { display: flex; gap: 6px; }
+    .side-nav button {
+      width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); cursor: pointer; font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .side-nav button:hover:not(:disabled) { color: var(--text); background: rgba(255,255,255,0.06); }
+    .side-nav button:disabled { opacity: 0.3; cursor: default; }
+
+    /* 상단 1열 */
+    .season-top-media-row {
+      display: flex; gap: 20px; align-items: stretch;
+      margin-bottom: 24px; width: 100%; box-sizing: border-box;
+    }
+    .season-top-video {
+      width: calc(70% - 10px); flex-shrink: 0;
+      display: flex;
+    }
+    .season-top-video .side-box {
+      width: 100%; padding: 16px;
+      display: flex; align-items: center;
+    }
+    .season-top-info {
+      width: calc(30% - 10px); flex-shrink: 0;
+      display: flex;
+    }
+    .season-top-info .side-box {
+      width: 100%; display: flex; flex-direction: column;
+    }
+
+    @media (max-width: 900px) {
+      .season-top-media-row { flex-direction: column; }
+      .season-top-video, .season-top-info { width: 100%; }
+      .season-top-info .side-box { min-height: auto; }
+    }
+
+    /* 상세정보 테이블 */
+    .season-info-table {
+      display: flex;
+      flex-direction: column;
+      padding: 12px 18px 16px;
+      gap: 5px;
+      flex: 1;
+      justify-content: flex-start;
+    }
+    .s-info-row {
+      display: flex;
+      align-items: baseline;
+      font-size: 12px;
+      line-height: 1.35;
+      padding: 2px 0 4px;
+    }
+    .s-info-lbl {
+      width: 64px;
+      flex-shrink: 0;
+      color: #64748b;
+      font-weight: 600;
+      font-size: 11.5px;
+    }
+    .s-info-val {
+      flex: 1;
+      color: var(--text);
+      font-weight: 500;
+      word-break: keep-all;
+    }
+    .s-info-val.hl { color: #ffc83b; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .s-info-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.05);
+      margin: 4px 0 6px;
+    }
+
+    /* 대진표 통합 박스 */
+    .season-bracket-unified-wrap {
+      width: 100%;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      height: 460px;
+      box-sizing: border-box;
+    }
+    .bracket-unified-header {
+      min-height: 0 !important;
+      padding-top: 15px !important;
+      padding-bottom: 0px !important;
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .bracket-detail-head-tit {
+      width: calc(30% - 10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .bracket-unified-content {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+    .bracket-grid-left {
+      width: calc(70% - 10px);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .bracket-grid-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-width: 0;
+      padding: 10px 14px 14px 0;
+      box-sizing: border-box;
+    }
+    .bracket-detail-card-zone {
+      background: #090c12;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      height: 100% !important;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    @media (max-width: 900px) {
+      .season-bracket-unified-wrap { height: auto !important; }
+      .bracket-unified-content { flex-direction: column; }
+      .bracket-grid-left { width: 100%; }
+      .bracket-grid-right { width: 100%; padding: 0 14px 14px; }
+      .bracket-detail-head-tit { display: none; }
+    }
+
+    .bracket-canvas-wrap {
+      padding: 10px 14px 14px;
+      flex: 1;
+      display: flex;
+      background: #0d1017;
+      box-sizing: border-box;
+    }
+    .tournament-canvas {
+      background: #090c12;
+      border-radius: 10px;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+    }
+
+    .b-detail-body {
+      padding: 8px 12px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      background: transparent;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    .b-match-summary {
+      background: #11141d;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .b-summary-score {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--cyan);
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+    }
+    .b-set-row {
+      background: #0d1017;
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 11px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      min-height: 28px;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+
+    .bracket-match-box {
+      position: absolute;
+      width: 124px;
+      background: #0d111a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      cursor: pointer;
+      z-index: 2;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .bracket-match-box:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      transform: translateY(-1px);
+    }
+    .bracket-match-box.active {
+      border-color: var(--cyan) !important;
+      box-shadow: 0 0 14px rgba(34, 211, 238, 0.35), 0 4px 12px rgba(0, 0, 0, 0.8) !important;
+      transform: translateY(-1px);
+    }
+    .bracket-match-box.active .b-player-row {
+      background: rgba(34, 211, 238, 0.12) !important;
+    }
+
+    .b-player-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #94a3b8;
+      background: #0a0e16;
+    }
+    .b-player-row:first-child {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .b-player-row.is-winner {
+      color: #f8fafc;
+      background: #0e1724;
+    }
+    .b-player-row.is-winner .b-row-score {
+      color: var(--cyan);
+      font-weight: 900;
+    }
+    .b-player-row.is-loser {
+      opacity: 0.70;
+      font-weight: 500;
+    }
+    .b-player-row.is-loser .b-row-score {
+      font-weight: 600;
+    }
+    .b-row-left {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .b-row-score {
+      font-size: 12px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: #64748b;
+      margin-left: 6px;
+    }
+
+    .b-champ-card {
+      position: absolute;
+      width: 124px;
+      background: linear-gradient(180deg, #241a0d 0%, #120e08 100%);
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+      text-align: center;
+      z-index: 2;
+    }
+    .b-champ-tag {
+      background: rgba(245, 158, 11, 0.25);
+      color: #fbbf24;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 0;
+      letter-spacing: 0.8px;
+      border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .b-champ-name {
+      padding: 8px 4px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .line-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+    .t-line { fill: none; stroke: rgba(255, 255, 255, 0.08); stroke-width: 1.5; }
+    .t-line.active { stroke: var(--cyan); stroke-width: 2.5; filter: drop-shadow(0px 0px 4px rgba(34, 211, 238, 0.5)); }
+
+    .unified-league-box {
+      background: #0d1017 !important;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .unified-league-box .side-box-header {
+      background: #0d1017 !important;
+      border-bottom: none !important;
+      padding-bottom: 8px;
+    }
+
+    .group-tabs-nav {
+      display: flex;
+      align-items: center;
+      padding: 4px 16px 12px;
+      background: #0d1017;
+    }
+    .group-tab-btn {
+      width: 16.666%;
+      flex: none;
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 13.5px;
+      font-weight: 700;
+      padding: 8px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: color 0.15s ease;
+    }
+    .group-tab-btn:hover { color: #cbd5e1; }
+    .group-tab-btn:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1px;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .group-tabs-nav.is-round-16 button[data-group="d"]::after {
+      display: none !important;
+    }
+    .group-tab-btn.active {
+      color: var(--cyan);
+      font-weight: 800;
+    }
+    .group-tab-btn.active::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 28px;
+      height: 2px;
+      background: var(--cyan);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+    }
+    .dual-stage-board {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #090c12;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      margin: 0 14px 14px;
+      flex: 1;
+      box-sizing: border-box;
+    }
+    .dual-top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .dual-bottom-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .dual-match-card {
+      background: #11141d; border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 10px;
+      padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; position: relative;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .dual-match-card.is-advance-gate {
+      background: #111824; border-color: rgba(34, 211, 238, 0.25); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    .dual-match-card:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      transform: translateY(-1px);
+    }
+    .dual-match-card.active {
+      border-color: var(--cyan) !important;
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.3) !important;
+    }
+    .match-score-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-variant-numeric: tabular-nums;
+      margin-left: 6px;
+    }
+    .match-player-row.is-winner .match-score-badge,
+    .match-player-row.is-advance .match-score-badge {
+      color: var(--cyan);
+      background: rgba(34, 211, 238, 0.15);
+    }
+    .match-header-tag {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11.5px; font-weight: 800; color: #8b92a3; padding-bottom: 6px;
+      border-bottom: none; letter-spacing: 0.3px;
+    }
+    .is-advance-gate .match-header-tag { color: var(--cyan); }
+    .match-player-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 10px; border-radius: 6px; background: #0a0c12; border: 1px solid transparent;
+    }
+    .match-player-row.is-winner { background: #0e1924; border-color: rgba(34, 211, 238, 0.3); }
+    .match-player-row.is-advance { background: #23190b; border-color: rgba(245, 158, 11, 0.35); }
+    .match-player-row.is-loser { opacity: 1 !important; }
+    .match-player-row.is-loser .match-p-info { opacity: 0.6; font-weight: 400; }
+    .match-player-row.is-loser .dual-badge { opacity: 1 !important; }
+    .match-p-info { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #f1f5f9; }
+    .dual-badge { font-size: 10px; font-weight: 800; padding: 3px 7px; border-radius: 4px; white-space: nowrap; }
+    .dual-badge.advance { background: var(--orange); color: #0c0e14; box-shadow: 0 0 8px rgba(245, 158, 11, 0.3); }
+    .dual-badge.win { background: var(--cyan); color: #050608; }
+    .dual-badge.move { background: rgba(255, 255, 255, 0.08); color: #94a3b8; }
+    .dual-badge.drop { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    @media (max-width: 900px) {
+      .dual-top-row, .dual-bottom-row { grid-template-columns: 1fr; }
+    }
+
+    /* 모달 */
+    .point-rule-btn {
+      border: 1px solid rgba(34,211,238,0.35); background: rgba(34,211,238,0.1);
+      color: #22d3ee; font-size: 11px; font-weight: 600; padding: 4px 9px;
+      border-radius: 6px; cursor: pointer;
+    }
+    .point-rule-btn:hover { background: rgba(34,211,238,0.2); }
+    .modal-back {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.6); align-items: center; justify-content: center; padding: 24px;
+    }
+    .modal-back.open { display: flex; }
+    .modal-box {
+      width: 100%; max-width: 350px; background: #0c0e14;
+      border: 1px solid #1c2230; border-radius: 14px; overflow: hidden;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(34, 211, 238, 0.1);
+    }
+    .modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 18px 12px; border-bottom: 1px solid #161b26;
+      font-size: 15px; font-weight: 700; color: #f1f5f9;
+    }
+    .modal-close {
+      border: none; background: rgba(255,255,255,0.05); color: #8b8f9a;
+      width: 26px; height: 26px; border-radius: 6px; font-size: 16px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .rule-notice-bar {
+      margin: 12px 16px 8px; padding: 7px 12px; border-radius: 6px;
+      background: rgba(34, 211, 238, 0.06); border: 1px dashed rgba(34, 211, 238, 0.25);
+      font-size: 11px; color: var(--cyan); text-align: center; font-weight: 500;
+    }
+    .point-stack-list { display: flex; flex-direction: column; gap: 7px; padding: 10px 16px 18px; list-style: none; }
+    .point-card-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; background: #11141d; border: 1px solid #191f2c;
+      border-radius: 8px; position: relative; overflow: hidden;
+    }
+    .point-gauge-bg {
+      position: absolute; top: 0; left: 0; bottom: 0;
+      background: linear-gradient(90deg, rgba(34, 211, 238, 0.12), rgba(34, 211, 238, 0.02));
+      pointer-events: none; z-index: 1; border-radius: 8px;
+    }
+    .point-tier-info { display: flex; align-items: center; gap: 8px; z-index: 2; min-width: 0; }
+    .point-badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 5px; white-space: nowrap; flex-shrink: 0; }
+    .point-badge.tier-1 { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .point-badge.tier-2 { background: rgba(192, 192, 192, 0.18); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.2); }
+    .point-badge.tier-3 { background: rgba(249, 115, 22, 0.18); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.3); }
+    .point-badge.tier-normal { background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.08); }
+    .point-percent { font-size: 11px; color: #64748b; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .point-val-wrap { display: flex; align-items: baseline; gap: 3px; z-index: 2; }
+    .point-num { font-size: 14px; font-weight: 800; color: #22d3ee; font-variant-numeric: tabular-nums; }
+    .point-unit { font-size: 10.5px; font-weight: 600; color: #64748b; }
+
+    @keyframes eloSpin { to { transform: rotate(360deg); } }
+    #aslLoading {
+      display: flex; min-height: 300px; align-items: center; justify-content: center;
+      flex-direction: column; gap: 14px; color: var(--text-dim); font-size: 14px;
+    }
+    #aslLoading .asl-spin {
+      width: 28px; height: 28px; border: 2px solid var(--border);
+      border-top-color: #22d3ee; border-radius: 50%; animation: eloSpin 0.8s linear infinite;
+    }
+
+    /* 본선 7개 맵 전용 정사각형 카드 그리드 레이아웃 */
+    .season-maps-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      padding: 6px 16px 14px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .map-square-card {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #090c12;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      cursor: default;
+    }
+    .map-square-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(34, 211, 238, 0.4);
+    }
+    .map-square-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.25s ease;
+    }
+    .map-square-card:hover img {
+      transform: scale(1.05);
+    }
+    .map-square-card .map-label {
+      position: absolute;
+      left: 50%;
+      bottom: 6px;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      color: #f1f5f9;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-align: center;
+      padding: 3px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      max-width: 90%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: 0.2px;
+      pointer-events: none;
+    }
+    .map-empty-slot {
+      aspect-ratio: 1 / 1;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    @media (max-width: 900px) {
+      .season-maps-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    @media (max-width: 580px) {
+      .season-maps-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .map-square-card { cursor: pointer !important; }
+    .map-modal-back {
+      display: none; position: fixed; inset: 0; z-index: 300;
+      background: rgba(0, 0, 0, 0.85); align-items: center; justify-content: center;
+      padding: 20px; cursor: pointer;
+    }
+    .map-modal-back.open { display: flex; }
+    .map-modal-img {
+      max-width: 90vw; max-height: 85vh; object-fit: contain;
+      border-radius: 8px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+    }
+  </style>
+</head>
+<body class="asl-loading">
+  <div id="site-top"></div>
+
+  <main class="main">
+    <div class="period-bar">
+      <div class="period-tabs">
+        <button type="button" class="crew-tab active" data-tab="power">파워랭킹</button>
+        <button type="button" class="crew-tab" data-tab="prize">역대상금</button>
+        <button type="button" class="crew-tab" data-tab="season">역대대회</button>
+        <button type="button" class="crew-tab" data-tab="asl22">ASL22</button>
+      </div>
+      <div id="seasonToggleWrap" style="display:inline-flex; position:relative; align-items:center; margin-left:auto;">
+        <button type="button" class="period-box" id="seasonSelectBtn" style="padding: 0 14px 0 18px !important; gap: 8px !important;">
+          <span id="seasonSelectTxt">시즌 21</span>
+          <svg class="season-arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div id="seasonDropMenu" style="display:none; position:absolute; top:calc(100% + 6px); right:0; width:115px; max-height:210px; overflow-y:auto; background:#16181f; border:1px solid rgba(255,255,255,0.12); border-radius:8px; z-index:150; padding:4px; box-shadow:0 8px 24px rgba(0,0,0,0.6);"></div>
+      </div>
+    </div>
+
+    <div id="aslLoading">
+      <div class="asl-spin"></div>
+      <div>데이터를 읽는중입니다</div>
+    </div>
+
+    <!-- 1. 파워랭킹 패널 -->
+    <div class="tab-panel active" id="panel-power">
+      <div class="rank-layout">
+        <div class="rank-left">
+          <div class="side-box">
+            <div class="side-box-header">
+              <span>파워랭킹</span>
+              <button type="button" class="point-rule-btn" id="pointRuleBtn">포인트 산정기준</button>
+            </div>
+            <div id="heroSlotPower"></div>
+            <div class="sub-rank-list" id="powerList"></div>
+            <div class="listNav" id="powerNav">
+              <button type="button" class="page-btn" id="powerPrev">‹</button>
+              <span class="page-info" id="powerPageInfo">1/1</span>
+              <button type="button" class="page-btn" id="powerNext">›</button>
+            </div>
+          </div>
+        </div>
+        <div class="rank-right">
+          <div class="side-box">
+            <div class="side-box-header">
+              <span>최다우승자</span>
+              <div class="side-nav">
+                <button type="button" class="hof-prev-btn" aria-label="이전">‹</button>
+                <button type="button" class="hof-next-btn" aria-label="다음">›</button>
+              </div>
+            </div>
+            <div class="hof-grid" id="hofPower"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">결승전 우승 확률</div>
+            <div class="final-donut-wrap" id="finalDonutPower"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">라운드별 점유율</div>
+            <div class="round-share-wrap" id="roundSharePower"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">
+              <span>종족별 합산</span>
+              <div class="attend-toggle-wrap">
+                <button type="button" class="attend-toggle-btn race-sum-tab-btn active" data-type="prize">상금합산</button>
+                <button type="button" class="attend-toggle-btn race-sum-tab-btn" data-type="point">포인트합산</button>
+              </div>
+            </div>
+            <div class="side-box-body" id="racePointSum"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">
+              <span>ASL 개근상</span>
+              <div class="attend-toggle-wrap">
+                <button type="button" class="attend-toggle-btn play-tab-btn active" data-mode="total">최다진출</button>
+                <button type="button" class="attend-toggle-btn play-tab-btn" data-mode="streak">연속진출</button>
+              </div>
+            </div>
+            <div class="side-box-body" id="playTop5Power"></div>
+            <div class="side-card-footer">
+              <div class="side-nav">
+                <button type="button" class="play-prev-btn" aria-label="이전">‹</button>
+                <button type="button" class="play-next-btn" aria-label="다음">›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 역대상금 패널 -->
+    <div class="tab-panel" id="panel-prize">
+      <div class="rank-layout">
+        <div class="rank-left">
+          <div class="side-box">
+            <div class="side-box-header">
+              <span>역대 상금 누적 순위</span>
+            </div>
+            <div id="heroSlotPrize"></div>
+            <div class="sub-rank-list" id="prizeList"></div>
+            <div class="listNav" id="prizeNav">
+              <button type="button" class="page-btn" id="prizePrev">‹</button>
+              <span class="page-info" id="prizePageInfo">1/1</span>
+              <button type="button" class="page-btn" id="prizeNext">›</button>
+            </div>
+          </div>
+        </div>
+        <div class="rank-right">
+          <div class="side-box">
+            <div class="side-box-header">
+              <span>최다우승자</span>
+              <div class="side-nav">
+                <button type="button" class="hof-prev-btn" aria-label="이전">‹</button>
+                <button type="button" class="hof-next-btn" aria-label="다음">›</button>
+              </div>
+            </div>
+            <div class="hof-grid" id="hofPrize"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">결승 진출 시 우승 확률은?</div>
+            <div class="final-donut-wrap" id="finalDonutPrize"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">라운드별 종족 점유율</div>
+            <div class="round-share-wrap" id="roundSharePrize"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">
+              <span>종족별 합산</span>
+              <div class="attend-toggle-wrap">
+                <button type="button" class="attend-toggle-btn race-sum-tab-btn active" data-type="prize">상금합산</button>
+                <button type="button" class="attend-toggle-btn race-sum-tab-btn" data-type="point">포인트합산</button>
+              </div>
+            </div>
+            <div class="side-box-body" id="racePrizeSum"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">
+              <span>ASL 개근상</span>
+              <div class="attend-toggle-wrap">
+                <button type="button" class="attend-toggle-btn play-tab-btn active" data-mode="total">최다진출</button>
+                <button type="button" class="attend-toggle-btn play-tab-btn" data-mode="streak">연속진출</button>
+              </div>
+            </div>
+            <div class="side-box-body" id="playTop5Prize"></div>
+            <div class="side-card-footer">
+              <div class="side-nav">
+                <button type="button" class="play-prev-btn" aria-label="이전">‹</button>
+                <button type="button" class="play-next-btn" aria-label="다음">›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. ASL22 패널 -->
+    <div class="tab-panel" id="panel-asl22">
+      <div class="rank-layout">
+        <div class="rank-left">
+          <div class="asl22-images" style="display:flex; flex-direction:column; gap:12px;">
+            <img src="https://stimg.sooplive.com/NORMAL_BBS/7/15524207/12526a6fe5925d52f.png" alt="ASL22-2" style="width:100%; border-radius:10px; display:block;">
+            <img src="https://stimg.sooplive.com/NORMAL_BBS/7/15524207/61876a6fe5933f001.png" alt="ASL22-3" style="width:100%; border-radius:10px; display:block;">
+          </div>
+        </div>
+        <div class="rank-right">
+          <!-- 최다 우승자 위로 작게 들어간 영상 박스 -->
+          <div class="side-box" style="padding:10px;">
+            <iframe src="https://www.youtube.com/embed/AbqImJS8XQM" title="ASL 22" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%; aspect-ratio:16/9; border:0; border-radius:8px; display:block;"></iframe>
+          </div>
+
+          <div class="side-box">
+            <div class="side-box-header">
+              <span>최다우승자</span>
+              <div class="side-nav">
+                <button type="button" class="hof-prev-btn" aria-label="이전">‹</button>
+                <button type="button" class="hof-next-btn" aria-label="다음">›</button>
+              </div>
+            </div>
+            <div class="hof-grid" id="hofAsl22"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">결승 진출 시 우승 확률은?</div>
+            <div class="final-donut-wrap" id="finalDonutAsl22"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">라운드별 종족 점유율</div>
+            <div class="round-share-wrap" id="roundShareAsl22"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">
+              <span>종족별 합산</span>
+              <div class="attend-toggle-wrap">
+                <button type="button" class="attend-toggle-btn race-sum-tab-btn active" data-type="prize">상금합산</button>
+                <button type="button" class="attend-toggle-btn race-sum-tab-btn" data-type="point">포인트합산</button>
+              </div>
+            </div>
+            <div class="side-box-body" id="racePointSum3"></div>
+          </div>
+          <div class="side-box">
+            <div class="side-box-header">
+              <span>ASL 개근상</span>
+              <div class="attend-toggle-wrap">
+                <button type="button" class="attend-toggle-btn play-tab-btn active" data-mode="total">최다진출</button>
+                <button type="button" class="attend-toggle-btn play-tab-btn" data-mode="streak">연속진출</button>
+              </div>
+            </div>
+            <div class="side-box-body" id="playTop5Asl22"></div>
+            <div class="side-card-footer">
+              <div class="side-nav">
+                <button type="button" class="play-prev-btn" aria-label="이전">‹</button>
+                <button type="button" class="play-next-btn" aria-label="다음">›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 역대대회 패널 -->
+    <div class="tab-panel" id="panel-season">
+
+      <!-- 상단 1열: 영상과 정보 박스 -->
+      <div class="season-top-media-row">
+        <div class="season-top-video">
+          <div class="side-box">
+            <iframe id="seasonVideoFrame" src="https://www.youtube.com/embed/AbqImJS8XQM" title="ASL Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0;border-radius:8px;display:block;"></iframe>
+          </div>
+        </div>
+
+        <div class="season-top-info">
+          <div class="side-box" style="height:100%;">
+            <div class="side-box-header" style="justify-content: center; min-height: 0 !important; padding-top: 24px !important; padding-bottom: 8px !important;">
+              <span id="seasonRightTitle" style="font-size: 16px; font-weight: 800; text-align: center; width: 100%;">Google Play ASL 시즌21</span>
+            </div>
+            <div class="season-info-table">
+              <div class="s-info-row">
+                <span class="s-info-lbl">대회 기간</span>
+                <span class="s-info-val" id="infoPeriod">-</span>
+              </div>
+              <div class="s-info-row">
+                <span class="s-info-lbl">주관 / 주최</span>
+                <span class="s-info-val" id="infoHost">-</span>
+              </div>
+              <div class="s-info-row">
+                <span class="s-info-lbl">협찬 / 후원</span>
+                <span class="s-info-val" id="infoPartner">-</span>
+              </div>
+              <div class="s-info-row">
+                <span class="s-info-lbl">중계진</span>
+                <span class="s-info-val" id="infoCasters">-</span>
+              </div>
+              <div class="s-info-row">
+                <span class="s-info-lbl">진행 MC</span>
+                <span class="s-info-val" id="infoMainMc">-</span>
+              </div>
+              <div class="s-info-row">
+                <span class="s-info-lbl">경기장</span>
+                <span class="s-info-val" id="infoStadium">-</span>
+              </div>
+              <div class="s-info-row">
+                <span class="s-info-lbl">총 상금</span>
+                <span class="s-info-val hl" id="infoTotalPrize">-</span>
+              </div>
+              <div class="s-info-divider"></div>
+              <div class="s-info-row">
+                <span class="s-info-lbl">우승자</span>
+                <span class="s-info-val" id="infoWinner" style="font-weight: 700;">-</span>
+              </div>
+              <div class="s-info-row">
+                <span class="s-info-lbl">준우승자</span>
+                <span class="s-info-val" id="infoRunnerUp">-</span>
+              </div>
+              <div class="s-info-row" style="align-items: flex-start;">
+                <span class="s-info-lbl" style="margin-top: 2px;">대회맵</span>
+                <div class="s-info-val" id="infoMaps" style="display: flex; flex-direction: column; gap: 4px;">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8강 토너먼트 + 상세경기내용 일체형 통합 박스 -->
+      <div class="side-box unified-league-box season-bracket-unified-wrap">
+        <div class="side-box-header bracket-unified-header">
+          <span id="bracketHeaderTitle">8강 토너먼트 대진표</span>
+          <div class="bracket-detail-head-tit" style="justify-content: flex-end;">
+            <span id="detailStageTag" style="display:none;"></span>
+            <div class="season-toggle-slot" style="display:inline-flex; position:relative; align-items:center;">
+              <button type="button" class="period-box season-select-btn" style="padding: 0 14px 0 18px !important; gap: 8px !important;">
+                <span class="season-select-txt">시즌 21</span>
+                <svg class="season-arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="season-drop-menu" style="display:none; position:absolute; top:calc(100% + 6px); right:0; width:115px; max-height:210px; overflow-y:auto; background:#16181f; border:1px solid rgba(255,255,255,0.12); border-radius:8px; z-index:150; padding:4px; box-shadow:0 8px 24px rgba(0,0,0,0.6);"></div>
+            </div>
+          </div>
+        </div>
+        <div class="bracket-unified-content">
+          <div class="bracket-grid-left">
+            <div class="bracket-canvas-wrap">
+              <div class="tournament-canvas" id="tournamentCanvasZone"></div>
+            </div>
+          </div>
+          <div class="bracket-grid-right">
+            <div class="bracket-detail-card-zone">
+              <div class="b-detail-body" id="matchDetailBody"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 16강 & 24강 조별리그 통합 박스 -->
+      <div class="side-box unified-league-box season-bracket-unified-wrap" style="height: 460px !important;">
+        <div class="side-box-header bracket-unified-header">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div class="period-tabs" style="gap:4px;">
+              <button type="button" class="crew-tab active" id="btnRound16Tab" onclick="switchLeagueTab('16')" style="padding:4px 10px; font-size:13px;">16강 조별리그</button>
+              <button type="button" class="crew-tab" id="btnRound24Tab" onclick="switchLeagueTab('24')" style="padding:4px 10px; font-size:13px;">24강 조별리그</button>
+            </div>
+          </div>
+          <div class="bracket-detail-head-tit" style="justify-content: flex-end;">
+            <div class="season-toggle-slot" style="display:inline-flex; position:relative; align-items:center;">
+              <button type="button" class="period-box season-select-btn" style="padding: 0 14px 0 18px !important; gap: 8px !important;">
+                <span class="season-select-txt">시즌 21</span>
+                <svg class="season-arrow-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div class="season-drop-menu" style="display:none; position:absolute; top:calc(100% + 6px); right:0; width:115px; max-height:210px; overflow-y:auto; background:#16181f; border:1px solid rgba(255,255,255,0.12); border-radius:8px; z-index:150; padding:4px; box-shadow:0 8px 24px rgba(0,0,0,0.6);"></div>
+            </div>
+          </div>
+        </div>
+        <div class="bracket-unified-content">
+          <div class="bracket-grid-left">
+            <div class="group-tabs-nav" id="groupTabsNav">
+              <button type="button" class="group-tab-btn active" data-group="a">A조</button>
+              <button type="button" class="group-tab-btn" data-group="b">B조</button>
+              <button type="button" class="group-tab-btn" data-group="c">C조</button>
+              <button type="button" class="group-tab-btn" data-group="d">D조</button>
+              <button type="button" class="group-tab-btn" data-group="e" id="tabGroupE" style="display:none;">E조</button>
+              <button type="button" class="group-tab-btn" data-group="f" id="tabGroupF" style="display:none;">F조</button>
+            </div>
+
+            <div class="dual-stage-board" id="round16StageBoard"></div>
+          </div>
+          <div class="bracket-grid-right">
+            <div class="bracket-detail-card-zone">
+              <div class="b-detail-body" id="leagueMatchDetailBody"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<!-- 맨 아래 공식 사용 맵 7개 정사각형 영역 (정보창 본선맵 연동) -->
+      <div class="side-box unified-league-box" style="margin-top: 24px;">
+        <div class="side-box-header" style="min-height: auto; padding-bottom: 4px;">
+          <span>본선 맵</span>
+        </div>
+        <div class="season-maps-grid" id="seasonMapsZone"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-bottom"></div>
+
+  <!-- 맵 원본 확대 모달 -->
+  <div class="map-modal-back" id="mapViewModal" onclick="this.classList.remove('open')">
+    <img class="map-modal-img" id="mapModalImg" src="" alt="맵 확대" />
+  </div>
+
+  <!-- 포인트 규정 모달 -->
+  <div class="modal-back" id="pointRuleModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <span>포인트 산정 기준</span>
+        <button type="button" class="modal-close" id="pointRuleClose">✕</button>
+      </div>
+      <div class="rule-notice-bar">
+        ⚡ 공식 랭킹이 아닌 스버스 자체 누적 포인트 집계 기준입니다
+      </div>
+      <ul class="point-stack-list">
+        <li class="point-card-row"><div class="point-gauge-bg" style="width: 100%;"></div><div class="point-tier-info"><span class="point-badge tier-1">우승</span><span class="point-percent">100%</span></div><div class="point-val-wrap"><span class="point-num">500</span><span class="point-unit">p</span></div></li>
+        <li class="point-card-row"><div class="point-gauge-bg" style="width: 70%;"></div><div class="point-tier-info"><span class="point-badge tier-2">준우승</span><span class="point-percent">70%</span></div><div class="point-val-wrap"><span class="point-num">350</span><span class="point-unit">p</span></div></li>
+        <li class="point-card-row"><div class="point-gauge-bg" style="width: 50%;"></div><div class="point-tier-info"><span class="point-badge tier-3">4강</span><span class="point-percent">50%</span></div><div class="point-val-wrap"><span class="point-num">250</span><span class="point-unit">p</span></div></li>
+        <li class="point-card-row"><div class="point-gauge-bg" style="width: 30%;"></div><div class="point-tier-info"><span class="point-badge tier-normal">8강</span><span class="point-percent">30%</span></div><div class="point-val-wrap"><span class="point-num">150</span><span class="point-unit">p</span></div></li>
+        <li class="point-card-row"><div class="point-gauge-bg" style="width: 20%;"></div><div class="point-tier-info"><span class="point-badge tier-normal">16강</span><span class="point-percent">20%</span></div><div class="point-val-wrap"><span class="point-num">100</span><span class="point-unit">p</span></div></li>
+        <li class="point-card-row"><div class="point-gauge-bg" style="width: 10%;"></div><div class="point-tier-info"><span class="point-badge tier-normal">28강</span><span class="point-percent">10%</span></div><div class="point-val-wrap"><span class="point-num">50</span><span class="point-unit">p</span></div></li>
+        <li class="point-card-row"><div class="point-gauge-bg" style="width: 5%;"></div><div class="point-tier-info"><span class="point-badge tier-normal">그 외</span><span class="point-percent">5%</span></div><div class="point-val-wrap"><span class="point-num">25</span><span class="point-unit">p</span></div></li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="common.js"></script>
+  <!-- 같은 폴더의 맵 데이터 사전 연동 -->
+  <script src="mapdata.js"></script>
+  <script>
+    const ASL_CSV = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=92322496";
+    const ROSTER_CSV = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=0";
+    const MATCH_CSV = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=535437746";
+    const META_CSV  = "https://docs.google.com/spreadsheets/d/1eYeyvdrd07PUmLAUeEXocF2N7wGRsGODqiul9YquAcY/export?format=csv&gid=1386656797";
+
+    let matchRawData = [];
+    let metaRawData = {};
+    let curSeason = "21";
+    let curR16Group = "a";
+    let curSeasonMatches = {};
+    let globalRoster = [];
+
+    window.openMapModal = function(src) {
+      if (!src) return;
+      const modal = document.getElementById("mapViewModal");
+      const modalImg = document.getElementById("mapModalImg");
+      if (modal && modalImg) {
+        modalImg.src = src;
+        modal.classList.add("open");
+      }
+    };
+
+    function resolveMapSrc(mapName) {
+      if (typeof getMapImagePath === "function") {
+        return getMapImagePath(mapName);
+      }
+      if (window.RAW_MAPS && window.RAW_MAPS[mapName]) {
+        return `map/${window.RAW_MAPS[mapName]}.webp`;
+      }
+      return `map/${mapName}.webp`;
+    }
+
+  // 본선 맵 7개 정사각형 그리드 렌더링 함수 (정보창 글자 직접 읽어오기)
+    function renderSeasonMapsGrid(mainMapsStr) {
+      const zone = document.getElementById("seasonMapsZone");
+      if (!zone) return;
+
+      let mapText = mainMapsStr || "";
+      
+      // 정보창(infoMaps)에 본선 맵 글자가 있다면 그걸 그대로 추출
+      const mapsEl = document.getElementById("infoMaps");
+      if (mapsEl) {
+        const spans = mapsEl.querySelectorAll("span");
+        spans.forEach(sp => {
+          if (sp.textContent.includes("본선") && sp.nextElementSibling) {
+            mapText = sp.nextElementSibling.textContent || mapText;
+          }
+        });
+      }
+
+      const mapNames = mapText
+        .split(/[,\n/]+/)
+        .map(s => s.trim().replace(/^["'\s]+|["'\s]+$/g, ""))
+        .filter(Boolean);
+
+      if (!mapNames.length) {
+        let emptyHtml = "";
+        for (let i = 1; i <= 7; i++) {
+          emptyHtml += `<div class="map-empty-slot">맵 ${i}</div>`;
+        }
+        zone.innerHTML = emptyHtml;
+        return;
+      }
+
+      zone.innerHTML = mapNames.map(name => {
+        const src = resolveMapSrc(name);
+        return `
+          <div class="map-square-card" onclick="openMapModal('${src}')">
+            <img src="${src}" alt="${name}" loading="lazy" onerror="this.style.display='none';" />
+            <div class="map-label">${name}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function parseMetaCsv(text) {
+      if (!text) return {};
+      const rows = [];
+      let cur = "";
+      let inQ = false;
+      let row = [];
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === '"') {
+          if (inQ && text[i + 1] === '"') { cur += '"'; i++; }
+          else { inQ = !inQ; }
+        } else if (ch === ',' && !inQ) {
+          row.push(cur.trim());
+          cur = "";
+        } else if ((ch === '\n' || ch === '\r') && !inQ) {
+          if (ch === '\r' && text[i + 1] === '\n') { i++; }
+          row.push(cur.trim());
+          if (row.length > 1 || (row.length === 1 && row[0] !== "")) {
+            rows.push(row);
+          }
+          row = [];
+          cur = "";
+        } else {
+          cur += ch;
+        }
+      }
+      if (cur !== "" || row.length > 0) {
+        row.push(cur.trim());
+        rows.push(row);
+      }
+
+      const dict = {};
+      for (let i = 1; i < rows.length; i++) {
+        const cols = rows[i];
+        if (!cols || !cols.length) continue;
+        const sId = (cols[0] || "").replace(/[^0-9]/g, "");
+        if (!sId) continue;
+
+        // 후원(cols[5])과 협찬(cols[6])을 합쳐서 표시하거나 존재하는 값 사용
+        const sponsorText = [cols[5], cols[6]].map(s => (s || "").trim()).filter(Boolean).join(" / ");
+
+        dict[sId] = {
+          season: sId,
+          name: cols[1] || "",
+          startDate: cols[2] || "",
+          endDate: cols[3] || "",
+          host: cols[4] || "",
+          partner: sponsorText || cols[5] || cols[6] || "",
+          casters: cols[7] || "",
+          mainMc: cols[8] || "",
+          stadiumMain: cols[9] || "",
+          stadiumFinal: cols[10] || "",
+          totalPrize: cols[11] || "",
+          preMaps: cols[12] || "",
+          mainMaps: cols[13] || "",
+          winner: cols[14] || "",
+          runnerUp: cols[15] || "",
+          winnerPrize: cols[16] || "",
+          runnerUpPrize: cols[17] || "",
+          videoUrl: cols[26] || cols[25] || cols[24] || ""
+        };
+      }
+      return dict;
+    }
+
+    function toEmbedUrl(url) {
+      if (!url) return "https://www.youtube.com/embed/AbqImJS8XQM";
+      if (url.includes("embed/")) return url;
+      const match = url.match(/(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
+      return (match && match[1].length === 11) ? `https://www.youtube.com/embed/${match[1]}` : url;
+    }
+
+    function renderSeasonMeta(sNum) {
+      const meta = metaRawData[String(sNum)];
+      const titleEl = document.getElementById("seasonRightTitle");
+      const periodEl = document.getElementById("infoPeriod");
+      const hostEl = document.getElementById("infoHost");
+      const partnerEl = document.getElementById("infoPartner");
+      const castersEl = document.getElementById("infoCasters");
+      const mainMcEl = document.getElementById("infoMainMc");
+      const stadiumEl = document.getElementById("infoStadium");
+      const prizeEl = document.getElementById("infoTotalPrize");
+      const winnerEl = document.getElementById("infoWinner");
+      const runnerEl = document.getElementById("infoRunnerUp");
+      const mapsEl = document.getElementById("infoMaps");
+      const videoFrame = document.getElementById("seasonVideoFrame");
+
+      if (!meta) {
+        if (titleEl) titleEl.textContent = `ASL 시즌${sNum}`;
+        if (periodEl) periodEl.textContent = "-";
+        if (hostEl) hostEl.textContent = "-";
+        if (partnerEl) partnerEl.textContent = "-";
+        if (castersEl) castersEl.textContent = "-";
+        if (mainMcEl) mainMcEl.textContent = "-";
+        if (stadiumEl) stadiumEl.textContent = "-";
+        if (prizeEl) prizeEl.textContent = "-";
+        if (winnerEl) winnerEl.textContent = "-";
+        if (runnerEl) runnerEl.textContent = "-";
+        if (mapsEl) mapsEl.innerHTML = "-";
+        renderSeasonMapsGrid("");
+        return;
+      }
+
+      if (titleEl) titleEl.textContent = meta.name || `ASL 시즌${sNum}`;
+
+      function fmtDate(d) {
+        if (!d) return "";
+        let clean = String(d).trim().replace(/[^0-9]/g, "");
+        if (clean.length === 8) {
+          return clean.substring(2, 4) + "." + clean.substring(4, 6) + "." + clean.substring(6, 8);
+        } else if (clean.length === 6) {
+          return clean.substring(0, 2) + "." + clean.substring(2, 4) + "." + clean.substring(4, 6);
+        }
+        return d;
+      }
+
+      if (periodEl) {
+        const sDate = fmtDate(meta.startDate);
+        const eDate = fmtDate(meta.endDate);
+        if (sDate && eDate) periodEl.textContent = `${sDate} ~ ${eDate}`;
+        else if (sDate) periodEl.textContent = sDate;
+        else periodEl.textContent = "-";
+      }
+
+      if (hostEl) hostEl.textContent = meta.host || "-";
+      if (partnerEl) partnerEl.textContent = meta.partner || "-";
+      if (castersEl) castersEl.textContent = meta.casters || "-";
+      if (mainMcEl) mainMcEl.textContent = meta.mainMc || "-";
+
+      if (stadiumEl) {
+        let stadText = "";
+        if (meta.stadiumMain && meta.stadiumFinal && meta.stadiumMain !== meta.stadiumFinal) {
+          stadText = `${meta.stadiumMain} (본선)<br>${meta.stadiumFinal} (결승)`;
+        } else {
+          stadText = meta.stadiumMain || meta.stadiumFinal || "-";
+        }
+        stadiumEl.innerHTML = stadText;
+      }
+
+      // 금액 포맷 함수 (숫자만 추출해서 원화 표기)
+      function fmtPrize(val) {
+        if (!val) return "-";
+        const n = parseInt(String(val).replace(/[^0-9]/g, ""), 10);
+        return (n > 0) ? "₩ " + n.toLocaleString() : val;
+      }
+
+      if (prizeEl) {
+        prizeEl.textContent = fmtPrize(meta.totalPrize);
+      }
+
+      if (winnerEl) {
+        const winName = (meta.winner || "").trim();
+        if (winName && winName !== "-") {
+          const wRace = getPlayerRace(winName);
+          const wPrizeTxt = meta.winnerPrize ? ` <span style="font-size:11px; color:#ffc83b; font-weight:700; margin-left:6px;">(${fmtPrize(meta.winnerPrize)})</span>` : "";
+          winnerEl.innerHTML = `<span style="color:#ffffff; font-weight:700;">${winName}</span>` + (wRace ? ` <span class="rank-race ${wRace}" style="margin-left:4px;">${wRace}</span>` : "") + wPrizeTxt;
+        } else {
+          winnerEl.textContent = "-";
+        }
+      }
+
+      if (runnerEl) {
+        const runName = (meta.runnerUp || "").trim();
+        if (runName && runName !== "-") {
+          const rRace = getPlayerRace(runName);
+          const rPrizeTxt = meta.runnerUpPrize ? ` <span style="font-size:11px; color:#94a3b8; font-weight:600; margin-left:6px;">(${fmtPrize(meta.runnerUpPrize)})</span>` : "";
+          runnerEl.innerHTML = `<span style="color:#ffffff; font-weight:700;">${runName}</span>` + (rRace ? ` <span class="rank-race ${rRace}" style="margin-left:4px;">${rRace}</span>` : "") + rPrizeTxt;
+        } else {
+          runnerEl.textContent = "-";
+        }
+      }
+
+      // 정보창 예선/본선 맵 표시
+      if (mapsEl) {
+        const preList = (meta.preMaps || "").split(",").map(m => m.trim()).filter(Boolean);
+        const mainList = (meta.mainMaps || "").split(",").map(m => m.trim()).filter(Boolean);
+
+        let mapHtml = "";
+        if (preList.length > 0) {
+          mapHtml += `
+            <div style="display:flex; align-items:flex-start; gap:6px; font-size:11.5px;">
+              <span style="background:rgba(245,158,11,0.15); color:#fbbf24; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px; flex-shrink:0;">예선</span>
+              <span style="color:#e2e8f0; line-height:1.4;">${preList.join(", ")}</span>
+            </div>
+          `;
+        }
+        if (mainList.length > 0) {
+          mapHtml += `
+            <div style="display:flex; align-items:flex-start; gap:6px; font-size:11.5px; margin-top:2px;">
+              <span style="background:rgba(34,211,238,0.15); color:#22d3ee; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:4px; flex-shrink:0;">본선</span>
+              <span style="color:#cbd5e1; line-height:1.4;">${mainList.join(", ")}</span>
+            </div>
+          `;
+        }
+        mapsEl.innerHTML = mapHtml || "-";
+      }
+
+      // 하단 본선 공식 맵 7개 슬롯 연동 (본선맵 없으면 예선맵이라도 렌더)
+      renderSeasonMapsGrid(meta.mainMaps || meta.preMaps || "");
+
+      if (videoFrame && meta.videoUrl) {
+        videoFrame.src = toEmbedUrl(meta.videoUrl);
+      }
+    }
+
+    function switchSeasonView(sNum) {
+      curSeason = String(sNum);
+      syncSeasonTxt(sNum);
+      curSeasonMatches = processSeasonData(curSeason);
+      if (typeof updateInfoPanel === "function") updateInfoPanel(curSeason);
+
+      renderSeasonMeta(curSeason);
+      renderBracket(curSeasonMatches.bracket);
+      if (typeof renderLeagueBoard === "function") {
+        renderLeagueBoard();
+      } else {
+        renderRound16Group(curLeagueGroup || "a");
+      }
+    }
+
+    function normName(s) { return String(s || "").replace(/[^가-힣a-zA-Z0-9]/g, ""); }
+    function parseRoster(text) {
+      var lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+      var list = [];
+      for (var i = 1; i < lines.length; i++) {
+        var cols = lines[i].match(/(?:[^",]+|"[^"]*")+/g) || [];
+        var c = cols.map(x => x.replace(/^"|"$/g, "").trim());
+        if (!c[0] && !c[1]) continue;
+        list.push({ id: c[0]||"", name: c[1]||"", aliases: (c[2]||"").split(",").map(x => x.trim()).filter(Boolean) });
+      }
+      return list;
+    }
+    function findRoster(nick, roster) {
+      var n = normName(nick);
+      if (!n) return null;
+      return roster.find(r => normName(r.name) === n || r.aliases.some(a => normName(a) === n)) || null;
+    }
+    function soopImg(id) {
+      if (!id) return "";
+      return "https://stimg.sooplive.com/LOGO/" + id.substring(0, 2).toLowerCase() + "/" + id + "/" + id + ".jpg";
+    }
+
+    const RACE_NAME = { T: "TERRAN", P: "PROTOSS", Z: "ZERG" };
+    const HOF_IMG = {
+      "이영호": "https://stimg.sooplive.com/LOGO/by/byflash/byflash.jpg",
+      "김민철": "https://stimg.sooplive.com/LOGO/mi/minchul/minchul.jpg",
+      "박상현": "https://stimg.sooplive.com/LOGO/th/thakzkf/thakzkf.jpg"
+    };
+
+    let sheetList = [];
+    let powerPage = 0;
+    let prizePage = 0;
+    const ASL_PAGE_SIZE = 25;
+
+    let playPage = 0;
+    const PLAY_PAGE_SIZE = 3;
+    let playNavBound = false;
+    let playMode = "total";
+
+    let hofPage = 0;
+    const HOF_PAGE_SIZE = 3;
+    let hofListCached = [];
+    let raceSumMode = "prize";
+
+    function getPlayerRace(name) {
+      if (!name) return "";
+      const p = sheetList.find(x => normName(x.name) === normName(name));
+      return p ? (p.race || "").trim().toUpperCase() : "";
+    }
+
+    function extraText(item) {
+      return `우승 ${item.win}회 · 준우승 ${item.second}회 · 4강 ${item.semi}회 · 8강 ${item.quarter}회 · 16강 ${item.round16}회 · 24강 이하 ${item.below}회`;
+    }
+    function formatPrize(n) { return (!n || n <= 0) ? "-" : "₩ " + n.toLocaleString(); }
+
+    function paintEloTable(heroId, listId, data, page, mode, infoId, prevId, nextId) {
+      const heroBox = document.getElementById(heroId);
+      const list = document.getElementById(listId);
+      const maxPage = Math.max(1, Math.ceil(data.length / ASL_PAGE_SIZE));
+      if (page > maxPage - 1) page = maxPage - 1;
+      if (page < 0) page = 0;
+
+      const start = page * ASL_PAGE_SIZE;
+      const pageRows = data.slice(start, start + ASL_PAGE_SIZE);
+      const absMax = data.length > 0 ? (mode === "power" ? data[0].point : data[0].prize) : 1;
+
+      heroBox.innerHTML = "";
+      list.innerHTML = "";
+
+      if (page === 0 && pageRows.length > 0) {
+        const h = pageRows[0];
+        const hImg = soopImg(h.id);
+        const valTxt = mode === "power" ? `${h.point.toLocaleString()} <span style="font-size:75%; opacity:0.7;">p</span>` : formatPrize(h.prize);
+        heroBox.innerHTML = `
+          <div class="hero-ranker-zone is-first" style="cursor:pointer; flex-direction:column; align-items:stretch;" onclick="this.classList.toggle('open')">
+            <div style="display:flex; align-items:center; gap:12px; width:100%;">
+              <div class="hero-avatar"><img src="${hImg}" alt="" onerror="this.style.display='none'"></div>
+              <div class="hero-meta">
+                <span class="p-name">${h.name}</span>
+                <span class="rank-race ${h.race}">${h.race}</span>
+              </div>
+              <div class="hero-val ${mode === 'prize' ? 'orange' : ''}" style="${mode === 'power' ? 'color:#ffffff;' : ''}">
+                <span>${valTxt}</span>
+              </div>
+            </div>
+            <div class="rank-extra" style="padding-left:52px;">${extraText(h)}</div>
+          </div>`;
+      }
+
+      const listRows = page === 0 ? pageRows.slice(1) : pageRows;
+      list.innerHTML = listRows.map((item, i) => {
+        const rank = start + (page === 0 ? i + 2 : i + 1);
+        const valNum = mode === "power" ? item.point : item.prize;
+        const percent = Math.max(8, Math.min(100, Math.round((valNum / absMax) * 100)));
+        const imgUrl = soopImg(item.id);
+        const valTxt = mode === "power" ? `${item.point.toLocaleString()} <span style="font-size:70%; opacity:0.7;">p</span>` : formatPrize(item.prize);
+
+        return `
+          <div class="rank-item-row" id="row-${mode}-${rank}" onclick="this.classList.toggle('open')">
+            <div class="bar-bg" style="width: ${percent}%;"></div>
+            <div class="rank-item-main">
+              <div class="item-left">
+                <span class="item-num">${rank}</span>
+                <div class="item-avatar"><img src="${imgUrl}" alt="" onerror="this.style.display='none'"></div>
+                <div class="item-name-group">
+                  <span class="item-p-name">${item.name}</span>
+                  <span class="rank-race ${item.race}">${item.race}</span>
+                </div>
+              </div>
+              <div class="item-val ${mode === 'prize' ? 'orange' : ''}">
+                <span>${valTxt}</span>
+              </div>
+            </div>
+            <div class="rank-extra">${extraText(item)}</div>
+          </div>`;
+      }).join("");
+
+      document.getElementById(infoId).textContent = (page + 1) + "/" + maxPage;
+      document.getElementById(prevId).disabled = page <= 0;
+      document.getElementById(nextId).disabled = page >= maxPage - 1;
+      return page;
+    }
+
+    function renderPowerMore() {
+      const data = sheetList.slice().sort((a, b) => b.point - a.point || b.prize - a.prize);
+      powerPage = paintEloTable("heroSlotPower", "powerList", data, powerPage, "power", "powerPageInfo", "powerPrev", "powerNext");
+    }
+
+    function renderPrizeMore() {
+      const data = sheetList.slice().sort((a, b) => b.prize - a.prize || b.point - a.point);
+      prizePage = paintEloTable("heroSlotPrize", "prizeList", data, prizePage, "prize", "prizePageInfo", "prizePrev", "prizeNext");
+    }
+
+    function updateHofView() {
+      const start = hofPage * HOF_PAGE_SIZE;
+      const paged = hofListCached.slice(start, start + HOF_PAGE_SIZE);
+      const maxPages = Math.max(1, Math.ceil(hofListCached.length / HOF_PAGE_SIZE));
+
+      let cardsHtml = paged.map(item => {
+        const photo = HOF_IMG[item.name] || soopImg(item.id);
+        return `
+          <div class="hof-card-v2">
+            <div class="hof-ava-wrap">
+              <img src="${photo}" alt="${item.name}" onerror="this.style.display='none'">
+            </div>
+            <span class="hof-player-name">
+              ${item.name}
+              <span class="rank-race ${item.race}">${item.race}</span>
+            </span>
+            <span class="hof-win-badge">우승 ${item.win}회</span>
+            <div class="hof-stat-chips">
+              <span>준 <b>${item.second}</b></span>
+              <span class="hof-stat-divider">·</span>
+              <span>4강 <b>${item.semi || 0}</b></span>
+              <span class="hof-stat-divider">·</span>
+              <span>8강 <b>${item.quarter || 0}</b></span>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      while (paged.length > 0 && (cardsHtml.match(/class="hof-card-v2"/g) || []).length % HOF_PAGE_SIZE !== 0) {
+        cardsHtml += `<div class="hof-empty-card">집계중</div>`;
+        break;
+      }
+
+      ["hofPower", "hofPrize", "hofSeason", "hofAsl22"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = cardsHtml;
+      });
+
+      document.querySelectorAll(".hof-prev-btn").forEach(btn => btn.disabled = (hofPage === 0));
+      document.querySelectorAll(".hof-next-btn").forEach(btn => btn.disabled = (hofPage >= maxPages - 1));
+    }
+
+    function bindHofNav() {
+      document.querySelectorAll(".hof-prev-btn").forEach(btn => {
+        btn.onclick = () => { if (hofPage > 0) { hofPage--; updateHofView(); } };
+      });
+      document.querySelectorAll(".hof-next-btn").forEach(btn => {
+        btn.onclick = () => {
+          const maxPages = Math.ceil(hofListCached.length / HOF_PAGE_SIZE);
+          if (hofPage < maxPages - 1) { hofPage++; updateHofView(); }
+        };
+      });
+    }
+
+    function finalDonutHtml() {
+      const map = { T: { win: 0, second: 0 }, P: { win: 0, second: 0 }, Z: { win: 0, second: 0 } };
+      sheetList.forEach(item => {
+        if (!map[item.race]) map[item.race] = { win: 0, second: 0 };
+        map[item.race].win += (item.win || 0);
+        map[item.race].second += (item.second || 0);
+      });
+      const colors = { Z: "#b346e0", T: "#3b9eff", P: "#f7a000" };
+      return ["Z", "T", "P"].map(r => {
+        const d = map[r];
+        const finals = d.win + d.second;
+        const rate = finals > 0 ? Math.round((d.win / finals) * 100) : 0;
+        const color = colors[r];
+        return `
+          <div class="donut-cell">
+            <div class="donut-box">
+              <svg class="donut-svg" viewBox="0 0 36 36">
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${color}" stroke-width="3" stroke-dasharray="${rate}, 100" stroke-linecap="round" style="filter: drop-shadow(0 0 4px ${color}88);"/>
+              </svg>
+              <div class="donut-center-pct" style="color:${color};">${rate}%</div>
+            </div>
+            <div class="donut-name">${RACE_NAME[r]}</div>
+            <div class="donut-desc">${d.win} 우승 · ${d.second} 준우승</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function roundShareHtml() {
+      var tiers = { "결승": { T: 0, P: 0, Z: 0 }, "4강": { T: 0, P: 0, Z: 0 }, "8강": { T: 0, P: 0, Z: 0 }, "16강": { T: 0, P: 0, Z: 0 } };
+      sheetList.forEach(function(item) {
+        var r = (item.race || "").trim().toUpperCase();
+        if (r !== "T" && r !== "P" && r !== "Z") return;
+        var win = item.win || 0, second = item.second || 0, semi = item.semi || 0, quarter = item.quarter || 0, r16 = item.round16 || 0;
+        tiers["결승"][r] += (win + second);
+        tiers["4강"][r]  += (win + second + semi);
+        tiers["8강"][r]  += (win + second + semi + quarter);
+        tiers["16강"][r] += (win + second + semi + quarter + r16);
+      });
+      var rounds = ["결승", "4강", "8강", "16강"];
+      var html = "";
+      rounds.forEach(function(rd) {
+        var t = tiers[rd].T, p = tiers[rd].P, z = tiers[rd].Z;
+        var total = t + p + z; if (total === 0) total = 1;
+        var tPct = Math.round((t / total) * 100), pPct = Math.round((p / total) * 100), zPct = 100 - tPct - pPct;
+        html += `
+          <div class="share-round-row">
+            <span class="share-round-name">${rd}</span>
+            <div class="share-inbar-track">
+              <div class="share-inbar-seg t" style="width: ${tPct}%;">T ${tPct}%</div>
+              <div class="share-inbar-seg p" style="width: ${pPct}%;">P ${pPct}%</div>
+              <div class="share-inbar-seg z" style="width: ${zPct}%;">Z ${zPct}%</div>
+            </div>
+          </div>
+        `;
+      });
+      html += `
+        <div class="share-legend-bottom">
+          <div class="share-legend-item"><span class="share-legend-dot t"></span><span>테란</span></div>
+          <div class="share-legend-item"><span class="share-legend-dot p"></span><span>프로토스</span></div>
+          <div class="share-legend-item"><span class="share-legend-dot z"></span><span>저그</span></div>
+        </div>
+      `;
+      return html;
+    }
+
+    function animateCountUp(container) {
+      if (!container) return;
+      const bars = container.querySelectorAll(".race-sum-bar");
+      requestAnimationFrame(() => {
+        bars.forEach(bar => {
+          const targetPct = bar.getAttribute("data-pct") || "0";
+          bar.style.width = targetPct + "%";
+        });
+      });
+    }
+
+    function raceSumHtml(key) {
+      const map = { T: 0, P: 0, Z: 0 };
+      sheetList.forEach(item => { if (map[item.race] != null) map[item.race] += item[key] || 0; });
+      const rows = ["T", "P", "Z"].map(r => ({ race: r, val: map[r] })).sort((a, b) => b.val - a.val);
+      const maxVal = rows[0].val > 0 ? rows[0].val : 1;
+      return '<div class="race-sum-wrap">' + rows.map(r => {
+        const pct = Math.max(8, Math.round((r.val / maxVal) * 100));
+        const valTxt = key === 'prize' ? formatPrize(r.val) : r.val.toLocaleString() + " p";
+        return `
+          <div class="race-sum-row">
+            <div class="race-sum-top">
+              <span class="rank-race ${r.race}">${RACE_NAME[r.race]}</span>
+              <span class="race-sum-cash">${valTxt}</span>
+            </div>
+            <div class="race-sum-track">
+              <div class="race-sum-bar ${r.race}" data-pct="${pct}" style="width: 0%;"></div>
+            </div>
+          </div>
+        `;
+      }).join("") + '</div>';
+    }
+
+    function getPlayGroups() {
+      const field = playMode === "streak" ? "streak" : "play";
+      const sorted = sheetList.slice().sort((a, b) => (b[field] || 0) - (a[field] || 0) || a.name.localeCompare(b.name, "ko"));
+      const allGroups = [];
+      let lastVal = null;
+      sorted.forEach(item => {
+        const val = item[field] || 0;
+        if (val !== lastVal) {
+          lastVal = val;
+          allGroups.push({ play: val, names: [item.name] });
+        } else if (allGroups.length) {
+          allGroups[allGroups.length - 1].names.push(item.name);
+        }
+      });
+      return allGroups.slice(0, PLAY_PAGE_SIZE * 2);
+    }
+
+    function playTopHtml() {
+      const allGroups = getPlayGroups();
+      if (!allGroups.length) return "";
+      const maxPages = Math.max(1, Math.ceil(allGroups.length / PLAY_PAGE_SIZE));
+      if (playPage >= maxPages) playPage = maxPages - 1;
+      if (playPage < 0) playPage = 0;
+      const paged = allGroups.slice(playPage * PLAY_PAGE_SIZE, (playPage + 1) * PLAY_PAGE_SIZE);
+      if (!paged.length) return '<div class="side-item" style="color:var(--text-dim); padding:16px;">데이터 없음</div>';
+      const unit = "회";
+
+      return '<div class="play-score-list">' + paged.map((g, idx) => {
+        const rankClass = (playPage === 0 && idx === 0) ? "rank-top" : ((playPage === 0 && idx === 1) ? "rank-mid" : "rank-low");
+        const namesHtml = g.names.map(name => `<span class="play-name-chip">${name}</span>`).join("");
+        return `
+          <div class="play-score-row ${rankClass}">
+            <div class="play-score-num-box"><span class="play-big-num">${g.play}</span><span class="play-unit-label">${unit}</span></div>
+            <div class="play-names-wrap">${namesHtml}</div>
+          </div>
+        `;
+      }).join("") + '</div>';
+    }
+
+    function updatePlayTopView() {
+      const html = playTopHtml();
+      ["playTop5Power", "playTop5Prize", "playTop5Season", "playTop5Asl22"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = html;
+      });
+      const allGroups = getPlayGroups();
+      const maxPages = Math.max(1, Math.ceil(allGroups.length / PLAY_PAGE_SIZE));
+      document.querySelectorAll(".play-prev-btn").forEach(btn => btn.disabled = (playPage === 0));
+      document.querySelectorAll(".play-next-btn").forEach(btn => btn.disabled = (playPage >= maxPages - 1));
+    }
+
+    function bindPlayNav() {
+      if (playNavBound) return;
+      document.querySelectorAll(".play-prev-btn").forEach(btn => btn.addEventListener("click", () => {
+        if (playPage > 0) { playPage--; updatePlayTopView(); }
+      }));
+      document.querySelectorAll(".play-next-btn").forEach(btn => btn.addEventListener("click", () => {
+        const allGroups = getPlayGroups();
+        const maxPages = Math.max(1, Math.ceil(allGroups.length / PLAY_PAGE_SIZE));
+        if (playPage < maxPages - 1) { playPage++; updatePlayTopView(); }
+      }));
+      playNavBound = true;
+    }
+
+    function renderSides() {
+      hofListCached = sheetList.slice().filter(x => x.win > 0).sort((a, b) => b.win - a.win || b.second - a.second);
+      hofPage = 0;
+      updateHofView();
+      bindHofNav();
+
+      const raceSumObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            animateCountUp(entry.target);
+            raceSumObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.2 });
+
+      function updateRaceSumView(forceAnimate = false) {
+        const html = raceSumHtml(raceSumMode);
+        ["racePointSum", "racePrizeSum", "racePointSum2", "racePointSum3"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.innerHTML = html;
+            if (forceAnimate) animateCountUp(el);
+            else raceSumObserver.observe(el);
+          }
+        });
+        document.querySelectorAll(".race-sum-tab-btn").forEach(btn => {
+          btn.classList.toggle("active", btn.getAttribute("data-type") === raceSumMode);
+        });
+      }
+
+      updateRaceSumView(false);
+
+      document.querySelectorAll(".race-sum-tab-btn").forEach(btn => {
+        btn.onclick = () => {
+          raceSumMode = btn.getAttribute("data-type");
+          updateRaceSumView(true);
+        };
+      });
+
+      var donutH = finalDonutHtml();
+      ["finalDonutPower", "finalDonutPrize", "finalDonutSeason", "finalDonutAsl22"].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.innerHTML = donutH;
+      });
+
+      document.querySelectorAll(".play-tab-btn").forEach(btn => {
+        btn.onclick = () => {
+          playMode = btn.getAttribute("data-mode") || "total";
+          playPage = 0;
+          document.querySelectorAll(".play-tab-btn").forEach(b => {
+            b.classList.toggle("active", b.getAttribute("data-mode") === playMode);
+          });
+          updatePlayTopView();
+        };
+      });
+
+      var shareH = roundShareHtml();
+      ["roundSharePower", "roundSharePrize", "roundShareSeason", "roundShareAsl22"].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.innerHTML = shareH;
+      });
+
+      updatePlayTopView();
+      bindPlayNav();
+    }
+
+    function parseMatchCsv(text) {
+      const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+      const rows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const c = lines[i].split(",").map(x => x.replace(/^"|"$/g, "").trim());
+        if (!c[0]) continue;
+        rows.push({
+          season: c[0],
+          roundKey: (c[1] || "").toLowerCase(),
+          matchType: (c[2] || "").toLowerCase(),
+          setNum: (c[3] || "").replace("nn", "n"),
+          pA: c[4] || "",
+          pB: c[5] || "",
+          map: c[6] || "",
+          winSide: (c[7] || "").toLowerCase()
+        });
+      }
+      return rows;
+    }
+
+    function processSeasonData(season) {
+      const sRows = matchRawData.filter(r => String(r.season) === String(season));
+      const bracket = { "8a": [], "8b": [], "8c": [], "8d": [], "4a": [], "4b": [], "2": [] };
+      const r16 = { "a": {}, "b": {}, "c": {}, "d": {} };
+      const r24 = { "a": {}, "b": {}, "c": {}, "d": {}, "e": {}, "f": {} };
+
+      sRows.forEach(r => {
+        if (bracket[r.roundKey]) {
+          bracket[r.roundKey].push(r);
+        } else if (r.roundKey.startsWith("16")) {
+          const g = r.roundKey.replace("16", "");
+          if (r16[g]) {
+            if (!r16[g][r.matchType]) r16[g][r.matchType] = [];
+            r16[g][r.matchType].push(r);
+          }
+        } else if (r.roundKey.startsWith("24")) {
+          const g = r.roundKey.replace("24", "");
+          if (r24[g]) {
+            if (!r24[g][r.matchType]) r24[g][r.matchType] = [];
+            r24[g][r.matchType].push(r);
+          }
+        }
+      });
+      return { bracket, r16, r24 };
+    }
+
+    function summarizeSeries(sets) {
+      if (!sets || !sets.length) return null;
+      const pA = sets[0].pA || "-";
+      const pB = sets[0].pB || "-";
+      let scoreA = 0, scoreB = 0;
+      sets.forEach(s => {
+        if (s.winSide === "a") scoreA++;
+        else if (s.winSide === "b") scoreB++;
+      });
+      return {
+        pA, pB,
+        raceA: getPlayerRace(pA),
+        raceB: getPlayerRace(pB),
+        scoreA, scoreB,
+        winner: scoreA > scoreB ? pA : (scoreB > scoreA ? pB : ""),
+        sets
+      };
+    }
+
+    function renderDetailBox(summary, title) {
+      const tag = document.getElementById("detailStageTag");
+      const body = document.getElementById("matchDetailBody");
+      if (tag) {
+        tag.textContent = title;
+        tag.style.display = "none";
+      }
+      if (!body) return;
+      if (!summary) {
+        body.innerHTML = '<div style="color:var(--text-dim); font-size:12px; text-align:center; padding:20px;">경기 데이터 준비중</div>';
+        return;
+      }
+      body.innerHTML = `
+        <div style="text-align:center; font-size:15px; font-weight:600; color:var(--cyan); letter-spacing:0.5px; padding: 10px 5px 6px 3px;">${title}</div>
+        <div class="b-match-summary">
+          <div>
+            <div style="font-weight:800; font-size:12.5px; color:#fff;">${summary.pA} <span class="rank-race ${summary.raceA}">${summary.raceA}</span></div>
+            <div style="font-size:9.5px; color:${summary.winner === summary.pA ? 'var(--cyan)' : '#64748b'}; font-weight:700;">${summary.winner === summary.pA ? 'WIN' : 'LOSE'}</div>
+          </div>
+          <div class="b-summary-score">${summary.scoreA} : ${summary.scoreB}</div>
+          <div>
+            <div style="font-weight:800; font-size:12.5px; color:#fff;">${summary.pB} <span class="rank-race ${summary.raceB}">${summary.raceB}</span></div>
+            <div style="font-size:9.5px; color:${summary.winner === summary.pB ? 'var(--cyan)' : '#64748b'}; font-weight:700;">${summary.winner === summary.pB ? 'WIN' : 'LOSE'}</div>
+          </div>
+        </div>
+        ${summary.sets.map((s, idx) => {
+          const wName = s.winSide === "a" ? s.pA : s.pB;
+          return `
+            <div class="b-set-row">
+              <span style="color:#64748b; text-align:left;">${s.setNum === 'n' ? (idx + 1) + 'set' : s.setNum + 'set'}</span>
+              <span style="color:#cbd5e1; font-weight:600; text-align:center;">${s.map || '-'}</span>
+              <span style="color:#ffffff; font-weight:700; text-align:right;">${wName} 승</span>
+            </div>
+          `;
+        }).join("")}
+      `;
+    }
+
+    function renderBracket(bracketData) {
+      const cvs = document.getElementById("tournamentCanvasZone");
+      const m8a = summarizeSeries(bracketData["8a"]);
+      const m8b = summarizeSeries(bracketData["8b"]);
+      const m8c = summarizeSeries(bracketData["8c"]);
+      const m8d = summarizeSeries(bracketData["8d"]);
+      const m4a = summarizeSeries(bracketData["4a"]);
+      const m4b = summarizeSeries(bracketData["4b"]);
+      const m2  = summarizeSeries(bracketData["2"]);
+
+      const champ = m2 ? m2.winner : "-";
+      const champRace = getPlayerRace(champ);
+
+      const wEl = document.getElementById("infoWinner");
+      const rEl = document.getElementById("infoRunnerUp");
+      const sEl = document.getElementById("infoSemiFinalists");
+
+      // 대진표(결승전 결과)에 우승자가 실제로 존재할 때만 갱신하고, 없으면 시트 메타데이터를 유지
+      if (wEl && champ && champ !== "-") {
+        wEl.innerHTML = `<span style="color:#ffffff; font-weight:700;">${champ}</span> <span class="rank-race ${champRace}" style="margin-left:4px;">${champRace || '-'}</span>`;
+      }
+      if (rEl && m2 && m2.winner) {
+        const runner = (m2.winner === m2.pA ? m2.pB : m2.pA);
+        if (runner && runner !== "-") {
+          const runnerRace = getPlayerRace(runner);
+          rEl.innerHTML = `<span style="color:#ffffff; font-weight:700;">${runner}</span> <span class="rank-race ${runnerRace}" style="margin-left:4px;">${runnerRace || '-'}</span>`;
+        }
+      }
+      if (sEl) {
+        const semiA = m4a ? (m4a.winner === m4a.pA ? m4a.pB : m4a.pA) : "";
+        const semiB = m4b ? (m4b.winner === m4b.pA ? m4b.pB : m4b.pA) : "";
+        const semis = [semiA, semiB].filter(Boolean).map(x => `${x} ${getPlayerRace(x)}`).join(", ");
+        sEl.textContent = semis || "-";
+      }
+
+      function matchBox(m, top, left, matchKey, title) {
+        if (!m || !m.pA) {
+          return `
+            <div class="bracket-match-box" style="top:${top}px; left:${left}px; opacity:0.28; cursor:default;">
+              <div class="b-player-row"><div class="b-row-left"><span>-</span></div><span class="b-row-score">-</span></div>
+              <div class="b-player-row"><div class="b-row-left"><span>-</span></div><span class="b-row-score">-</span></div>
+            </div>
+          `;
+        }
+        const winA = m.winner === m.pA;
+        const winB = m.winner === m.pB;
+        return `
+          <div class="bracket-match-box" style="top:${top}px; left:${left}px;" onclick="selectMatch('${matchKey}', '${title}', this)">
+            <div class="b-player-row ${winA ? 'is-winner' : (winB ? 'is-loser' : '')}">
+              <div class="b-row-left">
+                <span>${m.pA}</span>
+                <span class="rank-race ${m.raceA}">${m.raceA}</span>
+              </div>
+              <span class="b-row-score">${m.scoreA}</span>
+            </div>
+            <div class="b-player-row ${winB ? 'is-winner' : (winA ? 'is-loser' : '')}">
+              <div class="b-row-left">
+                <span>${m.pB}</span>
+                <span class="rank-race ${m.raceB}">${m.raceB}</span>
+              </div>
+              <span class="b-row-score">${m.scoreB}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      cvs.innerHTML = `
+        <svg class="line-svg">
+          <path d="M 184,38 L 217,38 L 217,89 L 250,89" class="t-line ${m8a && m8a.winner ? 'active' : ''}" />
+          <path d="M 184,140 L 217,140 L 217,89 L 250,89" class="t-line ${m8b && m8b.winner ? 'active' : ''}" />
+
+          <path d="M 184,242 L 217,242 L 217,293 L 250,293" class="t-line ${m8c && m8c.winner ? 'active' : ''}" />
+          <path d="M 184,344 L 217,344 L 217,293 L 250,293" class="t-line ${m8d && m8d.winner ? 'active' : ''}" />
+
+          <path d="M 374,89 L 407,89 L 407,191 L 440,191" class="t-line ${m4a && m4a.winner ? 'active' : ''}" />
+          <path d="M 374,293 L 407,293 L 407,191 L 440,191" class="t-line ${m4b && m4b.winner ? 'active' : ''}" />
+
+          <path d="M 564,191 L 630,191" class="t-line ${m2 && m2.winner ? 'active' : ''}" />
+        </svg>
+
+        ${matchBox(m8a, 12, 60, "8a", "8강 1경기")}
+        ${matchBox(m8b, 114, 60, "8b", "8강 2경기")}
+        ${matchBox(m8c, 216, 60, "8c", "8강 3경기")}
+        ${matchBox(m8d, 318, 60, "8d", "8강 4경기")}
+
+        ${matchBox(m4a, 63, 250, "4a", "4강 1경기")}
+        ${matchBox(m4b, 267, 250, "4b", "4강 2경기")}
+
+        ${matchBox(m2, 165, 440, "2", "결승전")}
+
+        <div class="b-champ-card" style="top: 161px; left: 630px; width: 130px;">
+          <div class="b-champ-tag">👑 CHAMPION</div>
+          <div class="b-champ-name"><span style="color:#ffffff;">${champ}</span> <span class="rank-race ${champRace}" style="margin-left:3px;">${champRace}</span></div>
+        </div>
+      `;
+
+      if (m2) renderDetailBox(m2, "결승전");
+    }
+
+    window.selectMatch = function(matchKey, title, el) {
+      document.querySelectorAll(".bracket-match-box, .dual-match-card").forEach(b => b.classList.remove("active"));
+      if (el) el.classList.add("active");
+
+      if (!curSeasonMatches.bracket) return;
+      const sets = curSeasonMatches.bracket[matchKey];
+      const summary = summarizeSeries(sets);
+      renderDetailBox(summary, title);
+    };
+
+    let curLeagueRound = "16";
+    let curLeagueGroup = "a";
+
+    function renderLeagueDetailBox(summary, title) {
+      const body = document.getElementById("leagueMatchDetailBody");
+      if (!body) return;
+      if (!summary) {
+        body.innerHTML = '<div style="color:var(--text-dim); font-size:12px; font-weight:500; display:flex; align-items:center; justify-content:center; flex:1; width:100%; height:100%; text-align:center;">경기를 클릭하면 상세 내용이 표시됩니다</div>';
+        return;
+      }
+      body.innerHTML = `
+        <div style="text-align:center; font-size:15px; font-weight:600; color:var(--cyan); letter-spacing:0.5px; padding: 10px 5px 6px 3px;">${title}</div>
+        <div class="b-match-summary">
+          <div>
+            <div style="font-weight:800; font-size:12.5px; color:#fff;">${summary.pA} <span class="rank-race ${summary.raceA}">${summary.raceA}</span></div>
+            <div style="font-size:9.5px; color:${summary.winner === summary.pA ? 'var(--cyan)' : '#64748b'}; font-weight:700;">${summary.winner === summary.pA ? 'WIN' : 'LOSE'}</div>
+          </div>
+          <div class="b-summary-score">${summary.scoreA} : ${summary.scoreB}</div>
+          <div>
+            <div style="font-weight:800; font-size:12.5px; color:#fff;">${summary.pB} <span class="rank-race ${summary.raceB}">${summary.raceB}</span></div>
+            <div style="font-size:9.5px; color:${summary.winner === summary.pB ? 'var(--cyan)' : '#64748b'}; font-weight:700;">${summary.winner === summary.pB ? 'WIN' : 'LOSE'}</div>
+          </div>
+        </div>
+        ${summary.sets.map((s, idx) => {
+          const wName = s.winSide === "a" ? s.pA : s.pB;
+          return `
+            <div class="b-set-row">
+              <span style="color:#64748b; text-align:left;">${s.setNum === 'n' ? (idx + 1) + 'set' : s.setNum + 'set'}</span>
+              <span style="color:#cbd5e1; font-weight:600; text-align:center;">${s.map || '-'}</span>
+              <span style="color:#ffffff; font-weight:700; text-align:right;">${wName} 승</span>
+            </div>
+          `;
+        }).join("")}
+      `;
+    }
+
+    function renderLeagueBoard() {
+      const board = document.getElementById("round16StageBoard");
+      const is16 = curLeagueRound === "16";
+      const gData = is16 ? (curSeasonMatches.r16 ? curSeasonMatches.r16[curLeagueGroup] : null)
+                        : (curSeasonMatches.r24 ? curSeasonMatches.r24[curLeagueGroup] : null);
+
+      if (!gData || Object.keys(gData).length === 0) {
+        board.innerHTML = `<div style="color:var(--text-dim); font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; flex:1; width:100%; height:100%; text-align:center;">${curLeagueRound}강 경기 데이터 준비중</div>`;
+        renderLeagueDetailBox(null);
+        return;
+      }
+
+      function parsePair(sets) {
+        const s = summarizeSeries(sets);
+        if (!s) return null;
+        const pWin = s.winner || s.pA || "-";
+        const pLose = s.winner ? (s.winner === s.pA ? s.pB : s.pA) : (s.pB || "-");
+        return {
+          summary: s,
+          pWin: pWin,
+          pLose: pLose,
+          rWin: getPlayerRace(pWin),
+          rLose: getPlayerRace(pLose)
+        };
+      }
+
+      const m1 = parsePair(gData["1"]);
+      const m2 = parsePair(gData["2"]);
+      const m3 = parsePair(gData["3"]);
+      const m4 = parsePair(gData["4"]);
+      const m5 = parsePair(gData["5"]);
+
+      const targetRound = is16 ? "8강" : "16강";
+      const gUpper = curLeagueGroup.toUpperCase();
+
+      board.innerHTML = `
+        <div class="dual-top-row">
+          <div class="dual-match-card is-advance-gate" onclick="selectLeagueMatch('3', '${curLeagueRound}강 ${gUpper}조 승자전', this)">
+            <div class="match-header-tag"><span>승자전</span><span>1위 ${targetRound} 진출</span></div>
+            ${m3 ? `
+              <div class="match-player-row is-advance"><div class="match-p-info"><span>${m3.pWin}</span><span class="rank-race ${m3.rWin}">${m3.rWin}</span></div><span class="dual-badge advance">${targetRound} 진출</span></div>
+              <div class="match-player-row is-loser"><div class="match-p-info"><span>${m3.pLose}</span><span class="rank-race ${m3.rLose}">${m3.rLose}</span></div><span class="dual-badge move">최종전 이동</span></div>
+            ` : '<div style="color:var(--text-dim);font-size:11px;padding:6px;">경기 준비중</div>'}
+          </div>
+          <div class="dual-match-card is-advance-gate" onclick="selectLeagueMatch('5', '${curLeagueRound}강 ${gUpper}조 최종전', this)">
+            <div class="match-header-tag"><span>최종전</span><span>2위 ${targetRound} 합류</span></div>
+            ${m5 ? `
+              <div class="match-player-row is-advance"><div class="match-p-info"><span>${m5.pWin}</span><span class="rank-race ${m5.rWin}">${m5.rWin}</span></div><span class="dual-badge advance">${targetRound} 진출</span></div>
+              <div class="match-player-row is-loser"><div class="match-p-info"><span>${m5.pLose}</span><span class="rank-race ${m5.rLose}">${m5.rLose}</span></div><span class="dual-badge drop">최종 탈락</span></div>
+            ` : '<div style="color:var(--text-dim);font-size:11px;padding:6px;">경기 준비중</div>'}
+          </div>
+        </div>
+        <div class="dual-bottom-row">
+          <div class="dual-match-card" onclick="selectLeagueMatch('1', '${curLeagueRound}강 ${gUpper}조 1경기', this)">
+            <div class="match-header-tag"><span>1경기</span></div>
+            ${m1 ? `
+              <div class="match-player-row is-winner"><div class="match-p-info"><span>${m1.pWin}</span><span class="rank-race ${m1.rWin}">${m1.rWin}</span></div><span class="dual-badge win">승자전 진출</span></div>
+              <div class="match-player-row is-loser"><div class="match-p-info"><span>${m1.pLose}</span><span class="rank-race ${m1.rLose}">${m1.rLose}</span></div><span class="dual-badge move">패자전 이동</span></div>
+            ` : '<div style="color:var(--text-dim);font-size:11px;padding:6px;">경기 준비중</div>'}
+          </div>
+          <div class="dual-match-card" onclick="selectLeagueMatch('2', '${curLeagueRound}강 ${gUpper}조 2경기', this)">
+            <div class="match-header-tag"><span>2경기</span></div>
+            ${m2 ? `
+              <div class="match-player-row is-winner"><div class="match-p-info"><span>${m2.pWin}</span><span class="rank-race ${m2.rWin}">${m2.rWin}</span></div><span class="dual-badge win">승자전 진출</span></div>
+              <div class="match-player-row is-loser"><div class="match-p-info"><span>${m2.pLose}</span><span class="rank-race ${m2.rLose}">${m2.rLose}</span></div><span class="dual-badge move">패자전 이동</span></div>
+            ` : '<div style="color:var(--text-dim);font-size:11px;padding:6px;">경기 준비중</div>'}
+          </div>
+          <div class="dual-match-card" onclick="selectLeagueMatch('4', '${curLeagueRound}강 ${gUpper}조 패자전', this)">
+            <div class="match-header-tag"><span>패자전</span></div>
+            ${m4 ? `
+              <div class="match-player-row is-winner"><div class="match-p-info"><span>${m4.pWin}</span><span class="rank-race ${m4.rWin}">${m4.rWin}</span></div><span class="dual-badge win">최종전 진출</span></div>
+              <div class="match-player-row is-loser"><div class="match-p-info"><span>${m4.pLose}</span><span class="rank-race ${m4.rLose}">${m4.rLose}</span></div><span class="dual-badge drop">최종 탈락</span></div>
+            ` : '<div style="color:var(--text-dim);font-size:11px;padding:6px;">경기 준비중</div>'}
+          </div>
+        </div>
+      `;
+
+      if (m3) renderLeagueDetailBox(m3.summary, `${curLeagueRound}강 ${gUpper}조 승자전`);
+      else renderLeagueDetailBox(null);
+    }
+
+    window.selectLeagueMatch = function(matchNum, title, el) {
+      document.querySelectorAll("#round16StageBoard .dual-match-card").forEach(c => c.classList.remove("active"));
+      if (el) el.classList.add("active");
+
+      const is16 = curLeagueRound === "16";
+      const gData = is16 ? (curSeasonMatches.r16 ? curSeasonMatches.r16[curLeagueGroup] : null)
+                        : (curSeasonMatches.r24 ? curSeasonMatches.r24[curLeagueGroup] : null);
+      if (!gData || !gData[matchNum]) return;
+      const summary = summarizeSeries(gData[matchNum]);
+      renderLeagueDetailBox(summary, title);
+    };
+
+    window.switchLeagueTab = function(round) {
+      curLeagueRound = String(round);
+      document.getElementById("btnRound16Tab").classList.toggle("active", round === "16");
+      document.getElementById("btnRound24Tab").classList.toggle("active", round === "24");
+
+      const tabE = document.getElementById("tabGroupE");
+      const tabF = document.getElementById("tabGroupF");
+      if (tabE) tabE.style.display = round === "24" ? "flex" : "none";
+      if (tabF) tabF.style.display = round === "24" ? "flex" : "none";
+
+      const navEl = document.getElementById("groupTabsNav");
+      if (navEl) {
+        navEl.classList.toggle("is-round-16", round === "16");
+      }
+
+      curLeagueGroup = "a";
+      document.querySelectorAll("#groupTabsNav .group-tab-btn").forEach(b => {
+        b.classList.toggle("active", b.getAttribute("data-group") === "a");
+      });
+
+      renderLeagueBoard();
+    };
+
+    function renderRound16Group(gKey) {
+      curLeagueGroup = gKey;
+      renderLeagueBoard();
+    }
+
+    document.querySelectorAll("#groupTabsNav .group-tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#groupTabsNav .group-tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        curR16Group = btn.getAttribute("data-group");
+        renderRound16Group(curR16Group);
+      });
+    });
+
+    async function loadMatchSheet() {
+      try {
+        const [resMatch, resMeta] = await Promise.all([
+          fetch(MATCH_CSV),
+          fetch(META_CSV)
+        ]);
+        matchRawData = parseMatchCsv(await resMatch.text());
+        metaRawData  = parseMetaCsv(await resMeta.text());
+        switchSeasonView("21");
+      } catch (err) {
+        console.error("Match/Meta CSV 로드 실패:", err);
+      }
+    }
+
+    function syncSeasonTxt(s) {
+      document.querySelectorAll("#seasonSelectTxt, .season-select-txt").forEach(el => {
+        el.textContent = `시즌 ${s}`;
+      });
+    }
+
+    function initSeasonSlider() {
+      const slots = document.querySelectorAll("#seasonToggleWrap, .season-toggle-slot");
+      if (!slots.length) return;
+
+      slots.forEach(slot => {
+        const sBtn = slot.querySelector("#seasonSelectBtn, .season-select-btn");
+        const sDrop = slot.querySelector("#seasonDropMenu, .season-drop-menu");
+        if (!sBtn || !sDrop) return;
+
+        sDrop.innerHTML = "";
+        for (let s = 22; s >= 0; s--) {
+          const item = document.createElement("div");
+          item.style.cssText = "padding:7px 12px; font-size:13px; font-weight:600; cursor:pointer; color:#c0c4cc; border-radius:6px; white-space:nowrap; text-align:center;";
+          item.textContent = `시즌 ${s}`;
+          item.onmouseover = () => { item.style.color = "#22d3ee"; item.style.background = "rgba(34,211,238,0.08)"; };
+          item.onmouseout = () => { item.style.color = "#c0c4cc"; item.style.background = "transparent"; };
+          item.onclick = (e) => {
+            e.stopPropagation();
+            syncSeasonTxt(s);
+            document.querySelectorAll("#seasonDropMenu, .season-drop-menu").forEach(d => d.style.display = "none");
+            document.querySelectorAll("#seasonSelectBtn, .season-select-btn").forEach(b => {
+              b.classList.remove("open");
+              b.classList.remove("active");
+            });
+
+            sessionStorage.setItem("asl_saved_season", String(s));
+            sessionStorage.setItem("asl_saved_tab", "season");
+
+            document.querySelectorAll(".period-tabs .crew-tab[data-tab]").forEach(b => b.classList.remove("active"));
+            const sTabBtn = document.querySelector('.period-tabs .crew-tab[data-tab="season"]');
+            if (sTabBtn) sTabBtn.classList.add("active");
+            document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+            const sPanel = document.getElementById("panel-season");
+            if (sPanel) sPanel.classList.add("active");
+
+            switchSeasonView(s);
+          };
+          sDrop.appendChild(item);
+        }
+
+        sBtn.onclick = (e) => {
+          e.stopPropagation();
+          const isOpen = sDrop.style.display === "block";
+          document.querySelectorAll("#seasonDropMenu, .season-drop-menu").forEach(d => d.style.display = "none");
+          document.querySelectorAll("#seasonSelectBtn, .season-select-btn").forEach(b => {
+            b.classList.remove("open");
+            b.classList.remove("active");
+          });
+          if (!isOpen) {
+            sDrop.style.display = "block";
+            sBtn.classList.add("open", "active");
+          }
+        };
+      });
+
+      document.addEventListener("click", () => {
+        document.querySelectorAll("#seasonDropMenu, .season-drop-menu").forEach(d => d.style.display = "none");
+        document.querySelectorAll("#seasonSelectBtn, .season-select-btn").forEach(b => {
+          b.classList.remove("open");
+          b.classList.remove("active");
+        });
+      });
+    }
+
+    async function loadAsl() {
+      try {
+        const [resAsl, resRoster] = await Promise.all([fetch(ASL_CSV), fetch(ROSTER_CSV)]);
+        const lines = (await resAsl.text()).split("\n").map(l => l.trim()).filter(Boolean);
+        const roster = parseRoster(await resRoster.text());
+
+        let result = [];
+        for (var i = 1; i < lines.length; i++) {
+          var c = [];
+          var cur = "";
+          var inQ = false;
+          for (var k = 0; k < lines[i].length; k++) {
+            var ch = lines[i][k];
+            if (ch === '"') { inQ = !inQ; continue; }
+            if (ch === "," && !inQ) { c.push(cur.trim()); cur = ""; continue; }
+            cur += ch;
+          }
+          c.push(cur.trim());
+          var name = (c[1] || "").trim();
+          if (!name || name === "선수명") continue;
+          var prize = parseInt((c[3] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          var win = parseInt((c[4] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          var second = parseInt((c[5] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          var semi = parseInt((c[6] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          var quarter = parseInt((c[7] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          var round16 = parseInt((c[8] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          var below = parseInt((c[9] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          var who = findRoster(name, roster);
+
+          var streakVal = parseInt((c[10] || "").replace(/[^0-9]/g, ""), 10) || 0;
+          result.push({
+            name, id: who ? who.id : "",
+            race: (c[2] || "").trim(),
+            point: win * 500 + second * 350 + semi * 250 + quarter * 150 + round16 * 100 + below * 50,
+            prize, win, second, semi, quarter, round16, below,
+            play: win + second + semi + quarter + round16 + below,
+            streak: streakVal
+          });
+        }
+
+        sheetList = result;
+        renderPowerMore();
+        renderPrizeMore();
+        renderSides();
+        document.getElementById("aslLoading").style.display = "none";
+        document.body.classList.remove("asl-loading");
+      } catch (err) {
+        console.error(err);
+        document.getElementById("aslLoading").innerHTML = "<div>데이터 불러오기 실패</div>";
+      }
+    }
+
+    document.querySelectorAll(".period-tabs .crew-tab[data-tab]").forEach(btn => {
+      btn.addEventListener("click", function () {
+        const tab = btn.getAttribute("data-tab");
+        sessionStorage.setItem("asl_saved_tab", tab);
+        document.querySelectorAll(".period-tabs .crew-tab[data-tab]").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        const panel = document.getElementById("panel-" + tab);
+        if (panel) panel.classList.add("active");
+
+        const sWrap = document.getElementById("seasonToggleWrap");
+        if (sWrap) {
+          sWrap.style.display = "inline-flex";
+        }
+      });
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedTab = sessionStorage.getItem("asl_saved_tab");
+      const savedSeason = sessionStorage.getItem("asl_saved_season");
+      if (savedTab) {
+        const targetTabBtn = document.querySelector(`.period-tabs .crew-tab[data-tab="${savedTab}"]`);
+        if (targetTabBtn) targetTabBtn.click();
+      }
+      if (savedSeason) {
+        curSeason = savedSeason;
+        const sTxt = document.getElementById("seasonSelectTxt");
+        if (sTxt) sTxt.textContent = `시즌 ${savedSeason}`;
+      }
+    });
+
+    function scrollToRankTop(panelId) {
+      const panel = document.getElementById(panelId);
+      if (!panel) return;
+      const box = panel.querySelector(".side-box");
+      if (!box) return;
+      const y = box.getBoundingClientRect().top + window.pageYOffset - 80;
+      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+    }
+
+    document.getElementById("powerPrev").addEventListener("click", () => {
+      if (powerPage > 0) { powerPage--; renderPowerMore(); scrollToRankTop("panel-power"); }
+    });
+    document.getElementById("powerNext").addEventListener("click", () => {
+      powerPage++; renderPowerMore(); scrollToRankTop("panel-power");
+    });
+
+    document.getElementById("prizePrev").addEventListener("click", () => {
+      if (prizePage > 0) { prizePage--; renderPrizeMore(); scrollToRankTop("panel-prize"); }
+    });
+    document.getElementById("prizeNext").addEventListener("click", () => {
+      prizePage++; renderPrizeMore(); scrollToRankTop("panel-prize");
+    });
+
+    const pBtn = document.getElementById("pointRuleBtn");
+    const pModal = document.getElementById("pointRuleModal");
+    const pClose = document.getElementById("pointRuleClose");
+    if (pBtn && pModal) {
+      pBtn.addEventListener("click", () => pModal.classList.add("open"));
+      pClose.addEventListener("click", () => pModal.classList.remove("open"));
+      pModal.addEventListener("click", (e) => { if (e.target === pModal) pModal.classList.remove("open"); });
+    }
+
+    initSeasonSlider();
+    const sWrap = document.getElementById("seasonToggleWrap");
+    if (sWrap) sWrap.style.display = "inline-flex";
+    loadMatchSheet().then(() => {
+      loadAsl();
+    });
+  </script>
+</body>
+</html>
